@@ -62,46 +62,47 @@ _Focus: Pedagogy, motif-based learning, and consistency._
 
 ### I. Strategy
 
-This plane defines the "Why" and "Who".
+This plane defines the "Why" and "Who" of the application.
 
 - **User Goals**: To master relative pitch recognition (Movable-Do) and map those sounds to absolute instrumental locations.
-- **Target Audience**: Choral scholar applicants, improvising students, and music educators requiring a "sound-first" pedagogical tool.
-- **The Mastery Bridge**: Bridges the gap between relative ear training and absolute score reading, ensuring "Sound before Symbol".
+- **Target Audience**: Choral scholar applicants, improvising instrumentalists, and music educators requiring a "sound-first" pedagogical tool.
+- **The Mastery Bridge**: Bridges the gap between relative ear training and absolute note reading, graduating students from Solfege symbols to absolute letter names once milestone consistency is achieved.
 
 ### II. Scope
 
-This plane defines the "Functional Requirements" based on our User Stories.
+This plane defines the strict functional requirements and limitations of the MVP.
 
-- **Diagnostic Evaluation**: The system identifies specific interval errors to provide remedial feedback, preventing the rehearsal of incorrect sounds.
-- **Motif-Based Generation**: Exercises use a library of pedagogical rhythmic cells (dotted rhythms, quaver pairs) rather than random noise to mirror real-world repertoire.
-- **Intrinsic Responsiveness**: The app must provide a high-quality experience on mobile browsers to allow "tuning up" during small gaps in a user's schedule.
+- **Algorithmic Melody Synthesis**: Exercises are built dynamically using a Step-Wise Bias and a Leap Restriction Guard Rule (forcing vocal leaps to immediately resolve by step in the opposite direction, along with other similar voice-leading conventions) to mirror singable repertoire rather than random noise.
+- **Diagnostic Evaluation Engine**: The system parses submission payloads at run-time, calculating specific interval distance errors or motif mismatches to trigger targeted remedial video vignettes.
+- **Session-Only Memory Profile**: To maintain a lightweight footprint, progression tracking and streak milestones are handled entirely within active runtime memory, intentionally omitting persistent backend database storage for the initial release.
+- **Intrinsic Responsiveness**: The interface must support mobile web browsers natively, allowing target users to execute quick training rounds within short gaps in their daily schedules.
 
 ### III. Structure
 
-This plane defines the "Logic Flow" and Interaction Design.
+This plane defines the interactive design patterns and logical framework of the game loop.
 
-- **Dual-Phase Identification**: To mirror professional rehearsal techniques, identification is split into two movements: Rhythm first, then Pitch.
-- **The Signal Chain**:
-  1. **Tonic Anchor**: The system plays a reference tonic to establish the "Home" key.
-  2. **The Call**: A neutral vowel ("Noo") is used to test pure pitch recognition.
-  3. **The Response**: Syllabic confirmation (Do-Re-Mi) confirms the user's correct identification.
-- **The Conductor’s Rule**: Interactive elements are disabled during playback to maintain focus and simulate exam conditions.
+- **Gated Dual-Phase Identification**: Interaction is structurally separated into two chronological steps to mirror professional rehearsal techniques: the user must successfully reconstruct the rhythmic timeline before the system unlocks the movable-Do pitch entry interface.
+- **The Controlled Playback Lifecycle (The Conductor's Rule)**: Interactive inputs are completely disabled while Tone.js fires audio vectors. The system tracks consumption via a strict 2-play limit per exercise; once reached, the playback engine locks entirely to simulate strict examination conditions.
+- **The Signal Chain Lifecycle**:
+  1. **Tonic Anchor**: The system initialises by playing an absolute reference pitch to root the user's ear in the selected key context.
+  2. **The Call**: A neutral vowel sampler ("Noo") is used to test pure aural recognition and disguise the correct sequence of solfa syllables.
+  3. **The Response**: Upon a successful evaluation, a dedicated Syllabic Sampler sings back the correct names ("Do-Re-Mi") to provide an immediate confirmative aural reward.
 
 ### IV. Skeleton
 
-This plane defines the visual arrangement using “Every Layout” Primitives.
+This plane defines the visual arrangement of components using layout primitives.
 
-- **The Switcher**: The Solfege identification buttons and the Virtual Keyboard use an intrinsic layout algorithm that automatically re-stacks for mobile viewports without fragile media queries.
-- **The Stack**: Vertical spacing between the header (Level/Streak), the console, and the piano is derived from a **Modular Scale**, ensuring visual harmony and touch-accuracy.
-- **Visual Anchoring**: A reactive link between the identification buttons and the keyboard "lights up" absolute pitches to build a visual-spatial map for the improviser.
+- **The Switcher**: The structural layout algorithm dynamically re-stacks the Solfege identification consoles and the Virtual Keyboard for mobile viewports cleanly without relying on fragile media queries.
+- **The Stack**: Component relationships (Header trackers, Main Input Consoles, Piano Keyboard, and Diagnostic Modals) utilise a unified vertical scale derived from a Modular Scale to guarantee optimal touch-target accuracy.
+- **Real-Time Visual Coupling**: Tapping an active input button instantly dispatches parallel updates—simultaneously triggering the Tone.js sampler while adding a `.key-active` utility class to highlight the corresponding key on the piano layout, reinforcing spatial mapping.
 
 ### V. Surface
 
-This plane is the final "Presentation".
+This plane establishes the sensory presentation and styling principles.
 
-- **Aesthetic Principle**: "Timeless, not cutting edge" — prioritising accessibility and clarity over flashy features.
-- **Axiomatic Typography**: Instruction measure is capped at **60ch** to ensure maximum readability during intense practice sessions.
-- **Semantic Colour Palette**: High-contrast, AAA-accessible colours indicate state change: Success (Green), Remedial (Amber), and Active (Blue).
+- **Aesthetic Principle**: "Timeless, not cutting edge" — prioritising immediate cognitive clarity and structural accessibility over complex web animations.
+- **Axiomatic Typography**: Instructional text measures are strictly capped at a highly readable layout width (e.g. 60ch) to ensure eye tracking comfort during dense training blocks.
+- **Semantic Colour Palette**: Utilises a strict, AAA-accessible high-contrast colour schema to convey operational system states immediately: Active Focus (Blue), Validation Success (Green), and Diagnostic Remediation (Amber).
 
 4. ## System Architecture and Logic Maps
 
