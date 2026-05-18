@@ -114,7 +114,7 @@ Below is the technical blueprint of the application's engine.
 
 The application operates as a deterministic State Machine. This architectural choice strictly controls what actions are permitted at any given moment to preserve the integrity of examination conditions and prevent cognitive overload.
 
-![Global State Machine](./documentation/docs/architecturemaps/state-machine-solfaic.png)
+![Global State Machine](./docs/architecturemaps/state-machine-solfaic.png)
 
 **Architectural Breakdown**
 
@@ -126,7 +126,7 @@ The application operates as a deterministic State Machine. This architectural ch
 
 This flowchart traces how data enters the application, transforms from a relative conceptual system (movable-do solfege) into absolute parameters (MIDI strings), and processes user payloads through a parallel feedback system.
 
-![Data Pipeline](./documentation/docs/architecturemaps/data-logic-solfaic.png)
+![Data Pipeline](./docs/architecturemaps/data-logic-solfaic.png)
 
 **Architectural Breakdown**
 
@@ -138,7 +138,7 @@ This flowchart traces how data enters the application, transforms from a relativ
 
 This sequence diagram charts the timeline and communication channels running across the application's Model-View-Controller (MVC) boundary layers, tracking how the UI, Game Engine, and Tone.js audio engine swap data asynchronously without stalling the main browser thread.
 
-![Sequence Map](./documentation/docs/architecturemaps/verification-sequence.png)
+![Sequence Map](./docs/architecturemaps/verification-sequence.png)
 
 **Architectural Breakdown**
 
