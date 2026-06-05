@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solfaic! - Rhythm Dictation</title>
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body>
+    <div>
+      <header>
+        <div>
+          <button>☰</button>
+          <h1>SOLFAIC!</h1>
+        </div>
+      </header>
+
+      <main>
+        <section>
+          <button>← Levels</button>
+          <div id="ui-level-badge"></div>
+          <div id="ui-streak-tracker"></div>
+        </section>
+
+        <section>
+          <button id="btn-replay">🔊 REPLAY RHYTHM</button>
+          <p id="ui-plays-remaining"></p>
+        </section>
+
+        <section>
+          <p>YOUR INPUT WORKSPACE:</p>
+          <div id="ui-workspace"></div>
+        </section>
+
+        <section>
+          <div>
+            <span id="ui-metre-display">Metre: --</span>
+            <span>|</span>
+            <span id="ui-bars-display">Bars: --</span>
+          </div>
+
+          <div>
+            <p>CHOOSE MOTIFS:</p>
+          </div>
+
+          <div id="ui-motif-selector"></div>
+        </section>
+
+        <section class="action-panel">
+          <button id="btn-submit">SUBMIT SEQUENCE</button>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
