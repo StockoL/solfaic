@@ -55,10 +55,35 @@ const levelSettings = {
 // ==========================================
 // 2. STATE MACHINE (Active Session Tracking)
 // ==========================================
+const sessionState = {
+  currentLevel: 1,
+  playCount: 0,
+  streak: 0,
+  maxPlays: 2,
+
+  // Sequence tracking
+  targetTimeline: [], // The generated "source of truth"
+  userSubmission: [], // What the user builds in the workspace
+
+  // Application flow state
+  currentState: "IDLE", // Possible: 'IDLE', 'PLAYING', 'AWAITING_INPUT'
+};
 
 // ==========================================
 // 3. UI DOM CACHE (View Connections)
 // ==========================================
+const DOM = {
+  levelBadge: document.getElementById("ui-level-badge"),
+  streakTracker: document.getElementById("ui-streak-tracker"),
+  replayBtn: document.getElementById("btn-replay"),
+  playsRemaining: document.getElementById("ui-plays-remaining"),
+  workspace: document.getElementById("ui-workspace"),
+  motifSelector: document.getElementById("ui-motif-selector"),
+  submitBtn: document.getElementById("btn-submit"),
+  // The anchor line elements
+  metreDisplay: document.getElementById("ui-metre-display"),
+  barsDisplay: document.getElementById("ui-bars-display"),
+};
 
 // ==========================================
 // 4. RHYTHM GENERATOR (The Core Logic)
