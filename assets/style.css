@@ -250,3 +250,39 @@ button:active {
   font-size: 0.85rem;
   color: var(--color-text-muted);
 }
+
+/* =========================================
+   JS STATE MODIFIERS 
+   ========================================= */
+/* Generic State */
+.is-locked {
+  pointer-events: none;
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+/* Component-Specific States (These win naturally because they have two class selectors) */
+.motif-pad.is-active {
+  border-color: var(--color-primary);
+  background-color: #e8f0fe;
+}
+
+.workspace-card.is-success,
+.motif-pad.is-success {
+  border-color: var(--color-success);
+  background-color: #e6f4ea;
+  color: #137333;
+}
+
+.workspace-card.is-error,
+.motif-pad.is-error {
+  border-color: var(--color-error);
+  background-color: #fce8e6;
+  color: #c5221f;
+}
+
+.workspace-card.is-remedial {
+  border-color: var(--color-remedial);
+  background-color: #fef7e0;
+  color: #b06000;
+}
