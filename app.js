@@ -10,13 +10,14 @@
 /**
  * Motif definitions mapping IDs to their rhythmic properties.
  * 'ticks' represent the smallest unit of measurement for that level (beat or pulse).
- * 'duration' is formatted for future Tone.js compatibility.
+ * 'duration' is formatted for future Tone.js compatibility, which uses a "bars:beats:sixteenths" time format for scheduling events rather than absolute seconds. This allows for easy expansion into melodic elements later on without restructuring the core timeline logic.
  */
 const MOTIF_LIBRARY = {
-  // 4/4 motifs
+  // 4/4 motifs (1 tick = 1 beat)
   crotchet: { duration: "4n", ticks: 1, label: "Crotchet", symbol: "♩" },
   minim: { duration: "2n", ticks: 2, label: "Minim", symbol: "𝅗𝅥" },
   quaverPair: { duration: "4n", ticks: 1, label: "Quaver Pair", symbol: "♫" },
+
   // 6/8 motifs
   quaver: { duration: "8n", ticks: 1, label: "Quaver", symbol: "♪" },
   crotchet68: { duration: "4n", ticks: 2, label: "Crotchet", symbol: "♩" },
@@ -62,10 +63,10 @@ const sessionState = {
   maxPlays: 2,
 
   // Sequence tracking
-  targetTimeline: [], // The generated "source of truth"
-  userSubmission: [], // What the user builds in the workspace
+  targetTimeline: [], // The generated "source of truth" for the rhythm sequence to be replicated
+  userSubmission: [], // What the user builds in the workspace before submitting for evaluation
 
-  // Application flow state
+  // Application flow state - helps manage UI states and button availability
   currentState: "IDLE", // Possible: 'IDLE', 'PLAYING', 'AWAITING_INPUT'
 };
 
@@ -88,6 +89,56 @@ const DOM = {
 // ==========================================
 // 4. RHYTHM GENERATOR (The Core Logic)
 // ==========================================
+
+/**
+ * Generates a randomised rhythm sequence based on level constraints.
+ *
+ * @param {number} levelId - The ID of the level to generate for.
+ * @returns {Array} An array of Event Objects for the timeline.
+ */
+function generateRhythmTimeline(levelId) {
+  const config = levelSettings[levelId];
+  if (!config) {
+    console.error(`Level ${levelId} not found.`);
+    return [];
+  }
+
+  const timeline = [];
+  let currentTicks = 0;
+
+  while (currentTicks < config.totalTicks) {
+    // 1. Filter motifs that fit in the remaining space of the timeline
+    const remainingTicks = config.totalTicks - currentTicks;
+    const viableMotifs = config.allowedMotifs.filter(
+      (id) => MOTIF_LIBRARY[id].ticks <= remainingTicks,
+    );
+
+    if (viableMotifs.length === 0) break;
+
+    // 2. Randomly pick a motif from the viable options
+    const chosenId =
+      viableMotifs[Math.floor(Math.random() * viableMotifs.length)];
+    const motifData = MOTIF_LIBRARY[chosenId];
+
+    // 3. Calculate time signature aware "Bars:Beats:rhythmic subdivisions"
+    const bar = Math.floor(currentTicks / config.ticksPerBar);
+    const beat = currentTicks % config.ticksPerBar;
+    const timeString = `${bar}:${beat}:0`;
+
+    // 4. Push event object (future-proofed for pitch/melody)
+    timeline.push({
+      time: timeString,
+      duration: motifData.duration,
+      motifId: chosenId,
+      pitch: null, // Rhythm only for initial MVP, but structured for future melodic expansion
+    });
+
+    // 5. Advance cursor
+    currentTicks += motifData.ticks;
+  }
+
+  return timeline;
+}
 
 // ==========================================
 // 5. UI RENDERING (The View Controller)

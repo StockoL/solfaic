@@ -4,6 +4,9 @@
 :root {
   --color-bg: #f8f9fa;
   --color-surface: #ffffff;
+  /* Typography Tokens */
+  --font-ui: "Inter", system-ui, sans-serif;
+  --font-music: "Noto Music", serif;
 
   /* Semantic Action Colours */
   --color-primary: #1a73e8;
@@ -29,12 +32,10 @@
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: var(--font-ui); /* Updated */
   margin: 0;
   padding: var(--space-md);
+  -webkit-font-smoothing: antialiased; /* Makes Inter look incredibly sharp */
 }
 
 /* =========================================
@@ -210,8 +211,12 @@ button:active {
 }
 
 .motif-pad .music-font {
-  font-size: 1.6rem;
+  font-family: var(
+    --font-music
+  ); /* Forces the music symbols to use Noto Music */
+  font-size: 1.8rem;
   margin-right: 8px;
+  font-weight: normal;
 }
 
 /* Input Workspace */
