@@ -1,0 +1,71 @@
+/* =========================================
+   GLOBAL VARIABLES & TYPOGRAPHY
+   ========================================= */
+:root {
+  --color-bg: #f8f9fa;
+  --color-surface: #ffffff;
+
+  /* Semantic Action Colours */
+  --color-primary: #1a73e8;
+  --color-primary-hover: #155dbb;
+
+  /* Semantic Feedback Colours */
+  --color-success: #34a853;
+  --color-error: #ea4335;
+  --color-remedial: #fbbc05;
+
+  /* Text & Structural Colours */
+  --color-text: #202124;
+  --color-text-muted: #5f6368;
+  --color-border: #dadce0;
+
+  /* Modular Scale Spacing */
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  margin: 0;
+  padding: var(--space-md);
+}
+
+/* =========================================
+   EVERY LAYOUT PRIMITIVES (Architecture)
+   ========================================= */
+
+/* The Center: Constrains width and centers content */
+.l-center {
+  box-sizing: content-box;
+  max-width: 65ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* The Stack: Manages vertical rhythm between elements */
+.l-stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.l-stack > * + * {
+  margin-top: var(--space-lg);
+}
+
+/* The Switcher: Wraps evenly on mobile, sits side-by-side on desktop */
+.l-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+.l-switcher > * {
+  flex-grow: 1;
+  flex-basis: calc((40rem - 100%) * 999);
+}
