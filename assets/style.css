@@ -69,3 +69,184 @@ body {
   flex-grow: 1;
   flex-basis: calc((40rem - 100%) * 999);
 }
+
+/* =========================================
+   COMPONENT STYLES (Aesthetics)
+   ========================================= */
+
+/* Header */
+.global-header {
+  display: flex;
+  justify-content: flex-start; /* Aligns everything to the left */
+  align-items: center;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: var(--space-md);
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+.logo {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+.hamburger-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-text);
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.blueprint-anchor {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-sm);
+  margin-bottom: calc(
+    var(--space-sm) * -1
+  ); /* Pulls it closer to the label below */
+  border-bottom: 1px dashed var(--color-border);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.blueprint-anchor .divider {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+/* Status Bar */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.streak-tracker {
+  display: flex;
+  gap: 4px;
+}
+.streak-dot {
+  width: 12px;
+  height: 12px;
+  background: var(--color-border);
+  border-radius: 2px;
+}
+.streak-dot.is-success {
+  background: var(--color-success);
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+button:active {
+  transform: scale(0.98);
+}
+
+.ghost-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+}
+.profile-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  padding: 6px 12px;
+}
+
+.btn-primary-audio {
+  background: var(--color-surface);
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+  padding: var(--space-lg);
+  font-size: 1.2rem;
+  width: 100%;
+}
+.btn-submit {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: var(--space-md);
+  width: 100%;
+  font-size: 1.1rem;
+}
+.btn-submit:hover {
+  background: var(--color-primary-hover);
+}
+
+#ui-motif-selector {
+  display: grid;
+  gap: var(--space-md);
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+  width: 100%;
+}
+
+.motif-pad {
+  /* Let the Grid handle the width */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px; /* Thick, accessible touch target for mobile thumbs */
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.motif-pad .music-font {
+  font-size: 1.6rem;
+  margin-right: 8px;
+}
+
+/* Input Workspace */
+.workspace-array {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  background: var(--color-surface);
+  padding: var(--space-md);
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  min-height: 50px;
+}
+.workspace-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+.workspace-card.is-placeholder {
+  border: 1px dashed var(--color-border);
+  color: var(--color-text-muted);
+}
+
+/* Utilities */
+.section-label {
+  margin: 0 0 var(--space-sm) 0;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+.plays-remaining {
+  margin: var(--space-sm) 0 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
