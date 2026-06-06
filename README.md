@@ -113,7 +113,7 @@ The application operates as a deterministic State Machine. This architectural ch
 
 This flowchart shows how data is modeled as modular arrays of objects, transforming raw configuration files into a timed sequence map that is fully prepared for future pitch characteristics.
 
-![Data Pipeline]()
+![Data Pipeline](./docs/architecturemaps/data-logic-solfaic.png)
 
 **Architectural Breakdown**
 
@@ -125,9 +125,82 @@ This flowchart shows how data is modeled as modular arrays of objects, transform
 
 This mapping details how the browser interface UI, the Central Engine Controller, and the Web Audio API wrappers share execution data asynchronously without clogging the primary browser thread.
 
-![Sequence Map]()
+![Sequence Map](./docs/architecturemaps/verification-sequence.png)
 
 **Architectural Breakdown**
 
 - **Callback-Driven Interface Unlocking**: Instead of utilising inaccurate JavaScript intervals to guess completion metrics, the layout links directly into native audio runtime scheduling buffers. The workspace stays locked until a clean `onComplete` signal clears the thread, protecting timing against system discrepancies.
 - **Isomorphic Error Isolation**: When validation failures occur, the checker isolates the precise faulty sequence metadata index. It blocks level advancement and immediately assigns rendering parameters to initialise the remediation modal window.
+
+5. ## Engineering the MVP
+
+To ensure a clean, maintainable, and scalable codebase, this application was built using atomic commits following the Model-View-Controller (MVC) design pattern. The development was broken into three distinct phases.
+
+### Phase 1: The Intrinsic Skeleton (HTML/CSS)
+
+Before writing any application logic, the physical bounds and visual tokens of the application were established.
+
+**The Commits:**
+
+- `feat(ui): scaffold raw semantic HTML skeleton for rhythm workspace`
+- `style: establish design tokens and Every Layout intrinsic primitives`
+- `style: apply visual hierarchy and component styling to workspace elements`
+- `style: define chained CSS state modifiers for JS interaction feedback`
+- `style(typography): integrate Inter for UI and Noto Music for cross-platform notation rendering`
+
+**Justifications:**
+
+- **Intrinsic Web Design:** I relied on Every Layout CSS primitives (such as the stack and grid) to create mathematical, content-aware layouts rather than relying on bloated media queries. This was essential in meeting the demands of user story 2.
+- **Separation of State:** All JavaScript UI changes are handled by toggling CSS utility classes (e.g., `.is-locked`, `.is-active`) rather than writing inline styles via JS.
+
+**Challenge & Resolution:**
+
+- _The Problem:_ Initially, I used a flexbox "Switcher" primitive for the motif pads. However, on narrow mobile screens, this forced the buttons into a single vertical column, which made for a poor user experience (touch targets were too spread out). Additionally, my CSS included the `-webkit-font-smoothing` hack.
+- _The Fix:_ I upgraded the layout to a true CSS Grid with the RAM pattern (`repeat(auto-fit, minmax(min(140px, 100%), 1fr))`). The `min()` function guarantees the grid never causes horizontal scrolling, while allowing a neat 2x2 grid on mobile. After consulting documentation again regarding the `font-smooth` property, I also deliberately removed `-webkit-font-smoothing` to prioritise native accessibility.
+
+### Phase 2: The Data Brain (Model & State)
+
+With the UI ready, I built the foundational mathematical rules and memory banks of the application isolated from the DOM.
+
+**The Commits:**
+
+- `chore(architecture): map JS module stubs and establish musical domain library`
+- `feat(core): initialise data models, global state machine, and DOM cache`
+
+**Justifications:**
+
+- **Architectural Stubbing:** I laid out empty section headers for the entire `app.js` file before writing logic. This ensured I kept my State Machine, Generator, and View Controllers completely decoupled.
+- **Centralised DOM Cache:** Instead of querying `document.getElementById` inside every function, I cached all elements in a single `DOM` object on load to improve performance.
+
+**Challenge & Resolution:**
+
+- _The Problem:_ I needed an algorithmic way to generate randomised rhythms, but if I scheduled them using milliseconds, the audio would break completely if the tempo changed later. Furthermore, my JavaScript functions risked taking the wrong data types, leading to silent bugs.
+- _The Fix:_ I "future-proofed" the Generator sequence by hard-calculating Tone.js compatible `Bars:Beats:Sixteenths` timestamps (e.g., `0:2:0`). To fix the typing issue, I implemented JSDoc (`/** @param ... */`) to establish data contracts, allowing my IDE to catch errors before they hit the browser.
+
+### Phase 3: The View Controller (Wiring the Logic)
+
+The final step was building the bridge between the mathematical models and the HTML View.
+
+**The Commits:**
+
+- `feat(engine): implement algorithmic rhythm sequence generator`
+- `feat(view): implement dynamic DOM rendering cycle for level initialisation`
+- `feat(interaction): implement state-aware event handlers for motif selection`
+- `feat(core): implement DOM load boot sequence and initialisation diagnostics`
+
+**Justifications:**
+
+- **Atomic Integrations:** Committing the UI render cycle (`startLevel`) and the interaction handlers (`handleMotifClick`) separately ensured successful curation of the event delegation and UI state management.
+
+**Challenge & Resolution:**
+
+- _The Problem:_ Dropping all the controller logic into the file at once risks triggering `undefined` errors if the boot sequence calls a function that hasn't been written yet.
+- _The Fix:_ I left the `window.addEventListener("DOMContentLoaded")` block empty until the very last commit. This allowed me to safely build and verify the logic in a modular fashion without breaking the live prototype during development.
+
+---
+
+## Current Status & Next Steps
+
+- **Phase 1-3:** ✅ UI Layout, State Machine, Rhythm Generator, and DOM Controllers complete.
+- **Phase 4:** ⏳ Implementation of the Evaluation Engine (Grading logic for sequence submission).
+- **Phase 5:** ⏳ Integration of Tone.js for accurate Audio Playback.
