@@ -126,11 +126,22 @@ body {
 
 /* Status Bar */
 .status-bar {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; /* 3 explicit columns */
   align-items: center;
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+/* Explicitly pin the left, center, and right elements */
+.status-bar .ghost-btn {
+  justify-self: start;
+}
+.status-bar .level-badge {
+  justify-self: center;
+}
+.status-bar .streak-tracker {
+  justify-self: end;
 }
 .streak-tracker {
   display: flex;
@@ -201,6 +212,7 @@ button:active {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px; /* We use gap instead of margin on the span */
   min-height: 56px; /* Thick, accessible touch target for mobile thumbs */
   background: var(--color-surface);
   border: 2px solid var(--color-border);
@@ -211,12 +223,12 @@ button:active {
 }
 
 .motif-pad .music-font {
-  font-family: var(
-    --font-music
-  ); /* Forces the music symbols to use Noto Music */
+  font-family: var(--font-music);
   font-size: 1.8rem;
-  margin-right: 8px;
   font-weight: normal;
+  /* The Fix: Strip the bounding box and nudge it optically */
+  line-height: 0;
+  transform: translateY(-4px);
 }
 
 /* Input Workspace */
@@ -231,11 +243,16 @@ button:active {
   min-height: 50px;
 }
 .workspace-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center; /* Added this to perfectly center text */
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   padding: 6px 12px;
   border-radius: 4px;
   font-size: 0.9rem;
+  font-weight: 600;
+  width: max-content;
 }
 .workspace-card.is-placeholder {
   border: 1px dashed var(--color-border);

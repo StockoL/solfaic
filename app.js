@@ -14,18 +14,18 @@
  */
 const MOTIF_LIBRARY = {
   // 4/4 motifs (1 tick = 1 beat)
-  crotchet: { duration: "4n", ticks: 1, label: "Crotchet", symbol: "♩" },
-  minim: { duration: "2n", ticks: 2, label: "Minim", symbol: "𝅗𝅥" },
+  crotchet: { duration: "4n", ticks: 1, label: "Crotchet", symbol: "𝅘𝅥" },
+  minim: { duration: "2n", ticks: 2, label: "Minim", symbol: "𝅗𝅥" },
   quaverPair: { duration: "4n", ticks: 1, label: "Quaver Pair", symbol: "♫" },
 
   // 6/8 motifs
-  quaver: { duration: "8n", ticks: 1, label: "Quaver", symbol: "♪" },
-  crotchet68: { duration: "4n", ticks: 2, label: "Crotchet", symbol: "♩" },
+  quaver: { duration: "8n", ticks: 1, label: "Quaver", symbol: "𝅘𝅥𝅮" },
+  crotchet68: { duration: "4n", ticks: 2, label: "Crotchet", symbol: "𝅘𝅥" },
   dottedCrotchet: {
     duration: "4n.",
     ticks: 3,
     label: "Dotted Crot.",
-    symbol: "♩.",
+    symbol: "𝅘𝅥.",
   },
 };
 
