@@ -204,3 +204,35 @@ The final step was building the bridge between the mathematical models and the H
 - **Phase 1-3:** ✅ UI Layout, State Machine, Rhythm Generator, and DOM Controllers complete.
 - **Phase 4:** ⏳ Implementation of the Evaluation Engine (Grading logic for sequence submission).
 - **Phase 5:** ⏳ Integration of Tone.js for accurate Audio Playback.
+
+---
+
+### Phase 4: The Evaluation Engine & Pedagogical Refinement
+
+With the core generator working invisibly, I needed to build the grading logic that compares the user's input to the generated sequence, alongside a robust educational data model.
+
+**The Commits:**
+
+- `feat(data): implement British Kodaly Academy curriculum mapping for MVP levels 1-3`
+- `feat(engine): decouple metre logic from motif generation to support dynamic phrase assembly`
+- `feat(evaluation): implement granular beat-by-beat validation engine and state routing`
+- `refactor(ui): migrate from unicode text characters to inline SVG library for pixel-perfect notation rendering`
+
+**Justifications:**
+
+- **Pedagogical Rigour:** Rather than generating completely random arrays, the data model was refactored to explicitly align with the British Kodály Academy curriculum. Levels dynamically unlock specific syllables (ta, ti-ti, tai) and metres.
+- **Granular Feedback:** I deliberately chose to evaluate the sequence beat-by-beat rather than using a binary "Pass/Fail" for the whole bar. By highlighting specific correct/incorrect cards, the app minimises cognitive load and directs the student's focus to exactly where they misheard the rhythm.
+- **Decoupled Metric Architecture:** Simple motifs and Compound motifs were strictly isolated into separate arrays within the blueprint settings. This physically prevents the engine from generating mathematically breaking sequences (e.g., mixing a simple crotchet with a compound dotted-crotchet in the same bar).
+
+**Challenge & Resolution:**
+
+- _The Problem:_ The "Unicode Typography Wall." I initially used the `Noto Music` font to render the notes. However, because different symbols belong to different Unicode blocks (e.g., beamed quavers are standard dingbats, while single crotchets are modern layout glyphs), they have wildly different bounding boxes. This pushed the buttons and workspace cards completely out of alignment, and global CSS transforms could not fix the discrepancies.
+- _The Fix:_ I abandoned text-based font rendering entirely and have started to implement an inline SVG architecture, mirroring industry standards (like Soundtrap or Flat.io). This guaranteed pixel-perfect mathematical alignment across all browsers and will introduce a UX benefit: leveraging CSS `currentColor` inheritance so the notes themselves change colour to green or red during the evaluation phase.
+
+---
+
+## Current Status & Next Steps
+
+- **Phase 1-4:** ✅ UI Layout, State Machine, Rhythm Generator, Kodály Data Model, and SVG Evaluation Engine complete.
+- **Phase 5:** ⏳ Integration of Tone.js for accurate Audio Playback and Metronome scheduling.
+- **UX Refinement:** ⏳ Possible implementation of a "click-to-remove" feature in the workspace to allow users to edit single mistakes without clearing the entire board.
