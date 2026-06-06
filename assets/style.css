@@ -228,7 +228,7 @@ button:active {
   font-weight: normal;
   /* The Fix: Strip the bounding box and nudge it optically */
   line-height: 0;
-  transform: translateY(-4px);
+  transform: translateY(-2px);
 }
 
 /* Input Workspace */
