@@ -185,6 +185,26 @@ function startLevel(levelId) {
 // ==========================================
 // 6. INTERACTION LOGIC (Clicking Buttons)
 // ==========================================
+/**
+ * Handles user clicks on motif buttons, adding the chosen motif to the workspace and internal submission array.
+ * @param {string} motifId - The ID of the motif that was clicked, used to retrieve its properties from the MOTIF_LIBRARY.
+ * This function also checks the current state of the session to prevent interactions that could conflict with audio playback or other state-dependent logic. It updates both the visual representation in the workspace and the internal data model that tracks the user's current submission sequence.
+ */
+function handleMotifClick(motifId) {
+  if (sessionState.currentState === "PLAYING") return; // Block clicks if audio is playing to prevent state conflicts
+
+  const motifData = MOTIF_LIBRARY[motifId];
+
+  // Add to internal memory - this is what will be evaluated against the targetTimeline when the user submits their answer. It tracks the sequence of motif IDs chosen by the user.
+  sessionState.userSubmission.push(motifId);
+
+  // Add visual card to the screen
+  const card = document.createElement("div");
+  card.className = "workspace-card";
+  card.innerText = motifData.label;
+
+  DOM.workspace.appendChild(card);
+}
 
 // ==========================================
 // BOOT UP THE APP
