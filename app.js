@@ -143,6 +143,44 @@ function generateRhythmTimeline(levelId) {
 // ==========================================
 // 5. UI RENDERING (The View Controller)
 // ==========================================
+function startLevel(levelId) {
+  // 1. Reset State
+  sessionState.currentLevel = levelId;
+  sessionState.playCount = 0;
+  sessionState.userSubmission = [];
+  sessionState.targetTimeline = generateRhythmTimeline(levelId);
+  sessionState.currentState = "IDLE";
+
+  const config = levelSettings[levelId];
+
+  // 2. Update Header & Blueprint Anchor Text
+  DOM.levelBadge.innerText = `Level ${levelId}`;
+  DOM.metreDisplay.innerText = `Metre: ${config.metre}`;
+
+  // Calculate bars by dividing total ticks by ticks per bar
+  DOM.barsDisplay.innerText = `Bars: ${config.totalTicks / config.ticksPerBar}`;
+  DOM.playsRemaining.innerText = `Plays remaining: ${sessionState.maxPlays} / ${sessionState.maxPlays}`;
+
+  // 3. Clear the workspace (Crucial for resetting between levels)
+  DOM.workspace.innerHTML = "";
+  DOM.motifSelector.innerHTML = "";
+
+  // 4. Dynamically generate the clickable buttons for the allowed motifs in this level
+  config.allowedMotifs.forEach((motifId) => {
+    const motifData = MOTIF_LIBRARY[motifId];
+
+    const btn = document.createElement("button");
+    btn.className = "motif-pad";
+    btn.innerHTML = `<span class="music-font">${motifData.symbol}</span> ${motifData.label}`;
+
+    // Listen for clicks
+    btn.addEventListener("click", () => handleMotifClick(motifId));
+
+    DOM.motifSelector.appendChild(btn);
+  });
+
+  console.log(`[Engine] Level ${levelId} Initialised. Target array generated.`);
+}
 
 // ==========================================
 // 6. INTERACTION LOGIC (Clicking Buttons)
