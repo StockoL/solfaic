@@ -209,3 +209,13 @@ function handleMotifClick(motifId) {
 // ==========================================
 // BOOT UP THE APP
 // ==========================================
+window.addEventListener("DOMContentLoaded", () => {
+  startLevel(1); // Start at Level 1 by default. In the future, add a level select screen.
+});
+
+// ==========================================
+// INITIALISATION / DEBUG
+// ==========================================
+
+console.log("Solfaic! App Initialised.");
+console.log("Sample Generation (Level 1):", generateRhythmTimeline(1));
