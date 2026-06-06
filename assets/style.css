@@ -222,13 +222,17 @@ button:active {
   transition: all 0.2s ease;
 }
 
-.motif-pad .music-font {
-  font-family: var(--font-music);
-  font-size: 1.8rem;
-  font-weight: normal;
-  /* The Fix: Strip the bounding box and nudge it optically */
-  line-height: 0;
-  transform: translateY(-2px);
+.motif-pad .svg-container {
+  height: 44px;
+}
+
+/* Unifies all SVGs to a specific optical size */
+.svg-container {
+  height: 36px;
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Input Workspace */
@@ -257,6 +261,14 @@ button:active {
 .workspace-card.is-placeholder {
   border: 1px dashed var(--color-border);
   color: var(--color-text-muted);
+}
+.workspace-card .music-font {
+  font-family: var(--font-music);
+  font-size: 1.8rem; /* Keep it nice and readable */
+  font-weight: normal;
+  line-height: 0;
+  /* Apply the same aggressive nudge to keep it centered in the box */
+  transform: translateY(-2px);
 }
 
 /* Utilities */

@@ -13,50 +13,68 @@
  * 'ticks' represent the beat footprint (1 tick = 1 crotchet in simple, 1 dotted-crotchet in compound).
  * 'duration' is formatted for future Tone.js compatibility.
  */
+
+/**
+ * SVG Library for pixel-perfect notation rendering.
+ * Using 'currentColor' allows the SVGs to turn green/red during evaluation.
+ */
+const SVG_ICONS = {
+  crotchet: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/></svg>`,
+  quaverPair: `<svg viewBox="0 0 80 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="64" cy="85" rx="12" ry="8" transform="rotate(-20 64 85)"/><rect x="72" y="15" width="3" height="70"/><rect x="22" y="15" width="53" height="8"/></svg>`,
+  restCrotchet: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M 25 20 L 15 40 L 30 55 L 15 80" fill="none"/></svg>`,
+  minim: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="3"><ellipse cx="14" cy="85" rx="10" ry="7" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70" fill="currentColor" stroke="none"/></svg>`,
+};
+
 const MOTIF_LIBRARY = {
   // --- SIMPLE TIME ---
-  ta: { type: "simple", duration: "4n", ticks: 1, label: "ta", symbol: "𝅘𝅥" },
+  ta: {
+    type: "simple",
+    duration: "4n",
+    ticks: 1,
+    label: "ta",
+    svg: SVG_ICONS.crotchet,
+  },
   titi: {
     type: "simple",
     duration: "4n",
     ticks: 1,
     label: "ti-ti",
-    symbol: "♫",
+    svg: SVG_ICONS.quaverPair,
   },
   taRest: {
     type: "simple",
     duration: "4n",
     ticks: 1,
     label: "ta rest",
-    symbol: "𝄽",
+    svg: SVG_ICONS.restCrotchet,
   },
   tikatika: {
     type: "simple",
     duration: "4n",
     ticks: 1,
     label: "tika-tika",
-    symbol: "𝅘𝅥𝅯𝅘𝅥𝅯𝅘𝅥𝅯𝅘𝅥𝅯",
+    symbol: "𝅘𝅥𝅯𝅘𝅥𝅯𝅘𝅥𝅯𝅘𝅥𝅯",
   },
   tikati: {
     type: "simple",
     duration: "4n",
     ticks: 1,
     label: "tika-ti",
-    symbol: "𝅘𝅥𝅯𝅘𝅥𝅯𝅘𝅥𝅮",
+    symbol: "𝅘𝅥𝅯𝅘𝅥𝅯𝅘𝅥𝅮",
   },
   titika: {
     type: "simple",
     duration: "4n",
     ticks: 1,
     label: "ti-tika",
-    symbol: "𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅯",
+    symbol: "𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅯",
   },
   taa: {
     type: "simple",
     duration: "2n",
     ticks: 2,
     label: "ta-a",
-    symbol: "𝅗𝅥",
+    svg: SVG_ICONS.minim,
   },
 
   // --- COMPOUND TIME ---
@@ -65,21 +83,21 @@ const MOTIF_LIBRARY = {
     duration: "4n.",
     ticks: 1,
     label: "tai",
-    symbol: "𝅘𝅥.",
+    symbol: "𝅘𝅥.",
   },
   tititi: {
     type: "compound",
     duration: "4n.",
     ticks: 1,
     label: "ti-ti-ti",
-    symbol: "𝅘𝅥𝅮𝅘𝅥𝅮𝅘𝅥𝅮",
+    symbol: "𝅘𝅥𝅮𝅘𝅥𝅮𝅘𝅥𝅮",
   },
   tati: {
     type: "compound",
     duration: "4n.",
     ticks: 1,
     label: "ta ti",
-    symbol: "𝅘𝅥 𝅘𝅥𝅮",
+    symbol: "𝅘𝅥 𝅘𝅥𝅮",
   },
   taiRest: {
     type: "compound",
@@ -273,7 +291,13 @@ function startLevel(levelId) {
 
     const btn = document.createElement("button");
     btn.className = "motif-pad";
-    btn.innerHTML = `<span class="music-font">${motifData.symbol}</span> ${motifData.label}`;
+
+    // Safely fallback to symbol if SVG isn't built yet
+    if (motifData.svg) {
+      btn.innerHTML = `<div class="svg-container">${motifData.svg}</div> ${motifData.label}`;
+    } else {
+      btn.innerHTML = `<span class="music-font">${motifData.symbol}</span> ${motifData.label}`;
+    }
 
     btn.addEventListener("click", () => handleMotifClick(motifId));
 
@@ -300,18 +324,84 @@ function handleMotifClick(motifId) {
   // Add to internal memory tracking
   sessionState.userSubmission.push(motifId);
 
-  // Add visual card to the screen
   const card = document.createElement("div");
   card.className = "workspace-card";
-  card.innerText = motifData.label;
+
+  // Safely fallback to symbol if SVG isn't built yet
+  if (motifData.svg) {
+    card.innerHTML = `<div class="svg-container">${motifData.svg}</div>`;
+  } else {
+    card.innerHTML = `<span class="music-font">${motifData.symbol}</span>`;
+  }
 
   DOM.workspace.appendChild(card);
+}
+
+// ==========================================
+// 7. EVALUATION ENGINE (Grading the User)
+// ==========================================
+
+function evaluateSubmission() {
+  // Prevent evaluation if the app is busy playing audio
+  if (sessionState.currentState === "PLAYING") return;
+
+  const user = sessionState.userSubmission;
+  const target = sessionState.targetTimeline;
+  const workspaceCards = DOM.workspace.querySelectorAll(".workspace-card");
+
+  // 1. Guard Clause: Did they submit enough beats?
+  if (user.length !== target.length) {
+    alert(
+      `Sequence incomplete! The target has ${target.length} motifs, but you submitted ${user.length}.`,
+    );
+    return;
+  }
+
+  let isPerfect = true;
+
+  // 2. Granular Checking: Compare item-by-item
+  for (let i = 0; i < target.length; i++) {
+    const card = workspaceCards[i];
+
+    // Wipe previous visual states just in case
+    card.classList.remove("is-success", "is-error");
+
+    if (user[i] === target[i].motifId) {
+      card.classList.add("is-success"); // Correct! Turn it green.
+    } else {
+      card.classList.add("is-error"); // Incorrect! Turn it red.
+      isPerfect = false;
+    }
+  }
+
+  // 3. State Routing: What happens next?
+  if (isPerfect) {
+    sessionState.streak++;
+    DOM.streakTracker.innerText = `Streak: ${sessionState.streak} 🔥`;
+
+    // Pause briefly so they can enjoy seeing the green, then advance
+    setTimeout(() => {
+      // Re-run the current level to generate a brand new sequence!
+      startLevel(sessionState.currentLevel);
+    }, 1500);
+  } else {
+    sessionState.streak = 0;
+    DOM.streakTracker.innerText = `Streak: 0`;
+
+    // Pause so they can read their mistakes, then clear the board to try again
+    setTimeout(() => {
+      DOM.workspace.innerHTML = "";
+      sessionState.userSubmission = [];
+    }, 2500);
+  }
 }
 
 // ==========================================
 // BOOT UP THE APP
 // ==========================================
 window.addEventListener("DOMContentLoaded", () => {
+  // Wire up the Evaluation Engine
+  DOM.submitBtn.addEventListener("click", evaluateSubmission);
   startLevel(1);
 });
 
