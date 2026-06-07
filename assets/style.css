@@ -2,7 +2,7 @@
    GLOBAL VARIABLES & TYPOGRAPHY
    ========================================= */
 :root {
-  --color-bg: #f8f9fa;
+  --color-bg: #f8fafc;
   --color-surface: #ffffff;
 
   /* Typography Tokens */
@@ -10,7 +10,7 @@
   --font-music: "Noto Music", serif;
 
   /* Semantic Action Colours */
-  --color-primary: #1a73e8;
+  --color-primary: #1e3a8a;
   --color-primary-hover: #155dbb;
 
   /* Semantic Feedback Colours */
