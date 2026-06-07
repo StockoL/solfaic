@@ -435,11 +435,103 @@ function evaluateSubmission() {
 }
 
 // ==========================================
+// 8. AUDIO ENGINE (Tone.js Integration)
+// ==========================================
+const AudioEngine = {
+  synth: null,
+  isInitialized: false,
+
+  /**
+   * Browsers strictly block audio until a user interaction.
+   * This initialises the Web Audio API on the first click.
+   */
+  async init() {
+    if (this.isInitialized) return;
+    await Tone.start();
+
+    // We can use a MembraneSynth for rhythmic dictation (sounds like a drum/woodblock)
+    this.synth = new Tone.MembraneSynth().toDestination();
+    Tone.Transport.bpm.value = 85; // A solid pedagogical tempo for dictation
+
+    this.isInitialized = true;
+    console.log("[Audio] Tone.js Initialized");
+  },
+
+  /**
+   * Reads the targetTimeline and schedules it into the audio context.
+   */
+  async playSequence() {
+    // 1. Guard Clauses
+    if (sessionState.currentState === "PLAYING") return;
+    if (sessionState.playCount >= sessionState.maxPlays) {
+      alert(
+        "You are out of plays! Give it your best guess, or submit to see the answer.",
+      );
+      return;
+    }
+
+    // 2. Initialise Audio & Update State
+    await this.init();
+    sessionState.currentState = "PLAYING";
+    sessionState.playCount++;
+
+    DOM.replayBtn.classList.add("is-locked");
+    DOM.playsRemaining.innerText = `Plays remaining: ${sessionState.maxPlays - sessionState.playCount} / ${sessionState.maxPlays}`;
+
+    // 3. Clear the Transport (Wipe any old sequences)
+    Tone.Transport.cancel();
+    Tone.Transport.stop();
+
+    // 4. Update the internal metronome to match the current level's metre
+    const [num, den] = sessionState.activeConfig.metre.split("/");
+    Tone.Transport.timeSignature = [parseInt(num), parseInt(den)];
+
+    // 5. Map the X/Y axes to a Tone.Part
+    const part = new Tone.Part((time, event) => {
+      // The Y-Axis Logic: If pitch is null, play a 'C2' woodblock thud.
+      // If pitch exists (Phase 6), play that actual note!
+      const noteToPlay = event.pitch ? event.pitch : "C2";
+
+      // Trigger the sound based on the motif's duration and the scheduled time
+      this.synth.triggerAttackRelease(noteToPlay, event.duration, time);
+    }, sessionState.targetTimeline);
+
+    // Start the sequence at the beginning of the timeline
+    part.start(0);
+
+    // 6. Calculate total duration so we know exactly when to unlock the UI
+    const totalBars = sessionState.activeConfig.bars;
+    const stopTimeInSeconds = Tone.Time(`${totalBars}m`).toSeconds();
+
+    // 7. Hit Play
+    Tone.Transport.start();
+
+    // 8. Cleanup and unlock UI when the sequence is over
+    setTimeout(
+      () => {
+        Tone.Transport.stop();
+        sessionState.currentState = "IDLE";
+
+        // Only unlock the button if they have plays left
+        if (sessionState.playCount < sessionState.maxPlays) {
+          DOM.replayBtn.classList.remove("is-locked");
+        }
+      },
+      stopTimeInSeconds * 1000 + 500,
+    ); // Added 500ms buffer for the final note's decay tail
+  },
+};
+
+// ==========================================
 // BOOT UP THE APP
 // ==========================================
 window.addEventListener("DOMContentLoaded", () => {
-  // Wire up the Evaluation Engine
+  // Wire up the logic controllers
   DOM.submitBtn.addEventListener("click", evaluateSubmission);
+
+  // Wire up the Audio Engine
+  DOM.replayBtn.addEventListener("click", () => AudioEngine.playSequence());
+
   startLevel(1);
 });
 
