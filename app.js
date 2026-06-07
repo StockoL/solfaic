@@ -19,10 +19,20 @@
  * Using 'currentColor' allows the SVGs to turn green/red during evaluation.
  */
 const SVG_ICONS = {
+  // Simple
   crotchet: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/></svg>`,
   quaverPair: `<svg viewBox="0 0 80 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="64" cy="85" rx="12" ry="8" transform="rotate(-20 64 85)"/><rect x="72" y="15" width="3" height="70"/><rect x="22" y="15" width="53" height="8"/></svg>`,
   restCrotchet: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M 25 20 L 15 40 L 30 55 L 15 80" fill="none"/></svg>`,
   minim: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="3"><ellipse cx="14" cy="85" rx="10" ry="7" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70" fill="currentColor" stroke="none"/></svg>`,
+  // Simple time semiquavers
+  tikatika: `<svg viewBox="0 0 160 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><ellipse cx="134" cy="85" rx="12" ry="8" transform="rotate(-20 134 85)"/><rect x="142" y="15" width="3" height="70"/><rect x="22" y="15" width="123" height="8"/><rect x="22" y="27" width="123" height="8"/></svg>`,
+  tikati: `<svg viewBox="0 0 120 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><rect x="22" y="15" width="83" height="8"/><rect x="22" y="27" width="43" height="8"/></svg>`,
+  titika: `<svg viewBox="0 0 120 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><rect x="22" y="15" width="83" height="8"/><rect x="62" y="27" width="43" height="8"/></svg>`,
+  // Compound
+  tai: `<svg viewBox="0 0 50 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><circle cx="40" cy="80" r="4"/></svg>`,
+  tititi: `<svg viewBox="0 0 120 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><rect x="22" y="15" width="83" height="8"/></svg>`,
+  tati: `<svg viewBox="0 0 90 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="64" cy="85" rx="12" ry="8" transform="rotate(-20 64 85)"/><rect x="72" y="15" width="3" height="70"/><path d="M 72 15 C 85 15 85 40 72 45 C 80 40 80 25 72 25 Z"/></svg>`,
+  restDottedCrotchet: `<svg viewBox="0 0 50 100" width="100%" height="100%" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M 20 20 L 10 40 L 25 55 L 10 80" fill="none"/><circle cx="40" cy="55" r="3" stroke="none" fill="currentColor"/></svg>`,
 };
 
 const MOTIF_LIBRARY = {
@@ -53,21 +63,21 @@ const MOTIF_LIBRARY = {
     duration: "4n",
     ticks: 1,
     label: "tika-tika",
-    symbol: "𝅘𝅥𝅯𝅘𝅥𝅯𝅘𝅥𝅯𝅘𝅥𝅯",
+    svg: SVG_ICONS.tikatika,
   },
   tikati: {
     type: "simple",
     duration: "4n",
     ticks: 1,
     label: "tika-ti",
-    symbol: "𝅘𝅥𝅯𝅘𝅥𝅯𝅘𝅥𝅮",
+    svg: SVG_ICONS.tikati,
   },
   titika: {
     type: "simple",
     duration: "4n",
     ticks: 1,
     label: "ti-tika",
-    symbol: "𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅯",
+    svg: SVG_ICONS.titika,
   },
   taa: {
     type: "simple",
@@ -83,29 +93,29 @@ const MOTIF_LIBRARY = {
     duration: "4n.",
     ticks: 1,
     label: "tai",
-    symbol: "𝅘𝅥.",
+    svg: SVG_ICONS.tai,
   },
   tititi: {
     type: "compound",
     duration: "4n.",
     ticks: 1,
     label: "ti-ti-ti",
-    symbol: "𝅘𝅥𝅮𝅘𝅥𝅮𝅘𝅥𝅮",
+    svg: SVG_ICONS.tititi,
   },
   tati: {
     type: "compound",
     duration: "4n.",
     ticks: 1,
     label: "ta ti",
-    symbol: "𝅘𝅥 𝅘𝅥𝅮",
+    svg: SVG_ICONS.tati,
   },
   taiRest: {
     type: "compound",
     duration: "4n.",
     ticks: 1,
     label: "tai rest",
-    symbol: "𝄽.",
-  },
+    svg: SVG_ICONS.restCrotchet,
+  }, // Note: Using standard rest for MVP
 };
 
 /**
@@ -310,31 +320,59 @@ function startLevel(levelId) {
 }
 
 // ==========================================
+// 5.5 UI RENDERING: WORKSPACE
+// ==========================================
+/**
+ * Renders the workspace array to the DOM.
+ * This ensures the UI is always perfectly synced with sessionState.userSubmission.
+ */
+
+function renderWorkspace() {
+  DOM.workspace.innerHTML = ""; // Clear existing UI
+
+  sessionState.userSubmission.forEach((motifId, index) => {
+    const motifData = MOTIF_LIBRARY[motifId];
+    const card = document.createElement("div");
+    card.className = "workspace-card";
+
+    card.innerHTML = `<div class="svg-container">${motifData.svg}</div>`;
+
+    // UX Touch: Make it clear the card is interactive
+    card.style.cursor = "pointer";
+    card.title = "Click to remove";
+
+    // --- The Click-to-Remove Listener ---
+    card.addEventListener("click", () => {
+      if (sessionState.currentState === "PLAYING") return;
+
+      // Remove this exact item from the state array
+      sessionState.userSubmission.splice(index, 1);
+
+      // Re-render the visual workspace to reflect the change
+      renderWorkspace();
+    });
+
+    DOM.workspace.appendChild(card);
+  });
+}
+
+// ==========================================
 // 6. INTERACTION LOGIC (Clicking Buttons)
 // ==========================================
 /**
- * Handles user clicks on motif buttons, adding the chosen motif to the workspace and internal submission array.
+ * Handles user clicks on motif buttons.
+ * State-driven: Updates the memory array, then triggers a UI redraw.
  * @param {string} motifId - The ID of the motif that was clicked.
  */
 function handleMotifClick(motifId) {
-  if (sessionState.currentState === "PLAYING") return; // Block clicks if audio is playing
+  // 1. Guard clause: don't allow clicks if audio is playing
+  if (sessionState.currentState === "PLAYING") return;
 
-  const motifData = MOTIF_LIBRARY[motifId];
-
-  // Add to internal memory tracking
+  // 2. Update the internal memory (The Source of Truth)
   sessionState.userSubmission.push(motifId);
 
-  const card = document.createElement("div");
-  card.className = "workspace-card";
-
-  // Safely fallback to symbol if SVG isn't built yet
-  if (motifData.svg) {
-    card.innerHTML = `<div class="svg-container">${motifData.svg}</div>`;
-  } else {
-    card.innerHTML = `<span class="music-font">${motifData.symbol}</span>`;
-  }
-
-  DOM.workspace.appendChild(card);
+  // 3. Tell the View Controller to redraw the screen based on the new memory!
+  renderWorkspace();
 }
 
 // ==========================================
