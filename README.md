@@ -236,3 +236,38 @@ With the core generator working invisibly, I needed to build the grading logic t
 - **Phase 1-4:** ✅ UI Layout, State Machine, Rhythm Generator, Kodály Data Model, and SVG Evaluation Engine complete.
 - **Phase 5:** ⏳ Integration of Tone.js for accurate Audio Playback and Metronome scheduling.
 - **UX Refinement:** ⏳ Possible implementation of a "click-to-remove" feature in the workspace to allow users to edit single mistakes without clearing the entire board.
+
+---
+
+### Phase 5: The Audio Engine & Pedagogical Scaffolding
+
+With the visual grading logic complete, the application needed to generate mathematically perfect audio playback to function as a true dictation tool.
+
+**The Commits:**
+
+- `feat(audio): integrate Tone.js scheduling engine for accurate target array playback`
+- `fix(audio): implement subdivision parsing array to render accurate dictation rhythms`
+- `refactor(data): align SVG library keys to strictly match Kodaly domain nomenclature`
+- `fix(core): remove legacy text fallbacks and stabilise audio engine with native math`
+- `fix(ui): reset replay button locked state upon level initialisation`
+- `feat(audio): implement visual and auditory count-in modal synchronised with Tone.Transport`
+
+**Justifications:**
+
+- **Decoupled Pitch/Rhythm Architecture:** When building the `targetTimeline` array, I explicitly set `pitch: null` for every rhythmic event. This future-proofs the MVP: the X-axis (Time/Duration) is completely isolated from the Y-axis (Pitch). When Phase 6 introduces melody, the generator logic will not need to be rewritten.
+- **Native Math for Absolute Timing:** To prevent silent browser caching errors with Tone.js `Time` objects, I refactored the audio scheduling to calculate absolute seconds using native JavaScript addition.
+- **Pedagogical Scaffolding:** Initial testing revealed that raw rhythm dictation without a tempo anchor is virtually impossible to parse. I implemented a frosted-glass modal that uses `Tone.Draw` to perfectly synchronise a 4-beat visual count-in with a high-pitched metronome click before dropping the user into the dictation.
+
+**Challenge & Resolution:**
+
+- _The Problem:_ The "Robotic Crotchet" Bug. Initially, Tone.js played a single woodblock hit for every motif block on the screen, failing to distinguish between the internal subdivisions of a `ta` and a `ti-ti`.
+- _The Fix:_ I added a `playback` array to the `MOTIF_LIBRARY` (e.g., `["8n", "8n"]` for a quaver pair) and wrote a "smart parser" that loops through the timeline and flattens the sequence into precisely timed micro-events.
+- _The Problem:_ The State/UI Desync. Exhausting all "plays" correctly locked the play button, but successfully evaluating and auto-generating the next level left the button locked, freezing the app.
+- _The Fix:_ Updated the `startLevel` View Controller to explicitly remove the `.is-locked` CSS class upon generating a new blueprint.
+
+---
+
+## Current Status & Next Steps
+
+- **Phase 1-5:** ✅ UI, State Machine, SVG Engine, Kodaly Data Model, and Tone.js Audio Integration complete.
+- **Phase 6:** ⏳ The Phrase Engine. Refactoring the random rhythm generator to pull from a curated dictionary of real musical phrases (e.g., call-and-response, standard classical/pop motifs) to teach musical syntax rather than raw data entry.
