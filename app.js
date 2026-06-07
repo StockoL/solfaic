@@ -296,6 +296,8 @@ function startLevel(levelId) {
   DOM.barsDisplay.innerText = `Bars: ${config.bars}`;
   DOM.playsRemaining.innerText = `Plays remaining: ${sessionState.maxPlays} / ${sessionState.maxPlays}`;
 
+  DOM.replayBtn.classList.remove("is-locked");
+
   // 4. Clear the workspace
   DOM.workspace.innerHTML = "";
   DOM.motifSelector.innerHTML = "";
