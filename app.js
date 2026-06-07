@@ -130,7 +130,7 @@ const MOTIF_LIBRARY = {
 const levelRules = {
   1: {
     allowedMetres: ["2/4", "3/4", "4/4"],
-    barOptions: [2, 4],
+    barOptions: [2],
     simpleMotifs: ["ta", "titi", "taRest"],
     compoundMotifs: [], // Level 1 does not use compound time
   },
@@ -493,40 +493,76 @@ const AudioEngine = {
     const [num, den] = sessionState.activeConfig.metre.split("/");
     Tone.Transport.timeSignature = [parseInt(num), parseInt(den)];
 
-    // 5. Map the target timeline into a flattened array of playable sounds
+    // 5. Map the target timeline, but START 1 BAR LATER to leave room for the count-in!
     const playableEvents = [];
-    let currentTime = 0; // Bulletproof native math: start at 0 absolute seconds
+    let currentTime = Tone.Time("1m").toSeconds(); // Shift cursor forward by 1 full measure
 
     sessionState.targetTimeline.forEach((event) => {
       const motifData = MOTIF_LIBRARY[event.motifId];
       let subTime = currentTime;
 
-      // Loop through the internal subdivisions (empty array for rests!)
       motifData.playback.forEach((subDuration) => {
         playableEvents.push({
           time: subTime,
           duration: subDuration,
           pitch: event.pitch,
         });
-        // Convert the Tone duration into pure seconds and add it natively
         subTime += Tone.Time(subDuration).toSeconds();
       });
 
-      // Nudge the main cursor forward by the motif's total footprint in seconds
       currentTime += Tone.Time(motifData.duration).toSeconds();
     });
 
-    // Feed the flattened array to Tone.js
     const part = new Tone.Part((time, event) => {
-      const noteToPlay = event.pitch ? event.pitch : "C2";
+      const noteToPlay = event.pitch ? event.pitch : "C2"; // Low woodblock for dictation
       this.synth.triggerAttackRelease(noteToPlay, event.duration, time);
     }, playableEvents);
 
-    // Start the sequence at the beginning of the timeline
     part.start(0);
 
-    // 6. Calculate total duration so we know exactly when to unlock the UI
-    const totalBars = sessionState.activeConfig.bars;
+    // --- 5.5 NEW: THE VISUAL COUNT-IN MODAL ---
+    const modal = document.createElement("div");
+    // Styling the modal as a frosted-glass overlay
+    modal.style.cssText =
+      "position:absolute; inset:0; background:rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index:100; display:flex; justify-content:center; align-items:center; font-size:6rem; font-weight:900; color:var(--text-color); border-radius: 12px;";
+    DOM.workspace.style.position = "relative";
+    DOM.workspace.appendChild(modal);
+
+    const ticks = sessionState.activeConfig.ticksPerBar;
+
+    // Schedule the metronome clicks and visual numbers
+    for (let i = 0; i < ticks; i++) {
+      // Compound time beats are dotted, simple time beats are straight
+      const beatSpacing = sessionState.activeConfig.metre.includes("8")
+        ? Tone.Time("4n.").toSeconds()
+        : Tone.Time("4n").toSeconds();
+      const tickTime = i * beatSpacing;
+
+      Tone.Transport.schedule((time) => {
+        // Play a higher-pitched click for the metronome
+        this.synth.triggerAttackRelease("G3", "16n", time);
+
+        // Sync the DOM visual perfectly with the audio
+        Tone.Draw.schedule(() => {
+          modal.innerText = i + 1;
+          // Slight CSS animation for a "pulse" effect
+          modal.animate(
+            [{ transform: "scale(1.2)" }, { transform: "scale(1)" }],
+            { duration: 200 },
+          );
+        }, time);
+      }, tickTime);
+    }
+
+    // Remove the modal right as the actual dictation begins (at 1 measure)
+    Tone.Transport.schedule((time) => {
+      Tone.Draw.schedule(() => {
+        modal.remove();
+      }, time);
+    }, Tone.Time("1m").toSeconds());
+
+    // 6. Calculate total duration (Original Bars + 1 Bar for the Count-In)
+    const totalBars = sessionState.activeConfig.bars + 1;
     const stopTimeInSeconds = Tone.Time(`${totalBars}m`).toSeconds();
 
     // 7. Hit Play
@@ -538,7 +574,6 @@ const AudioEngine = {
         Tone.Transport.stop();
         sessionState.currentState = "IDLE";
 
-        // Only unlock the button if they have plays left
         if (sessionState.playCount < sessionState.maxPlays) {
           DOM.replayBtn.classList.remove("is-locked");
         }
