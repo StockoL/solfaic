@@ -8,31 +8,26 @@
 // ==========================================
 
 /**
- * British Kodaly Academy Curriculum
- * Motifs are tagged with 'type' to prevent mathematically breaking the timeline.
- * 'ticks' represent the beat footprint (1 tick = 1 crotchet in simple, 1 dotted-crotchet in compound).
- * 'duration' is formatted for future Tone.js compatibility.
- */
-
-/**
  * SVG Library for pixel-perfect notation rendering.
- * Using 'currentColor' allows the SVGs to turn green/red during evaluation.
+ * Keys have been strictly refactored to use Kodaly terminology.
  */
 const SVG_ICONS = {
-  // Simple
-  crotchet: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/></svg>`,
-  quaverPair: `<svg viewBox="0 0 80 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="64" cy="85" rx="12" ry="8" transform="rotate(-20 64 85)"/><rect x="72" y="15" width="3" height="70"/><rect x="22" y="15" width="53" height="8"/></svg>`,
-  restCrotchet: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M 25 20 L 15 40 L 30 55 L 15 80" fill="none"/></svg>`,
-  minim: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="3"><ellipse cx="14" cy="85" rx="10" ry="7" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70" fill="currentColor" stroke="none"/></svg>`,
-  // Simple time semiquavers
+  // Simple Time Basics
+  ta: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/></svg>`,
+  titi: `<svg viewBox="0 0 80 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="64" cy="85" rx="12" ry="8" transform="rotate(-20 64 85)"/><rect x="72" y="15" width="3" height="70"/><rect x="22" y="15" width="53" height="8"/></svg>`,
+  taRest: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M 25 20 L 15 40 L 30 55 L 15 80" fill="none"/></svg>`,
+  taa: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="3"><ellipse cx="14" cy="85" rx="10" ry="7" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70" fill="currentColor" stroke="none"/></svg>`,
+
+  // Simple Time Semiquavers (Level 3)
   tikatika: `<svg viewBox="0 0 160 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><ellipse cx="134" cy="85" rx="12" ry="8" transform="rotate(-20 134 85)"/><rect x="142" y="15" width="3" height="70"/><rect x="22" y="15" width="123" height="8"/><rect x="22" y="27" width="123" height="8"/></svg>`,
   tikati: `<svg viewBox="0 0 120 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><rect x="22" y="15" width="83" height="8"/><rect x="22" y="27" width="43" height="8"/></svg>`,
   titika: `<svg viewBox="0 0 120 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><rect x="22" y="15" width="83" height="8"/><rect x="62" y="27" width="43" height="8"/></svg>`,
-  // Compound
+
+  // Compound Time (Level 2/3)
   tai: `<svg viewBox="0 0 50 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><circle cx="40" cy="80" r="4"/></svg>`,
   tititi: `<svg viewBox="0 0 120 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><rect x="22" y="15" width="83" height="8"/></svg>`,
   tati: `<svg viewBox="0 0 90 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="64" cy="85" rx="12" ry="8" transform="rotate(-20 64 85)"/><rect x="72" y="15" width="3" height="70"/><path d="M 72 15 C 85 15 85 40 72 45 C 80 40 80 25 72 25 Z"/></svg>`,
-  restDottedCrotchet: `<svg viewBox="0 0 50 100" width="100%" height="100%" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M 20 20 L 10 40 L 25 55 L 10 80" fill="none"/><circle cx="40" cy="55" r="3" stroke="none" fill="currentColor"/></svg>`,
+  taiRest: `<svg viewBox="0 0 50 100" width="100%" height="100%" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M 20 20 L 10 40 L 25 55 L 10 80" fill="none"/><circle cx="40" cy="55" r="3" stroke="none" fill="currentColor"/></svg>`,
 };
 
 const MOTIF_LIBRARY = {
@@ -42,21 +37,24 @@ const MOTIF_LIBRARY = {
     duration: "4n",
     ticks: 1,
     label: "ta",
-    svg: SVG_ICONS.crotchet,
+    svg: SVG_ICONS.ta,
+    playback: ["4n"],
   },
   titi: {
     type: "simple",
     duration: "4n",
     ticks: 1,
     label: "ti-ti",
-    svg: SVG_ICONS.quaverPair,
+    svg: SVG_ICONS.titi,
+    playback: ["8n", "8n"],
   },
   taRest: {
     type: "simple",
     duration: "4n",
     ticks: 1,
     label: "ta rest",
-    svg: SVG_ICONS.restCrotchet,
+    svg: SVG_ICONS.taRest,
+    playback: [],
   },
   tikatika: {
     type: "simple",
@@ -64,6 +62,7 @@ const MOTIF_LIBRARY = {
     ticks: 1,
     label: "tika-tika",
     svg: SVG_ICONS.tikatika,
+    playback: ["16n", "16n", "16n", "16n"],
   },
   tikati: {
     type: "simple",
@@ -71,6 +70,7 @@ const MOTIF_LIBRARY = {
     ticks: 1,
     label: "tika-ti",
     svg: SVG_ICONS.tikati,
+    playback: ["16n", "16n", "8n"],
   },
   titika: {
     type: "simple",
@@ -78,13 +78,15 @@ const MOTIF_LIBRARY = {
     ticks: 1,
     label: "ti-tika",
     svg: SVG_ICONS.titika,
+    playback: ["8n", "16n", "16n"],
   },
   taa: {
     type: "simple",
     duration: "2n",
     ticks: 2,
     label: "ta-a",
-    svg: SVG_ICONS.minim,
+    svg: SVG_ICONS.taa,
+    playback: ["2n"],
   },
 
   // --- COMPOUND TIME ---
@@ -94,6 +96,7 @@ const MOTIF_LIBRARY = {
     ticks: 1,
     label: "tai",
     svg: SVG_ICONS.tai,
+    playback: ["4n."],
   },
   tititi: {
     type: "compound",
@@ -101,6 +104,7 @@ const MOTIF_LIBRARY = {
     ticks: 1,
     label: "ti-ti-ti",
     svg: SVG_ICONS.tititi,
+    playback: ["8n", "8n", "8n"],
   },
   tati: {
     type: "compound",
@@ -108,16 +112,17 @@ const MOTIF_LIBRARY = {
     ticks: 1,
     label: "ta ti",
     svg: SVG_ICONS.tati,
+    playback: ["4n", "8n"],
   },
   taiRest: {
     type: "compound",
     duration: "4n.",
     ticks: 1,
     label: "tai rest",
-    svg: SVG_ICONS.restCrotchet,
-  }, // Note: Using standard rest for MVP
+    svg: SVG_ICONS.taiRest,
+    playback: [],
+  },
 };
-
 /**
  * Decoupled Pedagogical Levels
  * Simple and Compound motifs are strictly isolated to prevent metric cross-contamination.
@@ -486,15 +491,34 @@ const AudioEngine = {
     const [num, den] = sessionState.activeConfig.metre.split("/");
     Tone.Transport.timeSignature = [parseInt(num), parseInt(den)];
 
-    // 5. Map the X/Y axes to a Tone.Part
-    const part = new Tone.Part((time, event) => {
-      // The Y-Axis Logic: If pitch is null, play a 'C2' woodblock thud.
-      // If pitch exists (Phase 6), play that actual note!
-      const noteToPlay = event.pitch ? event.pitch : "C2";
+    // 5. Map the target timeline into a flattened array of playable sounds
+    const playableEvents = [];
+    let currentTime = 0; // Bulletproof native math: start at 0 absolute seconds
 
-      // Trigger the sound based on the motif's duration and the scheduled time
+    sessionState.targetTimeline.forEach((event) => {
+      const motifData = MOTIF_LIBRARY[event.motifId];
+      let subTime = currentTime;
+
+      // Loop through the internal subdivisions (empty array for rests!)
+      motifData.playback.forEach((subDuration) => {
+        playableEvents.push({
+          time: subTime,
+          duration: subDuration,
+          pitch: event.pitch,
+        });
+        // Convert the Tone duration into pure seconds and add it natively
+        subTime += Tone.Time(subDuration).toSeconds();
+      });
+
+      // Nudge the main cursor forward by the motif's total footprint in seconds
+      currentTime += Tone.Time(motifData.duration).toSeconds();
+    });
+
+    // Feed the flattened array to Tone.js
+    const part = new Tone.Part((time, event) => {
+      const noteToPlay = event.pitch ? event.pitch : "C2";
       this.synth.triggerAttackRelease(noteToPlay, event.duration, time);
-    }, sessionState.targetTimeline);
+    }, playableEvents);
 
     // Start the sequence at the beginning of the timeline
     part.start(0);
