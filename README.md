@@ -271,3 +271,57 @@ With the visual grading logic complete, the application needed to generate mathe
 
 - **Phase 1-5:** ✅ UI, State Machine, SVG Engine, Kodaly Data Model, and Tone.js Audio Integration complete.
 - **Phase 6:** ⏳ The Phrase Engine. Refactoring the random rhythm generator to pull from a curated dictionary of real musical phrases (e.g., call-and-response, standard classical/pop motifs) to teach musical syntax rather than raw data entry.
+
+---
+
+## Recent Core Architecture & UX Milestones
+
+We have recently completed a massive infrastructure and user experience overhaul, transitioning the platform from a strict, linear text loop into a robust, tactile musical grid system. Below are the core technical features and enhancements implemented in this version:
+
+### 1. Persistent Slot-State Memory & Surgical Error Workflow
+
+- **The Problem:** Wiping a student's entire input ledger after a single incorrect rhythm element introduces an aggressive cognitive penalty, forcing them to waste working memory reconstructing components they already got right.
+- **The Solution:** Implemented a persistent state tracking matrix (`slotStates`). Individual cards now retain their targeted validation memory (`success` or `error`) independently. When a student attempts a corrective pass, clicking an error card clears _only that specific beat_, leaving the remaining correct blocks perfectly preserved and visible as an interactive roadmap.
+- **Expanded Runway:** Boosted the total play capital from 2 to 3 attempts, establishing a highly encouraging, gamified environment before triggering the automatic blue-tinted visual correction sequence.
+
+### 2. Unified Dual-Input Interaction Engine
+
+To provide a smooth, native experience across all hardware screens without bloated third-party layout dependencies, the user interaction loop was completely decoupled and rebuilt:
+
+- **Desktop Environments:** Full HTML5 native **Drag-and-Drop** implementation allows students to grab selector motif pads from the tray and drop them directly onto any targeted coordinate on the musical stave ledger.
+- **Mobile Environments:** A targeted **Touchscreen Focus Ring Modifier**. Tapping an empty placeholder pulse highlights that exact coordinate with an active blue focus ring, allowing subsequent pad selections to snap instantly into the targeted slot rather than defaulting to the first available empty point.
+
+### 3. Articulated Audio Synthesis Engine
+
+- **Acoustic Delineation:** Shifted from a percussive kick-drum simulator (`MembraneSynth`) to a warm, resonant triangle wave oscillator (`Synth`) voiced at a crisp, mid-range register (`G3`) in order to distinguish between a crotchet "ta" and minim "ta-a".
+- **The Articulation Gap:** Solved the problem of consecutive identical notes blending into a muddy, continuous tone by introducing a mathematical trim equation into the scheduler (`Tone.Part`). Note durations are scaled to **82% of their structural metric space**, creating a uniform, crisp acoustic separation between attacks without altering the underlying metronome grid alignment.
+
+### 4. Universal Layout & Box-Sizing Calibration
+
+- Implemented a strict global `border-box` calculation reset alongside structural left/right safety margins inside the primary `.l-center` shell primitive.
+- This completely eliminates right-side horizontal layout bleed and truncation clipping errors, ensuring the springy CSS scale-up transformations can breathe smoothly on any viewport size.
+
+---
+
+## Pedagogical Whimsy & Interaction Philosophy
+
+While consumer software prioritises speed and raw efficiency, **educational software requires engagement, pacing, and cognitive pacing blocks.** Dictating long 4-bar fragments can quickly induce cognitive fatigue. To fight this, we injected subtle moments of interaction "whimsy" to lower affective filters and reward metric mastery.
+
+### Custom Spring-Loaded Success Overlays
+
+We deprecated disruptive browser alert dialog lines in favor of an elegant, canvas-wide custom HTML5 victory modal. The pop-up container leverages custom spring-physics curves (`cubic-bezier(0.34, 1.6, 0.64, 1)`) to slide out and inflate organically over a soft backdrop blur, presenting clear line-broken milestone encouragement.
+
+### Staggered Cinematic Confetti Downpour
+
+Instead of a sudden visual flash, the victory sequence initiates a highly dense, 160-particle colourful confetti storm.
+
+- **Depth Perception:** Particles are dynamically assigned random width and height values (ranging between 6px and 16px) to trick the human eye into perceiving organic 3D spatial depth.
+- **The Staggered Rain:** Particles are ghosted at birth (`opacity: 0`) and assigned randomised start delays up to 1.5 seconds. They burst into vision dynamically mid-flight, drifting across the width of modern monitors over a full 5-second flight window.
+
+---
+
+## 💡 Acknowledgments & Inspirations
+
+While this platform's technical structure is built on vanilla web systems and Tone.js, its heart, soul, and interactive delight are deeply inspired by external pioneers:
+
+- **Josh Comeau ("Whimsical Animations" Course):** A massive portion of this release's visual delight is directly inspired by Josh's design philosophy. His teachings on digital weight, spring physics, and intentional micro-interactions provided the groundwork for our tactile card scaling and metronome heartbeat pulses. The foundational logic for the staggered confetti particle engine and the intentional choice to craft delightful, non-transactional visual payoffs are a direct result of his educational impact.
