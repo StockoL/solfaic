@@ -71,6 +71,13 @@ button:active {
   justify-content: center;
 }
 
+/* FIX: Forces mobile Safari to preserve vector aspect ratios inside flex columns */
+.svg-container svg {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+}
+
 /* ==========================================================================
    3. LAYOUT PRIMITIVES (Structural Architecture)
    ========================================================================== */
@@ -298,7 +305,10 @@ main,
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg);
+  background: var(--color-surface); /* Keep it crisp against the background */
+  color: var(
+    --color-text
+  ); /* FIX: Defeats mobile Safari's system link-blue tint overrides */
   border: 2px solid var(--color-border);
   border-radius: 6px;
   height: 100%;
@@ -345,6 +355,9 @@ main,
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(
+    --color-text
+  ); /* FIX: Forces mobile buttons to drop system blue tints */
   gap: 8px;
   min-height: 56px;
   background: var(--color-surface);
