@@ -78,21 +78,24 @@ body {
 /* Header */
 .global-header {
   display: flex;
-  justify-content: flex-start; /* Aligns everything to the left */
+  justify-content: space-between; /* <-- THE MAGIC CHANGE */
   align-items: center;
   border-bottom: 2px solid var(--color-border);
   padding-bottom: var(--space-md);
 }
+
 .header-brand {
   display: flex;
   align-items: center;
   gap: var(--space-md);
 }
+
 .logo {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 800;
 }
+
 .hamburger-btn {
   background: none;
   border: none;
@@ -102,6 +105,26 @@ body {
   line-height: 1;
   display: flex;
   align-items: center;
+}
+
+/* NEW: The Escape Hatch Button */
+.btn-escape {
+  background-color: var(
+    --color-border
+  ); /* Uses your existing border color as a neutral background */
+  color: var(--color-text);
+  border: none;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-escape:hover {
+  background-color: var(--color-text-muted);
+  color: #ffffff; /* Or var(--color-bg) if your background is white */
 }
 
 .blueprint-anchor {
@@ -269,6 +292,28 @@ button:active {
   line-height: 0;
   /* Apply the same aggressive nudge to keep it centered in the box */
   transform: translateY(-2px);
+}
+
+#ui-workspace {
+  display: flex;
+  flex-wrap: wrap; /* Allows bars to drop to the next row when out of room */
+  justify-content: center; /* Keeps the music centered on the screen */
+  gap: 1.5rem; /* Generous padding between bars and rows */
+  min-height: 150px;
+  padding: 1rem;
+}
+
+.workspace-bar {
+  display: flex;
+  flex-wrap: nowrap; /* Forces beats to stay horizontal inside the bar */
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 100px;
+  min-width: 120px; /* Gives empty bars a nice target size before cards are added */
+  padding: 0.5rem 1rem;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  transition: background-color 0.1s ease;
 }
 
 /* Utilities */

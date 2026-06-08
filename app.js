@@ -189,6 +189,7 @@ const DOM = {
   submitBtn: document.getElementById("btn-submit"),
   metreDisplay: document.getElementById("ui-metre-display"),
   barsDisplay: document.getElementById("ui-bars-display"),
+  skipBtn: document.getElementById("btn-skip"),
 };
 
 // ==========================================
@@ -336,30 +337,47 @@ function startLevel(levelId) {
 
 function renderWorkspace() {
   DOM.workspace.innerHTML = ""; // Clear existing UI
+  const config = sessionState.activeConfig;
+
+  // 1. Pre-render the empty bar containers
+  const bars = [];
+  for (let i = 0; i < config.bars; i++) {
+    const barDiv = document.createElement("div");
+    barDiv.className = "workspace-bar";
+    bars.push(barDiv);
+    DOM.workspace.appendChild(barDiv);
+  }
+
+  // 2. Distribute the user's submitted blocks into the correct bars
+  let currentBarIndex = 0;
+  let ticksInCurrentBar = 0;
 
   sessionState.userSubmission.forEach((motifId, index) => {
     const motifData = MOTIF_LIBRARY[motifId];
-    const card = document.createElement("div");
-    card.className = "workspace-card";
 
-    card.innerHTML = `<div class="svg-container">${motifData.svg}</div>`;
+    // If adding this card overflows the current bar, move to the next one
+    if (ticksInCurrentBar + motifData.ticks > config.ticksPerBar) {
+      currentBarIndex++;
+      ticksInCurrentBar = 0;
+    }
 
-    // UX Touch: Make it clear the card is interactive
-    card.style.cursor = "pointer";
-    card.title = "Click to remove";
+    // Safety check to ensure we don't render outside the allowed bars
+    if (currentBarIndex < bars.length) {
+      const card = document.createElement("div");
+      card.className = "workspace-card";
+      card.innerHTML = `<div class="svg-container">${motifData.svg}</div>`;
+      card.style.cursor = "pointer";
+      card.title = "Click to remove";
 
-    // --- The Click-to-Remove Listener ---
-    card.addEventListener("click", () => {
-      if (sessionState.currentState === "PLAYING") return;
+      card.addEventListener("click", () => {
+        if (sessionState.currentState === "PLAYING") return;
+        sessionState.userSubmission.splice(index, 1);
+        renderWorkspace();
+      });
 
-      // Remove this exact item from the state array
-      sessionState.userSubmission.splice(index, 1);
-
-      // Re-render the visual workspace to reflect the change
-      renderWorkspace();
-    });
-
-    DOM.workspace.appendChild(card);
+      bars[currentBarIndex].appendChild(card);
+      ticksInCurrentBar += motifData.ticks;
+    }
   });
 }
 
@@ -433,11 +451,37 @@ function evaluateSubmission() {
     sessionState.streak = 0;
     DOM.streakTracker.innerText = `Streak: 0`;
 
-    // Pause so they can read their mistakes, then clear the board to try again
-    setTimeout(() => {
-      DOM.workspace.innerHTML = "";
-      sessionState.userSubmission = [];
-    }, 2500);
+    // Are they completely out of plays?
+    if (sessionState.playCount >= sessionState.maxPlays) {
+      setTimeout(() => {
+        // 1. Auto-fill the memory array with the correct answer
+        sessionState.userSubmission = sessionState.targetTimeline.map(
+          (t) => t.motifId,
+        );
+
+        // 2. Draw the correct answer on the screen
+        renderWorkspace();
+
+        // 3. Highlight the cards in blue to show it's a "Correction"
+        const correctedCards =
+          DOM.workspace.querySelectorAll(".workspace-card");
+        correctedCards.forEach((card) => {
+          card.style.borderColor = "#3b82f6"; // A helpful "teacher" blue
+          card.style.backgroundColor = "#eff6ff";
+        });
+
+        // 4. Give them 4 seconds to study the right answer, then generate a new puzzle!
+        setTimeout(() => {
+          startLevel(sessionState.currentLevel);
+        }, 4000);
+      }, 1500); // Wait 1.5s after showing their initial red mistakes
+    } else {
+      // They still have plays left! Clear the board and let them try again.
+      setTimeout(() => {
+        sessionState.userSubmission = [];
+        renderWorkspace(); // Re-draws the empty bars
+      }, 2000);
+    }
   }
 }
 
@@ -446,38 +490,32 @@ function evaluateSubmission() {
 // ==========================================
 const AudioEngine = {
   synth: null,
+  chime: null, // NEW: Distinct count-in sound
   isInitialized: false,
 
-  /**
-   * Browsers strictly block audio until a user interaction.
-   * This initialises the Web Audio API on the first click.
-   */
   async init() {
     if (this.isInitialized) return;
     await Tone.start();
 
-    // We can use a MembraneSynth for rhythmic dictation (sounds like a drum/woodblock)
+    // The Dictation Voice (Woodblock)
     this.synth = new Tone.MembraneSynth().toDestination();
-    Tone.Transport.bpm.value = 85; // A solid pedagogical tempo for dictation
+    // The Metronome Voice (A distinct, bell-like triangle wave)
+    this.chime = new Tone.Synth({
+      oscillator: { type: "triangle" },
+      envelope: { attack: 0.01, decay: 0.5 },
+    }).toDestination();
 
+    Tone.Transport.bpm.value = 85;
     this.isInitialized = true;
-    console.log("[Audio] Tone.js Initialized");
   },
 
-  /**
-   * Reads the targetTimeline and schedules it into the audio context.
-   */
   async playSequence() {
-    // 1. Guard Clauses
     if (sessionState.currentState === "PLAYING") return;
     if (sessionState.playCount >= sessionState.maxPlays) {
-      alert(
-        "You are out of plays! Give it your best guess, or submit to see the answer.",
-      );
+      alert("You are out of plays! Give it your best guess.");
       return;
     }
 
-    // 2. Initialise Audio & Update State
     await this.init();
     sessionState.currentState = "PLAYING";
     sessionState.playCount++;
@@ -485,17 +523,14 @@ const AudioEngine = {
     DOM.replayBtn.classList.add("is-locked");
     DOM.playsRemaining.innerText = `Plays remaining: ${sessionState.maxPlays - sessionState.playCount} / ${sessionState.maxPlays}`;
 
-    // 3. Clear the Transport (Wipe any old sequences)
     Tone.Transport.cancel();
     Tone.Transport.stop();
 
-    // 4. Update the internal metronome to match the current level's metre
     const [num, den] = sessionState.activeConfig.metre.split("/");
     Tone.Transport.timeSignature = [parseInt(num), parseInt(den)];
 
-    // 5. Map the target timeline, but START 1 BAR LATER to leave room for the count-in!
     const playableEvents = [];
-    let currentTime = Tone.Time("1m").toSeconds(); // Shift cursor forward by 1 full measure
+    let currentTime = Tone.Time("1m").toSeconds(); // Shift forward 1 bar
 
     sessionState.targetTimeline.forEach((event) => {
       const motifData = MOTIF_LIBRARY[event.motifId];
@@ -509,77 +544,80 @@ const AudioEngine = {
         });
         subTime += Tone.Time(subDuration).toSeconds();
       });
-
       currentTime += Tone.Time(motifData.duration).toSeconds();
     });
 
     const part = new Tone.Part((time, event) => {
-      const noteToPlay = event.pitch ? event.pitch : "C2"; // Low woodblock for dictation
+      const noteToPlay = event.pitch ? event.pitch : "C2";
       this.synth.triggerAttackRelease(noteToPlay, event.duration, time);
     }, playableEvents);
 
     part.start(0);
 
-    // --- 5.5 NEW: THE VISUAL COUNT-IN MODAL ---
+    // --- VISUAL UI MODAL ---
     const modal = document.createElement("div");
-    // Styling the modal as a frosted-glass overlay
     modal.style.cssText =
-      "position:absolute; inset:0; background:rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index:100; display:flex; justify-content:center; align-items:center; font-size:6rem; font-weight:900; color:var(--text-color); border-radius: 12px;";
+      "position:absolute; inset:0; background:rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index:100; display:flex; justify-content:center; align-items:center; font-size:6rem; font-weight:900; border-radius: 12px;";
     DOM.workspace.style.position = "relative";
     DOM.workspace.appendChild(modal);
 
     const ticks = sessionState.activeConfig.ticksPerBar;
+    const beatSpacing = sessionState.activeConfig.metre.includes("8")
+      ? Tone.Time("4n.").toSeconds()
+      : Tone.Time("4n").toSeconds();
 
-    // Schedule the metronome clicks and visual numbers
+    // 1. Schedule Count-In
     for (let i = 0; i < ticks; i++) {
-      // Compound time beats are dotted, simple time beats are straight
-      const beatSpacing = sessionState.activeConfig.metre.includes("8")
-        ? Tone.Time("4n.").toSeconds()
-        : Tone.Time("4n").toSeconds();
-      const tickTime = i * beatSpacing;
-
       Tone.Transport.schedule((time) => {
-        // Play a higher-pitched click for the metronome
-        this.synth.triggerAttackRelease("G3", "16n", time);
-
-        // Sync the DOM visual perfectly with the audio
+        this.chime.triggerAttackRelease("C6", "16n", time); // High pitched chime
         Tone.Draw.schedule(() => {
           modal.innerText = i + 1;
-          // Slight CSS animation for a "pulse" effect
-          modal.animate(
-            [{ transform: "scale(1.2)" }, { transform: "scale(1)" }],
-            { duration: 200 },
-          );
         }, time);
-      }, tickTime);
+      }, i * beatSpacing);
     }
 
-    // Remove the modal right as the actual dictation begins (at 1 measure)
+    // Remove modal
     Tone.Transport.schedule((time) => {
-      Tone.Draw.schedule(() => {
-        modal.remove();
-      }, time);
+      Tone.Draw.schedule(() => modal.remove(), time);
     }, Tone.Time("1m").toSeconds());
 
-    // 6. Calculate total duration (Original Bars + 1 Bar for the Count-In)
-    const totalBars = sessionState.activeConfig.bars + 1;
-    const stopTimeInSeconds = Tone.Time(`${totalBars}m`).toSeconds();
+    // 2. Schedule the Visual Metronome Flash!
+    const totalBars = sessionState.activeConfig.bars;
+    for (let bar = 0; bar < totalBars; bar++) {
+      for (let beat = 0; beat < ticks; beat++) {
+        const absoluteTick = bar * ticks + beat;
+        const timeOffset =
+          Tone.Time("1m").toSeconds() + absoluteTick * beatSpacing;
 
-    // 7. Hit Play
+        Tone.Transport.schedule((time) => {
+          Tone.Draw.schedule(() => {
+            const barElements = document.querySelectorAll(".workspace-bar");
+            if (barElements[bar]) {
+              // Flash the bar faint blue to show exactly where we are
+              barElements[bar].style.backgroundColor =
+                "rgba(30, 58, 138, 0.15)";
+              setTimeout(
+                () => (barElements[bar].style.backgroundColor = "transparent"),
+                250,
+              );
+            }
+          }, time);
+        }, timeOffset);
+      }
+    }
+
+    const stopTimeInSeconds = Tone.Time(`${totalBars + 1}m`).toSeconds();
     Tone.Transport.start();
 
-    // 8. Cleanup and unlock UI when the sequence is over
     setTimeout(
       () => {
         Tone.Transport.stop();
         sessionState.currentState = "IDLE";
-
-        if (sessionState.playCount < sessionState.maxPlays) {
+        if (sessionState.playCount < sessionState.maxPlays)
           DOM.replayBtn.classList.remove("is-locked");
-        }
       },
       stopTimeInSeconds * 1000 + 500,
-    ); // Added 500ms buffer for the final note's decay tail
+    );
   },
 };
 
@@ -590,9 +628,15 @@ window.addEventListener("DOMContentLoaded", () => {
   // Wire up the logic controllers
   DOM.submitBtn.addEventListener("click", evaluateSubmission);
 
+  // NEW: Instantly generate a new sequence at the current level
+  DOM.skipBtn.addEventListener("click", () =>
+    startLevel(sessionState.currentLevel),
+  );
+
   // Wire up the Audio Engine
   DOM.replayBtn.addEventListener("click", () => AudioEngine.playSequence());
 
+  // Start the first puzzle!
   startLevel(1);
 });
 
