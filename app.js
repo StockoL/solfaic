@@ -123,22 +123,19 @@ const MOTIF_LIBRARY = {
     playback: [],
   },
 };
-/**
- * Decoupled Pedagogical Levels
- * Simple and Compound motifs are strictly isolated to prevent metric cross-contamination.
- */
+
 const levelRules = {
   1: {
     allowedMetres: ["2/4", "3/4", "4/4"],
     barOptions: [2],
     simpleMotifs: ["ta", "titi", "taRest"],
-    compoundMotifs: [], // Level 1 does not use compound time
+    compoundMotifs: [],
   },
   2: {
     allowedMetres: ["2/4", "3/4", "4/4", "6/8"],
     barOptions: [2, 4],
     simpleMotifs: ["ta", "titi", "taRest"],
-    compoundMotifs: ["tai", "tititi", "tati", "taiRest"], // 6/8 introduced
+    compoundMotifs: ["tai", "tititi", "tati", "taiRest"],
   },
   3: {
     allowedMetres: ["2/4", "3/4", "4/4", "6/8"],
@@ -164,16 +161,10 @@ const sessionState = {
   playCount: 0,
   streak: 0,
   maxPlays: 2,
-
-  // Dynamically populated by the generator for the current round
   activeConfig: null,
-
-  // Sequence tracking
-  targetTimeline: [], // The generated "source of truth"
-  userSubmission: [], // What the user builds in the workspace
-
-  // Application flow state
-  currentState: "IDLE", // Possible: 'IDLE', 'PLAYING', 'AWAITING_INPUT'
+  targetTimeline: [],
+  userSubmission: [],
+  currentState: "IDLE",
 };
 
 // ==========================================
@@ -195,27 +186,15 @@ const DOM = {
 // ==========================================
 // 4. RHYTHM GENERATOR (The Core Logic)
 // ==========================================
-
-/**
- * Generates a randomised rhythm sequence based on level constraints and metric isolation.
- *
- * @param {number} levelId - The ID of the level to generate for.
- * @returns {Array} An array of Event Objects for the timeline.
- */
 function generateRhythmTimeline(levelId) {
   const rules = levelRules[levelId];
-  if (!rules) {
-    console.error(`Level ${levelId} not found.`);
-    return [];
-  }
+  if (!rules) return [];
 
-  // 1. Pick a random metre and bar length for this round
   const chosenMetre =
     rules.allowedMetres[Math.floor(Math.random() * rules.allowedMetres.length)];
   const barCount =
     rules.barOptions[Math.floor(Math.random() * rules.barOptions.length)];
 
-  // 2. Parse the mathematical constraints of the chosen metre
   let metreType = "simple";
   let ticksPerBar = 4;
 
@@ -224,16 +203,13 @@ function generateRhythmTimeline(levelId) {
   if (chosenMetre === "2/4") ticksPerBar = 2;
   if (chosenMetre === "6/8") {
     metreType = "compound";
-    ticksPerBar = 2; // In 6/8, there are 2 main dotted-crotchet beats per bar
+    ticksPerBar = 2;
   }
 
   const totalTicks = barCount * ticksPerBar;
-
-  // 3. SECURE ROUTING: Grab the exact array for this specific metre type
   const validMotifsForRound =
     metreType === "simple" ? rules.simpleMotifs : rules.compoundMotifs;
 
-  // 4. Save this specific assembly to the active config so the UI can render it
   sessionState.activeConfig = {
     metre: chosenMetre,
     bars: barCount,
@@ -242,14 +218,11 @@ function generateRhythmTimeline(levelId) {
     allowedMotifs: validMotifsForRound,
   };
 
-  // 5. Generate the timeline
   const timeline = [];
   let currentTicks = 0;
 
   while (currentTicks < totalTicks) {
     const remainingTicks = totalTicks - currentTicks;
-
-    // Only pick motifs that fit in the remaining space of the sequence
     const viableIds = validMotifsForRound.filter(
       (id) => MOTIF_LIBRARY[id].ticks <= remainingTicks,
     );
@@ -278,8 +251,6 @@ function generateRhythmTimeline(levelId) {
 // ==========================================
 // 5. UI RENDERING (The View Controller)
 // ==========================================
-
-// Helper to render the physical streak dots
 function renderStreakTracker() {
   DOM.streakTracker.innerHTML = "";
   for (let i = 0; i < 3; i++) {
@@ -293,39 +264,32 @@ function renderStreakTracker() {
 }
 
 function startLevel(levelId) {
-  // 1. Reset State (CRITICAL: Do NOT reset sessionState.streak here so it persists across rounds!)
   sessionState.currentLevel = levelId;
   sessionState.playCount = 0;
   sessionState.currentState = "IDLE";
 
-  // Calculate the target timeline layout map
   sessionState.targetTimeline = generateRhythmTimeline(levelId);
   const config = sessionState.activeConfig;
 
-  // Enforce rigid empty slots matching the puzzle architecture
-  sessionState.userSubmission = Array(sessionState.targetTimeline.length).fill(
+  // INITIALIZE A COMPLETELY UN-HINTED BEAT GRID MATRIX
+  sessionState.userSubmission = Array(config.bars * config.ticksPerBar).fill(
     null,
   );
 
-  // 2. Clear visual locks on control buttons
   DOM.submitBtn.classList.remove("is-locked");
   DOM.skipBtn.classList.remove("is-locked");
   DOM.replayBtn.classList.remove("is-locked");
 
-  // 3. Update Header & Blueprint Anchor Text
   DOM.levelBadge.innerText = `Level ${levelId}`;
   DOM.metreDisplay.innerText = `Metre: ${config.metre}`;
   DOM.barsDisplay.innerText = `Bars: ${config.bars}`;
   DOM.playsRemaining.innerText = `Plays remaining: ${sessionState.maxPlays} / ${sessionState.maxPlays}`;
 
-  // NEW: Keep the mastery track dots accurately synced on layout load
   renderStreakTracker();
 
-  // 4. Reset UI containers
   DOM.workspace.innerHTML = "";
   DOM.motifSelector.innerHTML = "";
 
-  // 5. Dynamically generate the clickable buttons for the allowed motifs
   config.allowedMotifs.forEach((motifId) => {
     const motifData = MOTIF_LIBRARY[motifId];
     const btn = document.createElement("button");
@@ -342,8 +306,17 @@ function startLevel(levelId) {
 
       const firstNullIndex = sessionState.userSubmission.indexOf(null);
       if (firstNullIndex !== -1) {
-        sessionState.userSubmission[firstNullIndex] = motifId;
-        renderWorkspace();
+        const duration = motifData.ticks || 1;
+
+        // Ensure the selected block fits within the remaining parameters of the ledger
+        if (firstNullIndex + duration <= sessionState.userSubmission.length) {
+          sessionState.userSubmission[firstNullIndex] = motifId;
+          // Label structural extension slots to maintain absolute visual sync
+          for (let i = 1; i < duration; i++) {
+            sessionState.userSubmission[firstNullIndex + i] = `${motifId}_ext`;
+          }
+          renderWorkspace();
+        }
       }
     });
 
@@ -360,10 +333,9 @@ function startLevel(levelId) {
 // 5.5 UI RENDERING: WORKSPACE
 // ==========================================
 function renderWorkspace() {
-  DOM.workspace.innerHTML = ""; // Clear existing UI
+  DOM.workspace.innerHTML = "";
   const config = sessionState.activeConfig;
 
-  // 1. Pre-render the empty bar containers
   const bars = [];
   for (let i = 0; i < config.bars; i++) {
     const barDiv = document.createElement("div");
@@ -372,67 +344,78 @@ function renderWorkspace() {
     DOM.workspace.appendChild(barDiv);
   }
 
-  // 2. Distribute slots into the bars using the target timeline layout as a grid map
-  let currentBarIndex = 0;
-  let ticksInCurrentBar = 0;
-
-  sessionState.userSubmission.forEach((motifId, index) => {
-    // We look at the underlying target timeline item to preserve perfect metric space
-    const targetEvent = sessionState.targetTimeline[index];
-    const underlyingMotif = MOTIF_LIBRARY[targetEvent.motifId];
-    const ticks = underlyingMotif.ticks;
-
-    // If this slot structurally belongs in the next bar, increment the bar layout index
-    if (ticksInCurrentBar + ticks > config.ticksPerBar) {
-      currentBarIndex++;
-      ticksInCurrentBar = 0;
-    }
+  sessionState.userSubmission.forEach((token, index) => {
+    const currentBarIndex = Math.floor(index / config.ticksPerBar);
 
     if (currentBarIndex < bars.length) {
       const card = document.createElement("div");
 
-      if (motifId) {
-        // --- SCENARIO A: STABLE ACTIVE CARD ---
-        const motifData = MOTIF_LIBRARY[motifId];
-        card.className = "workspace-card";
-        card.innerHTML = `<div class="svg-container">${motifData.svg}</div>`;
-        card.title = "Click to clear this beat";
+      if (token === null) {
+        // --- SCENARIO A: UNIFORM EMPTY BEAT PLACEHOLDER ---
+        card.className = "workspace-card is-placeholder";
+        card.innerHTML = `<div class="svg-container">•</div>`;
+        card.title = "Select a motif option from below to fill this beat";
+      } else if (token.endsWith("_ext")) {
+        // --- SCENARIO B: MULTI-BEAT ELONGATION EXTENSION ---
+        const rootId = token.replace("_ext", "");
+        card.className = "workspace-card is-extension";
+        card.innerHTML = `<div class="svg-container" style="font-size: 1.5rem; color: var(--color-text-muted); font-weight:800;">—</div>`;
+        card.title = "Click to clear this note";
 
         card.addEventListener("click", () => {
           if (sessionState.currentState === "PLAYING") return;
-          sessionState.userSubmission[index] = null; // Revert cleanly back to a slot placeholder
-          renderWorkspace();
+          clearMultiBeatNote(index, rootId);
         });
       } else {
-        // --- SCENARIO B: RIGID EMPTY PLACEHOLDER CONTAINER ---
-        card.className = "workspace-card is-placeholder";
-        card.innerHTML = `<div class="svg-container">•</div>`;
-        card.title = "Select a motif option from below to fill this slot";
+        // --- SCENARIO C: STANDARD ACTIVE CARD ---
+        const motifData = MOTIF_LIBRARY[token];
+        card.className = "workspace-card";
+        if (motifData && motifData.svg) {
+          card.innerHTML = `<div class="svg-container">${motifData.svg}</div>`;
+        } else {
+          card.innerHTML = `<div class="svg-container">${token}</div>`;
+        }
+        card.title = "Click to clear this note";
+
+        card.addEventListener("click", () => {
+          if (sessionState.currentState === "PLAYING") return;
+          clearMultiBeatNote(index, token);
+        });
       }
 
       bars[currentBarIndex].appendChild(card);
-      ticksInCurrentBar += ticks;
     }
   });
 }
 
-// ==========================================
-// 6. INTERACTION LOGIC (Clicking Buttons)
-// ==========================================
-/**
- * Handles user clicks on motif buttons.
- * State-driven: Updates the memory array, then triggers a UI redraw.
- * @param {string} motifId - The ID of the motif that was clicked.
- */
-function handleMotifClick(motifId) {
-  // 1. Guard clause: don't allow clicks if audio is playing
-  if (sessionState.currentState === "PLAYING") return;
+// Helper controller to cleanly execute atomic multi-slot deletions
+function clearMultiBeatNote(index, motifId) {
+  const duration = MOTIF_LIBRARY[motifId].ticks || 1;
+  let startIndex = index;
 
-  // 2. Update the internal memory (The Source of Truth)
-  sessionState.userSubmission.push(motifId);
+  if (sessionState.userSubmission[index] === `${motifId}_ext`) {
+    while (
+      startIndex > 0 &&
+      sessionState.userSubmission[startIndex] === `${motifId}_ext`
+    ) {
+      startIndex--;
+    }
+  }
 
-  // 3. Tell the View Controller to redraw the screen based on the new memory!
+  sessionState.userSubmission[startIndex] = null;
+  for (let i = 1; i < duration; i++) {
+    if (sessionState.userSubmission[startIndex + i] === `${motifId}_ext`) {
+      sessionState.userSubmission[startIndex + i] = null;
+    }
+  }
   renderWorkspace();
+}
+
+// ==========================================
+// 6. INTERACTION LOGIC (Legacy Handler Guarded)
+// ==========================================
+function handleMotifClick(motifId) {
+  if (sessionState.currentState === "PLAYING") return;
 }
 
 // ==========================================
@@ -448,19 +431,27 @@ function evaluateSubmission() {
     return;
   }
 
-  // Instantly lock down inputs to block rapid multi-clicks
   sessionState.currentState = "PLAYING";
   DOM.submitBtn.classList.add("is-locked");
   DOM.skipBtn.classList.add("is-locked");
   DOM.replayBtn.classList.add("is-locked");
 
+  const flatTarget = [];
+  sessionState.targetTimeline.forEach((event) => {
+    const duration = MOTIF_LIBRARY[event.motifId].ticks || 1;
+    flatTarget.push(event.motifId);
+    for (let i = 1; i < duration; i++) {
+      flatTarget.push(`${event.motifId}_ext`);
+    }
+  });
+
   let isCorrect = true;
   const cards = DOM.workspace.querySelectorAll(".workspace-card");
 
-  sessionState.userSubmission.forEach((motifId, index) => {
-    const targetMotifId = sessionState.targetTimeline[index].motifId;
+  sessionState.userSubmission.forEach((token, index) => {
+    const targetToken = flatTarget[index];
 
-    if (motifId === targetMotifId) {
+    if (token === targetToken) {
       cards[index].classList.add("is-success");
     } else {
       cards[index].classList.add("is-error");
@@ -469,18 +460,16 @@ function evaluateSubmission() {
   });
 
   if (isCorrect) {
-    // --- WIN STATE ---
     sessionState.streak++;
-    renderStreakTracker(); // Light up the next dot live!
+    renderStreakTracker();
 
     setTimeout(() => {
-      // FIX: Check if they have reached the mastery threshold of 3 consecutive wins
       if (sessionState.streak >= 3) {
-        sessionState.streak = 0; // Reset mastery tracking counter for the next level
+        sessionState.streak = 0;
         const nextLevel = sessionState.currentLevel + 1;
 
         if (nextLevel <= 3) {
-          startLevel(nextLevel); // Advance!
+          startLevel(nextLevel);
         } else {
           alert(
             "Incredible! You've mastered all current levels. Resetting to Level 1!",
@@ -488,20 +477,16 @@ function evaluateSubmission() {
           startLevel(1);
         }
       } else {
-        // Keep them on the same level, but generate a fresh puzzle to build their streak!
         startLevel(sessionState.currentLevel);
       }
     }, 2000);
   } else {
-    // --- FAIL STATE ---
     sessionState.streak = 0;
-    renderStreakTracker(); // Immediately dump the tracker dots back to gray
+    renderStreakTracker();
 
     if (sessionState.playCount >= sessionState.maxPlays) {
       setTimeout(() => {
-        sessionState.userSubmission = sessionState.targetTimeline.map(
-          (t) => t.motifId,
-        );
+        sessionState.userSubmission = [...flatTarget];
         renderWorkspace();
 
         const correctedCards =
@@ -518,7 +503,7 @@ function evaluateSubmission() {
     } else {
       setTimeout(() => {
         sessionState.userSubmission = Array(
-          sessionState.targetTimeline.length,
+          config.bars * config.ticksPerBar,
         ).fill(null);
         renderWorkspace();
 
@@ -538,16 +523,16 @@ function evaluateSubmission() {
 // ==========================================
 const AudioEngine = {
   synth: null,
-  chime: null, // NEW: Distinct count-in sound
+  chime: null,
   isInitialized: false,
 
   async init() {
     if (this.isInitialized) return;
     await Tone.start();
 
-    // The Dictation Voice (Woodblock)
     this.synth = new Tone.MembraneSynth().toDestination();
-    // The Metronome Voice (A distinct, bell-like triangle wave)
+
+    // FIX: Restored the explicit 'Tone.' namespace instantiation guard
     this.chime = new Tone.Synth({
       oscillator: { type: "triangle" },
       envelope: { attack: 0.01, decay: 0.5 },
@@ -578,7 +563,7 @@ const AudioEngine = {
     Tone.Transport.timeSignature = [parseInt(num), parseInt(den)];
 
     const playableEvents = [];
-    let currentTime = Tone.Time("1m").toSeconds(); // Shift forward 1 bar
+    let currentTime = Tone.Time("1m").toSeconds();
 
     sessionState.targetTimeline.forEach((event) => {
       const motifData = MOTIF_LIBRARY[event.motifId];
@@ -602,7 +587,6 @@ const AudioEngine = {
 
     part.start(0);
 
-    // --- VISUAL UI MODAL ---
     const modal = document.createElement("div");
     modal.style.cssText =
       "position:absolute; inset:0; background:rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index:100; display:flex; justify-content:center; align-items:center; font-size:6rem; font-weight:900; border-radius: 12px;";
@@ -614,22 +598,19 @@ const AudioEngine = {
       ? Tone.Time("4n.").toSeconds()
       : Tone.Time("4n").toSeconds();
 
-    // 1. Schedule Count-In
     for (let i = 0; i < ticks; i++) {
       Tone.Transport.schedule((time) => {
-        this.chime.triggerAttackRelease("C6", "16n", time); // High pitched chime
+        this.chime.triggerAttackRelease("C6", "16n", time);
         Tone.Draw.schedule(() => {
           modal.innerText = i + 1;
         }, time);
       }, i * beatSpacing);
     }
 
-    // Remove modal
     Tone.Transport.schedule((time) => {
       Tone.Draw.schedule(() => modal.remove(), time);
     }, Tone.Time("1m").toSeconds());
 
-    // 2. Schedule the Visual Metronome Flash!
     const totalBars = sessionState.activeConfig.bars;
     for (let bar = 0; bar < totalBars; bar++) {
       for (let beat = 0; beat < ticks; beat++) {
@@ -641,7 +622,6 @@ const AudioEngine = {
           Tone.Draw.schedule(() => {
             const barElements = document.querySelectorAll(".workspace-bar");
             if (barElements[bar]) {
-              // Flash the bar faint blue to show exactly where we are
               barElements[bar].style.backgroundColor =
                 "rgba(30, 58, 138, 0.15)";
               setTimeout(
@@ -673,23 +653,13 @@ const AudioEngine = {
 // BOOT UP THE APP
 // ==========================================
 window.addEventListener("DOMContentLoaded", () => {
-  // Wire up the logic controllers
   DOM.submitBtn.addEventListener("click", evaluateSubmission);
-
-  // NEW: Instantly generate a new sequence at the current level
   DOM.skipBtn.addEventListener("click", () =>
     startLevel(sessionState.currentLevel),
   );
-
-  // Wire up the Audio Engine
   DOM.replayBtn.addEventListener("click", () => AudioEngine.playSequence());
 
-  // Start the first puzzle!
   startLevel(1);
 });
 
-// ==========================================
-// INITIALISATION / DEBUG
-// ==========================================
 console.log("Solfaic! App Initialised.");
-console.log("Sample Generation (Level 1):", generateRhythmTimeline(1));
