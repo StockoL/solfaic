@@ -392,12 +392,12 @@ main,
   color: var(--color-text-muted);
 }
 
+/* FIX: content-visibility removed to prevent microinteraction animation freezes */
 .playback-panel,
 .input-display-panel,
 .motif-selector-pane,
 .action-panel {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 100px;
+  contain: none;
 }
 
 /* ==========================================================================
@@ -649,34 +649,43 @@ main,
   }
 
   .logo {
-    font-size: 1.2rem; /* Give the logo a cleaner mobile scale */
+    font-size: 1.2rem;
   }
 
   .btn-escape,
   #btn-skip {
-    white-space: nowrap; /* Absolutely prevent ugly multi-line height wrapping */
-    flex-shrink: 0; /* Refuse to let the title crush the button bounds */
-    width: auto; /* Only occupy the exact width of the text */
+    white-space: nowrap;
+    flex-shrink: 0;
+    width: auto;
     padding: var(--space-sm) 0.75rem;
-    font-size: 0.8rem; /* Drop the scale so it balances beautifully */
+    font-size: 0.8rem;
   }
 
   /* --- 2. Compact Multi-Column Motif Selector Grid --- */
   #ui-motif-selector {
-    /* Force exactly 2 columns side-by-side instead of stacking vertically */
+    display: grid !important; /* Explicitly lock grid mode over the structural switcher class */
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-sm); /* Tighten spacing to maximize viewport territory */
+    gap: var(--space-sm);
     padding: var(--space-sm) 0;
   }
 
   .motif-pad {
-    min-height: 46px; /* Sleek, touch-friendly but space-conscious height */
-    font-size: 0.9rem;
-    padding: 4px var(--space-sm);
+    -webkit-appearance: none; /* Strips native iOS button rendering constraints */
+    appearance: none;
+    min-width: 0; /* FIX: Breaks min-width:auto so text fits inside columns */
+    flex-direction: column; /* Stacks vector icons above label text */
+    min-height: 68px; /* Ensures clean spatial tapping zone dimensions */
+    font-size: 0.75rem; /* Scales down long notation labels cleanly */
+    padding: var(--space-sm);
     gap: 4px;
+    background-color: var(--color-surface) !important;
+    color: var(
+      --color-text
+    ) !important; /* FIX: Hard-locks your brand gray against system blue overrides */
   }
 
   .motif-pad .svg-container {
-    height: 32px; /* Scale the music notation down to fit the split columns */
+    height: 28px; /* Shrinks vectors proportionally inside grid layouts */
+    width: 100%;
   }
 }
