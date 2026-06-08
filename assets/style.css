@@ -311,8 +311,9 @@ button:active {
   flex-wrap: wrap;
   justify-content: center;
   gap: 1.5rem;
-  min-height: 120px;
-  padding: 1rem 0; /* Removed background and border so only the bars show! */
+  height: 116px; /* FIXED HEIGHT FOR 1-2 ROWS: Keeps downstream panels locked in place */
+  overflow: hidden; /* Stops elements from spilling down before wrapping intentionally */
+  padding: 1rem 0;
 }
 
 /* 2. The Bars (Rigid height so they don't collapse when empty) */
@@ -342,6 +343,13 @@ button:active {
   text-align: center;
   font-size: 0.85rem;
   color: var(--color-text-muted);
+}
+.playback-panel,
+.input-display-panel,
+.motif-selector-pane,
+.action-panel {
+  content-visibility: auto; /* Tells browser to optimise rendering passes for these sections */
+  contain-intrinsic-size: auto 100px;
 }
 
 /* =========================================
