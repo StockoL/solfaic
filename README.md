@@ -331,3 +331,50 @@ Instead of a sudden visual flash, the victory sequence initiates a highly dense,
 While this platform's technical structure is built on vanilla web systems and Tone.js, its heart, soul, and interactive delight are deeply inspired by external pioneers:
 
 - **Josh Comeau ("Whimsical Animations" Course):** A massive portion of this release's visual delight is directly inspired by Josh's design philosophy. His teachings on digital weight, spring physics, and intentional micro-interactions provided the groundwork for our tactile card scaling and metronome heartbeat pulses. The foundational logic for the staggered confetti particle engine and the intentional choice to craft delightful, non-transactional visual payoffs are a direct result of his educational impact.
+
+---
+
+## 🪵 The Mobile Chronicles & Cross-Browser Bug Hunt (The Hardened Release)
+
+While building for desktop web browsers provides a highly predictable sandbox, deploying a highly interactive canvas to modern mobile touchscreens exposed aggressive, device-specific optimisations to solve. This section documents the cross-browser rendering bugs encountered during our mobile deployment phase and the hardware-level engineering architectures deployed to solve them.
+
+### 1. The iOS WebKit SVG Flexbox Collapse
+
+- **The Pain:** Rhythmic motif cards suddenly expanded horizontally, rendering twice their intended size and spilling cleanly off the right-hand edge of mobile screens.
+- **The Diagnostic:** By default, it seems CSS Flexbox tracks use an implicit calculation rule: `min-width: auto`. On desktop engines, vector graphics utilise internal `viewBox` coordinates to compute missing aspect ratios. On iOS mobile Safari (WebKit), flexible rows ignore aspect calculations for SVGs containing dynamic `width="100%"` configurations, expanding the wrapper container outward to fit the unconstrained vector scale.
+- **The Architecture:** Hardened grid track items with a strict structural reset override (`min-width: 0`) and forced the internal vector children to observe strict relative proportions (`height: 100%; width: auto; max-width: 100%;`).
+
+### 2. The Native iOS Interactive Tint Override
+
+- **The Pain:** Buttons and text labels inside selection cards suddenly discarded our unified style guide variables and rendered in an aggressive, un-styled hyper-link blue color scheme.
+- **The Diagnostic:** To save data, mobile Safari intercepts interactive semantic tags (like `<button>`) and forces them to inherit native device interactive identifiers, completely overriding CSS background colour cascades unless a design block is strictly isolated.
+- **The Architecture:** Injected a deep-level appearance strip command (`-webkit-appearance: none; appearance: none;`) across the interaction deck and hard-locked typography variables with explicit priority declarations (`color: var(--color-text) !important;`).
+
+### 3. The 'Content-Visibility' Animation Strike
+
+- **The Pain:** All custom spring animations and tactile hover transitions suddenly froze solid across both mobile viewports and desktop device simulations.
+- **The Diagnostic:** In an effort to optimise viewports, a rendering boundary utility (`content-visibility: auto`) was introduced into core wrapper containers. While this keeps static elements lightweight, it segregates elements into completely isolated layout contexts. The browser stops tracking dynamic transforms mid-flight because it decides the off-screen animations are a low processing priority.
+- **The Architecture:** Completely removed visibility containment properties (`contain: none;`) on active validation lanes, restoring fully fluid 60FPS script execution runways.
+
+### 4. The Simultaneous Layer Promotion Trap
+
+- **The Pain:** The tactile horizontal frustration shake microgesture vanished entirely from existence, refusing to fire on clicks even when code paths were verified perfectly.
+- **The Diagnostic:** We attempted to optimise the shake by adding a GPU layer instruction (`will-change: transform`) directly inside the active animation utility class. When the error class was injected, the browser received two instructions at the exact same millisecond: _promote this element to the hardware graphics processor_ AND _run a high-speed shake loop_. Because layer creation causes a tiny 1-frame paint freeze, the animation lifecycle was completely bypassed by the engine.
+- **The Architecture:** Moved the hardware allocation instruction (`will-change: transform`) up to the **base workspace element style permanently**, ensuring the layout row is pre-cached on the graphics processor and ready to execute physical shudders instantly.
+
+### 5. Style Batching Optimisation & The Forced Reflow Solution
+
+- **The Pain:** Even after fixing the GPU layers, JavaScript successfully added and removed the `.is-shaking` class, but the visual elements remained totally rigid.
+- **The Diagnostic:** Modern browser layout threads are highly optimised to skip redundant work. When JavaScript adds an error style class and schedules a `setTimeout` loop to strip it away 500ms later, the layout engine batches the operations together. It reasons that since the state returns to normal instantly, it can skip painting the intermediate frames entirely to save battery power.
+- **The Architecture:** Targeted the localised `.workspace-bar` components directly and injected an explicit, legal layout calculation interrupt command (**`void bar.offsetWidth;`**). Reading a physical layout measurement breaks the browser's batching mechanism, forces an immediate frame refresh, and guarantees the microgesture paints onto the screen before JavaScript can reset it.
+
+---
+
+## 📱 Touch-First Sensation Mapping
+
+To bridge the UX divide between hardware platforms, the interactive physics layers were fully bifurcated:
+
+- **Pointing Environments (Mouse/Trackpad):** Smooth bounding box elevation curves (`translateY(-4px)`) remain enclosed within dedicated hover feature queries (`@media (hover: hover)`) to maximise desktop immersion.
+- **Touchscreens (Glass Screens):** Hover definitions are suppressed entirely to eliminate sticky layout card scaling freezes on mobile browsers. Instead, touch inputs focus exclusively on the high-fidelity **`:active`** state, delivering a crisp, immediate touch-down spring compression feel (`scale(0.96)`) the precise millisecond a finger makes contact.
+
+---
