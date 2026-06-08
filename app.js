@@ -12,7 +12,6 @@
  * Keys have been strictly refactored to use Kodaly terminology.
  */
 const SVG_ICONS = {
-  // Simple Time Basics
   ta: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/></svg>`,
   titi: `<svg viewBox="0 0 80 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="64" cy="85" rx="12" ry="8" transform="rotate(-20 64 85)"/><rect x="72" y="15" width="3" height="70"/><rect x="22" y="15" width="53" height="8"/></svg>`,
   taRest: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M 25 20 L 15 40 L 30 55 L 15 80" fill="none"/></svg>`,
@@ -338,9 +337,6 @@ function startLevel(levelId) {
   );
 }
 
-// ==========================================
-// 5.5 UI RENDERING: WORKSPACE
-// ==========================================
 function renderWorkspace() {
   DOM.workspace.innerHTML = "";
   const config = sessionState.activeConfig;
@@ -475,15 +471,12 @@ function clearMultiBeatNote(index, motifId) {
   renderWorkspace();
 }
 
-// ==========================================
-// 6. INTERACTION LOGIC (Legacy Handler Guarded)
-// ==========================================
 function handleMotifClick(motifId) {
   if (sessionState.currentState === "PLAYING") return;
 }
 
 // ==========================================
-// 7. EVALUATION LOGIC (The Judgment Engine)
+// 7. EVALUATION LOGIC & POP-UP INJECTOR
 // ==========================================
 function evaluateSubmission() {
   if (sessionState.currentState === "PLAYING") return;
@@ -497,7 +490,6 @@ function evaluateSubmission() {
 
   sessionState.currentState = "PLAYING";
 
-  // FIX: Fixed the broken button selector crash loop rule!
   DOM.submitBtn.classList.add("is-locked");
   DOM.skipBtn.classList.add("is-locked");
   DOM.replayBtn.classList.add("is-locked");
@@ -534,19 +526,11 @@ function evaluateSubmission() {
       if (sessionState.streak >= 3) {
         sessionState.streak = 0;
         const nextLevel = sessionState.currentLevel + 1;
-
-        if (nextLevel <= 3) {
-          startLevel(nextLevel);
-        } else {
-          alert(
-            "Incredible! You've mastered all current levels. Resetting to Level 1!",
-          );
-          startLevel(1);
-        }
+        triggerCelebrationModal(nextLevel);
       } else {
         startLevel(sessionState.currentLevel);
       }
-    }, 2000);
+    }, 1000);
   } else {
     sessionState.streak = 0;
     renderStreakTracker();
@@ -582,6 +566,55 @@ function evaluateSubmission() {
   }
 }
 
+function triggerCelebrationModal(targetLevelId) {
+  const overlay = document.createElement("div");
+  overlay.className = "celebration-overlay";
+
+  const modal = document.createElement("div");
+  modal.className = "celebration-modal";
+
+  let titleText = `Level ${sessionState.currentLevel} Mastered! 🚀`;
+  let subText = `Sensational ear tracking.<br>Ready to unlock Level ${targetLevelId}?`;
+  let actionText = "Onwards! →";
+
+  if (targetLevelId > 3) {
+    titleText = "Grand Masterpiece! 🏆";
+    subText =
+      "Incredible! You have officially conquered all levels of the rhythmic matrix.";
+    actionText = "Play Again 🔄";
+  }
+
+  modal.innerHTML = `
+    <div class="celebration-title">${titleText}</div>
+    <div class="celebration-subtext">${subText}</div>
+  `;
+
+  const btn = document.createElement("button");
+  btn.className = "celebration-btn";
+  btn.innerText = actionText;
+
+  btn.addEventListener("click", () => {
+    overlay.classList.remove("is-active");
+    setTimeout(() => {
+      overlay.remove();
+      if (targetLevelId <= 3) {
+        startLevel(targetLevelId);
+      } else {
+        startLevel(1);
+      }
+    }, 300);
+  });
+
+  modal.appendChild(btn);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    overlay.classList.add("is-active");
+    fireMasteryConfetti();
+  }, 50);
+}
+
 // ==========================================
 // 8. AUDIO ENGINE (Tone.js Integration)
 // ==========================================
@@ -594,7 +627,10 @@ const AudioEngine = {
     if (this.isInitialized) return;
     await Tone.start();
 
-    this.synth = new Tone.MembraneSynth().toDestination();
+    this.synth = new Tone.Synth({
+      oscillator: { type: "triangle" },
+      envelope: { attack: 0.02, decay: 0.1, sustain: 0.6, release: 0.1 },
+    }).toDestination();
 
     this.chime = new Tone.Synth({
       oscillator: { type: "triangle" },
@@ -644,8 +680,13 @@ const AudioEngine = {
     });
 
     const part = new Tone.Part((time, event) => {
-      const noteToPlay = event.pitch ? event.pitch : "C2";
-      this.synth.triggerAttackRelease(noteToPlay, event.duration, time);
+      const noteToPlay = event.pitch ? event.pitch : "G3";
+
+      // CRITICAL: Convert string musical notation to seconds and trim to 82%
+      // This injects a standard articulation gap for crisp metric delineation.
+      const soundingDuration = Tone.Time(event.duration).toSeconds() * 0.82;
+
+      this.synth.triggerAttackRelease(noteToPlay, soundingDuration, time);
     }, playableEvents);
 
     part.start(0);
@@ -685,12 +726,10 @@ const AudioEngine = {
           Tone.Draw.schedule(() => {
             const barElements = document.querySelectorAll(".workspace-bar");
             if (barElements[bar]) {
-              barElements[bar].style.backgroundColor =
-                "rgba(30, 58, 138, 0.15)";
-              setTimeout(
-                () => (barElements[bar].style.backgroundColor = "transparent"),
-                250,
-              );
+              barElements[bar].classList.add("is-metronome-pulse");
+              setTimeout(() => {
+                barElements[bar].classList.remove("is-metronome-pulse");
+              }, 300);
             }
           }, time);
         }, timeOffset);
@@ -711,6 +750,52 @@ const AudioEngine = {
     );
   },
 };
+
+// Whimsical Reward System: Cinematic, Long-Lasting Confetti Downpour
+function fireMasteryConfetti() {
+  const colors = [
+    "#3b82f6",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#ec4899",
+    "#8b5cf6",
+  ];
+  const particleCount = 160;
+
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement("div");
+    particle.className = "confetti-particle";
+
+    particle.style.backgroundColor =
+      colors[Math.floor(Math.random() * colors.length)];
+
+    particle.style.left = "50vw";
+    particle.style.top = "50vh";
+
+    const size = Math.floor(Math.random() * 10) + 6;
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+
+    // NEW: Staggers the release of the particles (up to 1.5 seconds delay)
+    // This creates a sustained, tumbling rain effect instead of a single sudden pop
+    const delay = Math.random() * 1.5;
+    particle.style.animationDelay = `${delay}s`;
+
+    const xDrift = (Math.random() - 0.5) * 1000;
+    const yDrop = Math.random() * 500 + 250; // Increased fall distance slightly
+    const rotation = Math.random() * 1080 - 540;
+
+    particle.style.setProperty("--x-drift", `${xDrift}px`);
+    particle.style.setProperty("--y-drop", `${yDrop}px`);
+    particle.style.setProperty("--rotation", `${rotation}deg`);
+
+    document.body.appendChild(particle);
+
+    // UPGRADED: Extended lifecycle boundary to match the new 4-second flight + delay runway
+    setTimeout(() => particle.remove(), 5500);
+  }
+}
 
 // ==========================================
 // BOOT UP THE APP
