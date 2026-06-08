@@ -278,35 +278,54 @@ function generateRhythmTimeline(levelId) {
 // ==========================================
 // 5. UI RENDERING (The View Controller)
 // ==========================================
+
+// Helper to render the physical streak dots
+function renderStreakTracker() {
+  DOM.streakTracker.innerHTML = "";
+  for (let i = 0; i < 3; i++) {
+    const dot = document.createElement("div");
+    dot.className = "streak-dot";
+    if (i < sessionState.streak) {
+      dot.classList.add("is-success");
+    }
+    DOM.streakTracker.appendChild(dot);
+  }
+}
+
 function startLevel(levelId) {
-  // 1. Reset State
+  // 1. Reset State (CRITICAL: Do NOT reset sessionState.streak here so it persists across rounds!)
   sessionState.currentLevel = levelId;
   sessionState.playCount = 0;
-
-  // This calculates the timeline AND populates sessionState.activeConfig
-  sessionState.targetTimeline = generateRhythmTimeline(levelId);
   sessionState.currentState = "IDLE";
 
+  // Calculate the target timeline layout map
+  sessionState.targetTimeline = generateRhythmTimeline(levelId);
   const config = sessionState.activeConfig;
 
-  // FIX: Pre-populate the user timeline with rigid empty slots matching the puzzle length!
+  // Enforce rigid empty slots matching the puzzle architecture
   sessionState.userSubmission = Array(sessionState.targetTimeline.length).fill(
     null,
   );
 
-  // 2. Update Header & Blueprint Anchor Text
+  // 2. Clear visual locks on control buttons
+  DOM.submitBtn.classList.remove("is-locked");
+  DOM.skipBtn.classList.remove("is-locked");
+  DOM.replayBtn.classList.remove("is-locked");
+
+  // 3. Update Header & Blueprint Anchor Text
   DOM.levelBadge.innerText = `Level ${levelId}`;
   DOM.metreDisplay.innerText = `Metre: ${config.metre}`;
   DOM.barsDisplay.innerText = `Bars: ${config.bars}`;
   DOM.playsRemaining.innerText = `Plays remaining: ${sessionState.maxPlays} / ${sessionState.maxPlays}`;
 
-  DOM.replayBtn.classList.remove("is-locked");
+  // NEW: Keep the mastery track dots accurately synced on layout load
+  renderStreakTracker();
 
-  // 3. Clear the UI selectors
+  // 4. Reset UI containers
   DOM.workspace.innerHTML = "";
   DOM.motifSelector.innerHTML = "";
 
-  // 4. Dynamically generate the clickable buttons for the allowed motifs
+  // 5. Dynamically generate the clickable buttons for the allowed motifs
   config.allowedMotifs.forEach((motifId) => {
     const motifData = MOTIF_LIBRARY[motifId];
     const btn = document.createElement("button");
@@ -318,13 +337,10 @@ function startLevel(levelId) {
       btn.innerHTML = `<span class="music-font">${motifData.symbol}</span> ${motifData.label}`;
     }
 
-    // Smart slot-preservation pad selector logic
     btn.addEventListener("click", () => {
       if (sessionState.currentState === "PLAYING") return;
 
-      // Find the first empty placeholder hole in the rigid timeline
       const firstNullIndex = sessionState.userSubmission.indexOf(null);
-
       if (firstNullIndex !== -1) {
         sessionState.userSubmission[firstNullIndex] = motifId;
         renderWorkspace();
@@ -334,11 +350,9 @@ function startLevel(levelId) {
     DOM.motifSelector.appendChild(btn);
   });
 
-  // Immediately draw the rigid structural grid upon level load
   renderWorkspace();
-
   console.log(
-    `[Engine] Level ${levelId} Initialised with rigid ledger structure.`,
+    `[Engine] Level ${levelId} Initialised. Streak: ${sessionState.streak}/3`,
   );
 }
 
@@ -422,85 +436,98 @@ function handleMotifClick(motifId) {
 }
 
 // ==========================================
-// 7. EVALUATION ENGINE (Grading the User)
+// 7. EVALUATION LOGIC (The Judgment Engine)
 // ==========================================
-
 function evaluateSubmission() {
-  // Prevent evaluation if the app is busy playing audio
   if (sessionState.currentState === "PLAYING") return;
 
-  const user = sessionState.userSubmission;
-  const target = sessionState.targetTimeline;
-  const workspaceCards = DOM.workspace.querySelectorAll(".workspace-card");
+  const config = sessionState.activeConfig;
 
-  // 1. Guard Clause: Did they submit enough beats?
-  if (user.length !== target.length) {
-    alert(
-      `Sequence incomplete! The target has ${target.length} motifs, but you submitted ${user.length}.`,
-    );
+  if (sessionState.userSubmission.includes(null)) {
+    alert("Please fill all slots before submitting your answer!");
     return;
   }
 
-  let isPerfect = true;
+  // Instantly lock down inputs to block rapid multi-clicks
+  sessionState.currentState = "PLAYING";
+  DOM.submitBtn.classList.add("is-locked");
+  DOM.skipBtn.classList.add("is-locked");
+  DOM.replayBtn.classList.add("is-locked");
 
-  // 2. Granular Checking: Compare item-by-item
-  for (let i = 0; i < target.length; i++) {
-    const card = workspaceCards[i];
+  let isCorrect = true;
+  const cards = DOM.workspace.querySelectorAll(".workspace-card");
 
-    // Wipe previous visual states just in case
-    card.classList.remove("is-success", "is-error");
+  sessionState.userSubmission.forEach((motifId, index) => {
+    const targetMotifId = sessionState.targetTimeline[index].motifId;
 
-    if (user[i] === target[i].motifId) {
-      card.classList.add("is-success"); // Correct! Turn it green.
+    if (motifId === targetMotifId) {
+      cards[index].classList.add("is-success");
     } else {
-      card.classList.add("is-error"); // Incorrect! Turn it red.
-      isPerfect = false;
+      cards[index].classList.add("is-error");
+      isCorrect = false;
     }
-  }
+  });
 
-  // 3. State Routing: What happens next?
-  if (isPerfect) {
+  if (isCorrect) {
+    // --- WIN STATE ---
     sessionState.streak++;
-    DOM.streakTracker.innerText = `Streak: ${sessionState.streak} 🔥`;
+    renderStreakTracker(); // Light up the next dot live!
 
-    // Pause briefly so they can enjoy seeing the green, then advance
     setTimeout(() => {
-      // Re-run the current level to generate a brand new sequence!
-      startLevel(sessionState.currentLevel);
-    }, 1500);
-  } else {
-    sessionState.streak = 0;
-    DOM.streakTracker.innerText = `Streak: 0`;
+      // FIX: Check if they have reached the mastery threshold of 3 consecutive wins
+      if (sessionState.streak >= 3) {
+        sessionState.streak = 0; // Reset mastery tracking counter for the next level
+        const nextLevel = sessionState.currentLevel + 1;
 
-    // Are they completely out of plays?
+        if (nextLevel <= 3) {
+          startLevel(nextLevel); // Advance!
+        } else {
+          alert(
+            "Incredible! You've mastered all current levels. Resetting to Level 1!",
+          );
+          startLevel(1);
+        }
+      } else {
+        // Keep them on the same level, but generate a fresh puzzle to build their streak!
+        startLevel(sessionState.currentLevel);
+      }
+    }, 2000);
+  } else {
+    // --- FAIL STATE ---
+    sessionState.streak = 0;
+    renderStreakTracker(); // Immediately dump the tracker dots back to gray
+
     if (sessionState.playCount >= sessionState.maxPlays) {
       setTimeout(() => {
-        // 1. Auto-fill the memory array with the correct answer
         sessionState.userSubmission = sessionState.targetTimeline.map(
           (t) => t.motifId,
         );
-
-        // 2. Draw the correct answer on the screen
         renderWorkspace();
 
-        // 3. Highlight the cards in blue to show it's a "Correction"
         const correctedCards =
           DOM.workspace.querySelectorAll(".workspace-card");
         correctedCards.forEach((card) => {
-          card.style.borderColor = "#3b82f6"; // A helpful "teacher" blue
+          card.style.borderColor = "#3b82f6";
           card.style.backgroundColor = "#eff6ff";
         });
 
-        // 4. Give them 4 seconds to study the right answer, then generate a new puzzle!
         setTimeout(() => {
           startLevel(sessionState.currentLevel);
         }, 4000);
-      }, 1500); // Wait 1.5s after showing their initial red mistakes
+      }, 1500);
     } else {
-      // They still have plays left! Clear the board and let them try again.
       setTimeout(() => {
-        sessionState.userSubmission = [];
-        renderWorkspace(); // Re-draws the empty bars
+        sessionState.userSubmission = Array(
+          sessionState.targetTimeline.length,
+        ).fill(null);
+        renderWorkspace();
+
+        sessionState.currentState = "IDLE";
+        DOM.submitBtn.classList.remove("is-locked");
+        DOM.skipBtn.classList.remove("is-locked");
+        if (sessionState.playCount < sessionState.maxPlays) {
+          DOM.replayBtn.classList.remove("is-locked");
+        }
       }, 2000);
     }
   }
