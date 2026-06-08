@@ -322,6 +322,9 @@ function startLevel(levelId) {
     DOM.motifSelector.appendChild(btn);
   });
 
+  // NEW: Immediately draw the empty bars so the metronome has something to flash!
+  renderWorkspace();
+
   console.log(
     `[Engine] Level ${levelId} Initialised. Metre: ${config.metre}. Target array generated.`,
   );

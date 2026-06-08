@@ -269,22 +269,27 @@ button:active {
   border-radius: 8px;
   min-height: 50px;
 }
+
 .workspace-card {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  justify-content: center; /* Added this to perfectly center text */
+  justify-content: center;
   background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  width: max-content;
+  border: 2px solid var(--color-border);
+  border-radius: 6px;
+  height: 100%; /* Matches the inside of the bar perfectly */
+  min-width: 54px; /* Gives the card a standard playing-card width */
+  padding: 0 8px;
+  flex: 0 0 auto; /* THE MAGIC FIX: Absolutely refuses to stretch or shrink */
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
+
 .workspace-card.is-placeholder {
   border: 1px dashed var(--color-border);
   color: var(--color-text-muted);
 }
+
 .workspace-card .music-font {
   font-family: var(--font-music);
   font-size: 1.8rem; /* Keep it nice and readable */
@@ -294,23 +299,30 @@ button:active {
   transform: translateY(-2px);
 }
 
-#ui-workspace {
-  display: flex;
-  flex-wrap: wrap; /* Allows bars to drop to the next row when out of room */
-  justify-content: center; /* Keeps the music centered on the screen */
-  gap: 1.5rem; /* Generous padding between bars and rows */
-  min-height: 150px;
-  padding: 1rem;
+.workspace-card:active {
+  transform: scale(0.95);
 }
 
+/* 1. The Main Workspace Container (Removed the old dashed borders) */
+#ui-workspace {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  min-height: 120px;
+  padding: 1rem 0; /* Removed background and border so only the bars show! */
+}
+
+/* 2. The Bars (Rigid height so they don't collapse when empty) */
 .workspace-bar {
   display: flex;
-  flex-wrap: nowrap; /* Forces beats to stay horizontal inside the bar */
+  flex-wrap: nowrap;
   align-items: center;
   gap: 0.5rem;
-  min-height: 100px;
-  min-width: 120px; /* Gives empty bars a nice target size before cards are added */
-  padding: 0.5rem 1rem;
+  height: 80px; /* STRICT HEIGHT: Prevents shifting when cards are added */
+  min-width: 160px; /* Wide enough to look like a bar even when empty */
+  padding: 0.5rem;
+  background: var(--color-surface);
   border: 2px dashed #cbd5e1;
   border-radius: 8px;
   transition: background-color 0.1s ease;
