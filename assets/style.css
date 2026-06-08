@@ -311,9 +311,11 @@ button:active {
   flex-wrap: wrap;
   justify-content: center;
   gap: 1.5rem;
-  height: 116px; /* FIXED HEIGHT FOR 1-2 ROWS: Keeps downstream panels locked in place */
-  overflow: hidden; /* Stops elements from spilling down before wrapping intentionally */
+  /* CHANGE: Use min-height instead of height so it holds space when empty but grows naturally */
+  min-height: 116px;
+  height: auto;
   padding: 1rem 0;
+  /* Remove overflow: hidden if it's still there so wrapped content shows up */
 }
 
 /* 2. The Bars (Rigid height so they don't collapse when empty) */
