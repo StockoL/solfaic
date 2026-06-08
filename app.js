@@ -282,16 +282,19 @@ function startLevel(levelId) {
   // 1. Reset State
   sessionState.currentLevel = levelId;
   sessionState.playCount = 0;
-  sessionState.userSubmission = [];
 
   // This calculates the timeline AND populates sessionState.activeConfig
   sessionState.targetTimeline = generateRhythmTimeline(levelId);
   sessionState.currentState = "IDLE";
 
-  // 2. Fetch the dynamically generated rules for this specific round
   const config = sessionState.activeConfig;
 
-  // 3. Update Header & Blueprint Anchor Text
+  // FIX: Pre-populate the user timeline with rigid empty slots matching the puzzle length!
+  sessionState.userSubmission = Array(sessionState.targetTimeline.length).fill(
+    null,
+  );
+
+  // 2. Update Header & Blueprint Anchor Text
   DOM.levelBadge.innerText = `Level ${levelId}`;
   DOM.metreDisplay.innerText = `Metre: ${config.metre}`;
   DOM.barsDisplay.innerText = `Bars: ${config.bars}`;
@@ -299,60 +302,49 @@ function startLevel(levelId) {
 
   DOM.replayBtn.classList.remove("is-locked");
 
-  // 4. Clear the workspace
+  // 3. Clear the UI selectors
   DOM.workspace.innerHTML = "";
   DOM.motifSelector.innerHTML = "";
 
-  // 5. Dynamically generate the clickable buttons for the allowed motifs
+  // 4. Dynamically generate the clickable buttons for the allowed motifs
   config.allowedMotifs.forEach((motifId) => {
     const motifData = MOTIF_LIBRARY[motifId];
-
     const btn = document.createElement("button");
     btn.className = "motif-pad";
 
-    // Safely fallback to symbol if SVG isn't built yet
     if (motifData.svg) {
       btn.innerHTML = `<div class="svg-container">${motifData.svg}</div> ${motifData.label}`;
     } else {
       btn.innerHTML = `<span class="music-font">${motifData.symbol}</span> ${motifData.label}`;
     }
 
-    // NEW: Smart slot-preservation pad selector logic
+    // Smart slot-preservation pad selector logic
     btn.addEventListener("click", () => {
       if (sessionState.currentState === "PLAYING") return;
 
-      // Check if there is an empty placeholder hole anywhere in the sequence
+      // Find the first empty placeholder hole in the rigid timeline
       const firstNullIndex = sessionState.userSubmission.indexOf(null);
 
       if (firstNullIndex !== -1) {
-        // Drop the new note right into the historical hole!
         sessionState.userSubmission[firstNullIndex] = motifId;
-      } else {
-        // No holes found, append to the end normally
-        sessionState.userSubmission.push(motifId);
+        renderWorkspace();
       }
-
-      renderWorkspace();
     });
 
     DOM.motifSelector.appendChild(btn);
   });
 
-  // Immediately draw the empty bars so the metronome has something to flash!
+  // Immediately draw the rigid structural grid upon level load
   renderWorkspace();
 
   console.log(
-    `[Engine] Level ${levelId} Initialised. Metre: ${config.metre}. Target array generated.`,
+    `[Engine] Level ${levelId} Initialised with rigid ledger structure.`,
   );
 }
 
 // ==========================================
 // 5.5 UI RENDERING: WORKSPACE
 // ==========================================
-/**
- * Renders the workspace array to the DOM.
- * This ensures the UI is always perfectly synced with sessionState.userSubmission.
- */
 function renderWorkspace() {
   DOM.workspace.innerHTML = ""; // Clear existing UI
   const config = sessionState.activeConfig;
@@ -366,26 +358,27 @@ function renderWorkspace() {
     DOM.workspace.appendChild(barDiv);
   }
 
-  // 2. Distribute the user's submitted blocks into the correct bars
+  // 2. Distribute slots into the bars using the target timeline layout as a grid map
   let currentBarIndex = 0;
   let ticksInCurrentBar = 0;
 
   sessionState.userSubmission.forEach((motifId, index) => {
-    // If it's an empty placeholder (null), we default its physical spacing to 1 tick
-    const ticks = motifId ? MOTIF_LIBRARY[motifId].ticks : 1;
+    // We look at the underlying target timeline item to preserve perfect metric space
+    const targetEvent = sessionState.targetTimeline[index];
+    const underlyingMotif = MOTIF_LIBRARY[targetEvent.motifId];
+    const ticks = underlyingMotif.ticks;
 
-    // If adding this card/placeholder overflows the current bar, move to the next one
+    // If this slot structurally belongs in the next bar, increment the bar layout index
     if (ticksInCurrentBar + ticks > config.ticksPerBar) {
       currentBarIndex++;
       ticksInCurrentBar = 0;
     }
 
-    // Safety check to ensure we don't render outside the allowed bars
     if (currentBarIndex < bars.length) {
       const card = document.createElement("div");
 
       if (motifId) {
-        // --- SCENARIO A: ACTIVE NOTE CARD ---
+        // --- SCENARIO A: STABLE ACTIVE CARD ---
         const motifData = MOTIF_LIBRARY[motifId];
         card.className = "workspace-card";
         card.innerHTML = `<div class="svg-container">${motifData.svg}</div>`;
@@ -393,22 +386,14 @@ function renderWorkspace() {
 
         card.addEventListener("click", () => {
           if (sessionState.currentState === "PLAYING") return;
-          // Leave a slot-preserving placeholder instead of shifting downstream notes!
-          sessionState.userSubmission[index] = null;
+          sessionState.userSubmission[index] = null; // Revert cleanly back to a slot placeholder
           renderWorkspace();
         });
       } else {
-        // --- SCENARIO B: EMPTY PLACEHOLDER SLOT ---
+        // --- SCENARIO B: RIGID EMPTY PLACEHOLDER CONTAINER ---
         card.className = "workspace-card is-placeholder";
         card.innerHTML = `<div class="svg-container">•</div>`;
-        card.title = "Click to delete this slot entirely";
-
-        card.addEventListener("click", () => {
-          if (sessionState.currentState === "PLAYING") return;
-          // If they click the empty slot itself, splice it out completely
-          sessionState.userSubmission.splice(index, 1);
-          renderWorkspace();
-        });
+        card.title = "Select a motif option from below to fill this slot";
       }
 
       bars[currentBarIndex].appendChild(card);

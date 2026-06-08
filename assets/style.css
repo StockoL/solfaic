@@ -286,8 +286,10 @@ button:active {
 }
 
 .workspace-card.is-placeholder {
-  border: 1px dashed var(--color-border);
-  color: var(--color-text-muted);
+  border: 2px dashed var(--color-border);
+  background-color: transparent; /* Hollows out the card slot */
+  color: var(--color-border);
+  box-shadow: none;
 }
 
 .workspace-card .music-font {
