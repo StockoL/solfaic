@@ -1,37 +1,46 @@
 /* ==========================================================================
    1. TOKENS & SYSTEM VARIABLES
    ========================================================================== */
-/* Universal Box-Sizing Reset - Keeps padding inside widths */
+
+/**
+ * Universal Structural Layout Box Reset
+ * Forces borders and paddings inside explicitly assigned component widths,
+ * preventing sizing overflows across screen updates.
+ */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
+/**
+ * Application Design Token Variables System Dictionary
+ * Centralized token database mapping color spaces, typography metrics, and spatial scales.
+ */
 :root {
-  /* System Core Backgrounds */
+  /* System Base Canvas Underlays */
   --color-bg: #f8fafc;
   --color-surface: #ffffff;
 
-  /* Typography Tokens */
+  /* Typography Design Stems */
   --font-ui: "Inter", system-ui, sans-serif;
   --font-music: "Noto Music", serif;
 
-  /* Semantic Action Colors */
+  /* Primary Accent Identities */
   --color-primary: #1e3a8a;
   --color-primary-hover: #155dbb;
 
-  /* Semantic Feedback Colors */
+  /* Interface State Feedback Channels */
   --color-success: #34a853;
   --color-error: #ea4335;
   --color-remedial: #fbbc05;
 
-  /* Text & Structural Colors */
+  /* Structural Inks & Lines */
   --color-text: #202124;
   --color-text-muted: #5f6368;
   --color-border: #dadce0;
 
-  /* Modular Scale Spacing Tokens */
+  /* Fluid Metric Scale Steps */
   --space-sm: 0.5rem;
   --space-md: 1rem;
   --space-lg: 1.5rem;
@@ -49,7 +58,6 @@ body {
   padding: var(--space-md);
 }
 
-/* General Button Base Typography Reset */
 button {
   cursor: pointer;
   font-family: inherit;
@@ -62,7 +70,7 @@ button:active {
   transform: scale(0.98);
 }
 
-/* Unifies all rhythm SVGs to a specific consistent optical height */
+/* Vector Graphic Blueprint Core Layout Wrappers */
 .svg-container {
   height: 36px;
   width: auto;
@@ -71,7 +79,11 @@ button:active {
   justify-content: center;
 }
 
-/* FIX: Forces mobile Safari to preserve vector aspect ratios inside flex columns */
+/**
+ * iOS WebKit SVG Workaround Constraint
+ * Forces internal vector coordinates to obey parent bounds width metrics,
+ * preventing aspect ratio explosions inside mobile browsers.
+ */
 .svg-container svg {
   height: 100%;
   width: auto;
@@ -79,11 +91,10 @@ button:active {
 }
 
 /* ==========================================================================
-   3. LAYOUT PRIMITIVES (Structural Architecture)
+   3. LAYOUT PRIMITIVES (Structural Architecture - Every Layout Model)
    ========================================================================== */
 
-/* FIX: Force global application layout rails to provide explicit horizontal 
-   clearance so scaling spring animations don't clip the outer viewport edges */
+/* Layout Protection Pass: Ensures scaling components can breathe without edge clipping */
 main,
 .container,
 #ui-workspace,
@@ -93,21 +104,17 @@ main,
   overflow: visible !important;
 }
 
-/* The Center Layout: Constrains width and centers core content rails safely */
+/* The Center Primitive: Centers content and provides responsive side gutters */
 .l-center {
-  width: 100%; /* Guarantees it scales down seamlessly on smaller screens */
+  width: 100%;
   max-width: 65ch;
   margin-left: auto;
   margin-right: auto;
-  padding-left: var(
-    --space-md
-  ); /* Built-in safety margin for left-side scaling */
-  padding-right: var(
-    --space-md
-  ); /* Built-in safety margin for right-side scaling */
+  padding-left: var(--space-md);
+  padding-right: var(--space-md);
 }
 
-/* The Stack Layout: Manages precise vertical rhythm between sections */
+/* The Stack Primitive: Manages linear vertical spacing between sibling flows */
 .l-stack {
   display: flex;
   flex-direction: column;
@@ -118,7 +125,7 @@ main,
   margin-top: var(--space-lg);
 }
 
-/* The Switcher Layout: Wraps cleanly on mobile devices, pairs row-by-row on desktop */
+/* The Switcher Primitive: Runs horizontally on desktop, reflows to vertical columns on mobile */
 .l-switcher {
   display: flex;
   flex-wrap: wrap;
@@ -133,8 +140,6 @@ main,
 /* ==========================================================================
    4. CORE APPLICATION COMPONENTS (Aesthetics & Interface)
    ========================================================================== */
-
-/* --- Global Header Pane --- */
 .global-header {
   display: flex;
   justify-content: space-between;
@@ -166,7 +171,6 @@ main,
   align-items: center;
 }
 
-/* --- Control Panel Atoms --- */
 .btn-escape {
   background-color: var(--color-border);
   color: var(--color-text);
@@ -202,7 +206,6 @@ main,
   font-weight: 400;
 }
 
-/* --- Navigation & Session Status Bars --- */
 .status-bar {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -227,13 +230,6 @@ main,
   color: var(--color-text-muted);
 }
 
-.profile-btn {
-  background: none;
-  border: 1px solid var(--color-border);
-  padding: 6px 12px;
-}
-
-/* --- Rhythmic Progress Mastery Dots --- */
 .streak-tracker {
   display: flex;
   gap: 4px;
@@ -246,7 +242,6 @@ main,
   border-radius: 2px;
 }
 
-/* --- Main Interactive Submission Buttons --- */
 .btn-primary-audio {
   background: var(--color-surface);
   border: 2px solid var(--color-primary);
@@ -272,8 +267,6 @@ main,
 /* ==========================================================================
    5. WORKSPACE GRID ENVIRONMENT (The Interactive Arena)
    ========================================================================== */
-
-/* --- The Main Evaluation Blueprint Container --- */
 #ui-workspace {
   display: flex;
   flex-wrap: wrap;
@@ -282,9 +275,15 @@ main,
   min-height: 116px;
   height: auto;
   padding: 1rem 0;
+
+  /**
+   * ADVANCED WORKAROUND: Pre-promote container permanently to its own GPU layer.
+   * Isolates rendering logic from parent flows, preventing dynamic class additions
+   * from freezing fast microinteraction frames.
+   */
+  will-change: transform;
 }
 
-/* --- The Discrete Musical Measures Grid Rows --- */
 .workspace-bar {
   display: flex;
   flex-wrap: nowrap;
@@ -300,15 +299,14 @@ main,
   transition: background-color 0.1s ease;
 }
 
-/* --- Clickable Dictation Selection Cards --- */
 .workspace-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-surface); /* Keep it crisp against the background */
+  background: var(--color-surface);
   color: var(
     --color-text
-  ); /* FIX: Defeats mobile Safari's system link-blue tint overrides */
+  ); /* Hard-locks default text palette color to override mobile styles */
   border: 2px solid var(--color-border);
   border-radius: 6px;
   height: 100%;
@@ -327,11 +325,6 @@ main,
   transform: translateY(-2px);
 }
 
-.workspace-card:active {
-  transform: scale(0.95);
-}
-
-/* --- Rhythmic Legacy Array Compatibility Rail --- */
 .workspace-array {
   display: flex;
   flex-wrap: wrap;
@@ -343,7 +336,6 @@ main,
   min-height: 50px;
 }
 
-/* --- Lower Input Motif Pad Deck Selector --- */
 #ui-motif-selector {
   display: grid;
   gap: var(--space-md);
@@ -355,9 +347,7 @@ main,
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(
-    --color-text
-  ); /* FIX: Forces mobile buttons to drop system blue tints */
+  color: var(--color-text);
   gap: 8px;
   min-height: 56px;
   background: var(--color-surface);
@@ -392,7 +382,7 @@ main,
   color: var(--color-text-muted);
 }
 
-/* FIX: content-visibility removed to prevent microinteraction animation freezes */
+/* FIX: Content-visibility and containment properties completely cleared to prevent animation locks */
 .playback-panel,
 .input-display-panel,
 .motif-selector-pane,
@@ -403,20 +393,18 @@ main,
 /* ==========================================================================
    7. RUNTIME APPLICATION ENGINE STATE MODIFIERS
    ========================================================================== */
-/* Global Evaluation Lockdown State */
 .is-locked {
   pointer-events: none;
   opacity: 0.4;
   filter: grayscale(1);
 }
 
-/* Component Selection States */
 .motif-pad.is-active {
   border-color: var(--color-primary);
   background-color: #e8f0fe;
 }
 
-/* Evaluation Success Memory Modifiers */
+/* Validation Pass Success Mappings */
 .workspace-card.is-success,
 .motif-pad.is-success {
   border-color: var(--color-success) !important;
@@ -427,7 +415,7 @@ main,
   background-color: var(--color-success) !important;
 }
 
-/* Evaluation Failure Memory Modifiers */
+/* Validation Pass Failure Mappings */
 .workspace-card.is-error,
 .motif-pad.is-error {
   border-color: var(--color-error) !important;
@@ -435,14 +423,13 @@ main,
   color: #c5221f !important;
 }
 
-/* Remedial Pedagogical Layout Balances */
 .workspace-card.is-remedial {
   border-color: var(--color-remedial);
   background-color: #fef7e0;
   color: #b06000;
 }
 
-/* Mobile Targeted Input Ring Highlights */
+/* Mobile Tapping Interaction Target Highlights */
 .workspace-card.is-placeholder.is-targeted {
   border: 2px solid #3b82f6 !important;
   background-color: #eff6ff !important;
@@ -454,7 +441,7 @@ main,
    8. WHIMSICAL INTERACTION ENGINE & SQUISHY PHYSICS (Comeau Core)
    ========================================================================== */
 
-/* Spring Physics Transitions across core interactive atoms */
+/* Unified structural transition parameters leveraging standard elastic spring physics curves */
 .workspace-card,
 .motif-pad,
 #btn-replay,
@@ -465,19 +452,27 @@ main,
     box-shadow 0.3s ease;
 }
 
-/* Tactile Squash & Stretch Lifting States */
-.workspace-card:hover,
-.motif-pad:hover {
-  transform: translateY(-4px) scale(1.04);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+/**
+ * Isolated Desktop Hover Feature Query
+ * Encloses hover transforms inside pointing-device query wrappers.
+ * Completely eliminates permanent sticky-card zoom glitches from mobile screen viewports.
+ */
+@media (hover: hover) {
+  .workspace-card:hover,
+  .motif-pad:hover {
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  }
 }
 
+/* Active touch feedback compression physics across physical tapping screens */
 .workspace-card:active,
 .motif-pad:active {
   transform: translateY(1px) scale(0.96);
+  transition: transform 0.05s ease;
 }
 
-/* Rhythmic Heartbeat Bar Pulse Animation Definitions */
+/* Audio timeline play pulsation animation triggers */
 .workspace-bar.is-metronome-pulse {
   animation: barHeartbeat 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
@@ -499,12 +494,12 @@ main,
   }
 }
 
-/* High-Payoff Particle Confetti Element Layout configurations */
+/* Celebration particles layout anchors */
 .confetti-particle {
   position: fixed;
   width: 10px;
   height: 10px;
-  z-index: 2100; /* Safely floating ahead of the celebration overlays */
+  z-index: 2100;
   pointer-events: none;
   border-radius: 2px;
   opacity: 0;
@@ -590,27 +585,14 @@ main,
   font-weight: 700;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-  transition:
-    transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    box-shadow 0.2s ease;
-}
-
-.celebration-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
-}
-
-.celebration-btn:active {
-  transform: scale(0.95);
 }
 
 /* --- Tactile Frustration Microgestures --- */
 .is-shaking {
+  /* Dynamic animation keyframe assignment targeting structural stave bar nodes */
   animation: horizontalShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-  transform: translate3d(0, 0, 0);
 }
 
-/* Temporary panic warning animation for blank beats */
 .workspace-card.is-placeholder.is-empty-panic {
   border-color: var(--color-error) !important;
   box-shadow: 0 0 0 4px rgba(234, 67, 53, 0.35) !important;
@@ -619,22 +601,28 @@ main,
 }
 
 @keyframes horizontalShake {
+  /* HARD-LOCKED ANCHORS: Explicit 0% and 100% states preserve browser-rendering layouts.
+     Standardized translateX properties avoid rendering conflicts inside nested containers. */
+  0%,
+  100% {
+    transform: translateX(0);
+  }
   10%,
   90% {
-    transform: translate3d(-2px, 0, 0);
+    transform: translateX(-6px);
   }
   20%,
   80% {
-    transform: translate3d(4px, 0, 0);
+    transform: translateX(6px);
   }
   30%,
   50%,
   70% {
-    transform: translate3d(-6px, 0, 0);
+    transform: translateX(-10px);
   }
   40%,
   60% {
-    transform: translate3d(6px, 0, 0);
+    transform: translateX(10px);
   }
 }
 
@@ -642,7 +630,6 @@ main,
    10. MOBILE VIEW REFINEMENTS (Responsive Breakpoints)
    ========================================================================== */
 @media (max-width: 480px) {
-  /* --- 1. Compact Header & Skip Button Reset --- */
   .global-header {
     padding-bottom: var(--space-sm);
     gap: var(--space-sm);
@@ -661,31 +648,28 @@ main,
     font-size: 0.8rem;
   }
 
-  /* --- 2. Compact Multi-Column Motif Selector Grid --- */
   #ui-motif-selector {
-    display: grid !important; /* Explicitly lock grid mode over the structural switcher class */
+    display: grid !important;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-sm);
     padding: var(--space-sm) 0;
   }
 
   .motif-pad {
-    -webkit-appearance: none; /* Strips native iOS button rendering constraints */
+    -webkit-appearance: none;
     appearance: none;
-    min-width: 0; /* FIX: Breaks min-width:auto so text fits inside columns */
-    flex-direction: column; /* Stacks vector icons above label text */
-    min-height: 68px; /* Ensures clean spatial tapping zone dimensions */
-    font-size: 0.75rem; /* Scales down long notation labels cleanly */
+    min-width: 0; /* FIX: Blocks content expansion from throwing columns out of view */
+    flex-direction: column; /* Rearranges design blocks vertically on small screens */
+    min-height: 68px;
+    font-size: 0.75rem;
     padding: var(--space-sm);
     gap: 4px;
     background-color: var(--color-surface) !important;
-    color: var(
-      --color-text
-    ) !important; /* FIX: Hard-locks your brand gray against system blue overrides */
+    color: var(--color-text) !important;
   }
 
   .motif-pad .svg-container {
-    height: 28px; /* Shrinks vectors proportionally inside grid layouts */
+    height: 28px;
     width: 100%;
   }
 }
