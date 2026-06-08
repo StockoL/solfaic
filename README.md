@@ -318,6 +318,12 @@ Instead of a sudden visual flash, the victory sequence initiates a highly dense,
 - **Depth Perception:** Particles are dynamically assigned random width and height values (ranging between 6px and 16px) to trick the human eye into perceiving organic 3D spatial depth.
 - **The Staggered Rain:** Particles are ghosted at birth (`opacity: 0`) and assigned randomised start delays up to 1.5 seconds. They burst into vision dynamically mid-flight, drifting across the width of modern monitors over a full 5-second flight window.
 
+### Tactile Frustration Microgestures (Error Handling)
+
+- **The Problem:** Interrupting a student with a jarring, hard-edged browser error dialog box when they click submit early shatters their focus and breaks immersion.
+- **The Solution:** Completely eliminated validation text boxes in favor of physical, kinesthetic interface feedback. Attempting to submit an incomplete exercise causes the entire canvas row to execute an aggressive **horizontal frustration shake** (`is-shaking`) built with a snappy, tightly coiled physics curve.
+- Simultaneously, any empty slots on the board flash with a brief **crimson halo pulse** (`is-empty-panic`), highlighting exactly what needs attention without forcing the student to click out of an annoying popup window.
+
 ---
 
 ## 💡 Acknowledgments & Inspirations
