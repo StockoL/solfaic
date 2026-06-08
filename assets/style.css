@@ -590,3 +590,80 @@ main,
 .celebration-btn:active {
   transform: scale(0.95);
 }
+
+/* --- Tactile Frustration Microgestures --- */
+.is-shaking {
+  animation: horizontalShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Temporary panic warning animation for blank beats */
+.workspace-card.is-placeholder.is-empty-panic {
+  border-color: var(--color-error) !important;
+  box-shadow: 0 0 0 4px rgba(234, 67, 53, 0.35) !important;
+  background-color: #fce8e6 !important;
+  transform: scale(0.95);
+}
+
+@keyframes horizontalShake {
+  10%,
+  90% {
+    transform: translate3d(-2px, 0, 0);
+  }
+  20%,
+  80% {
+    transform: translate3d(4px, 0, 0);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-6px, 0, 0);
+  }
+  40%,
+  60% {
+    transform: translate3d(6px, 0, 0);
+  }
+}
+
+/* ==========================================================================
+   10. MOBILE VIEW REFINEMENTS (Responsive Breakpoints)
+   ========================================================================== */
+@media (max-width: 480px) {
+  /* --- 1. Compact Header & Skip Button Reset --- */
+  .global-header {
+    padding-bottom: var(--space-sm);
+    gap: var(--space-sm);
+  }
+
+  .logo {
+    font-size: 1.2rem; /* Give the logo a cleaner mobile scale */
+  }
+
+  .btn-escape,
+  #btn-skip {
+    white-space: nowrap; /* Absolutely prevent ugly multi-line height wrapping */
+    flex-shrink: 0; /* Refuse to let the title crush the button bounds */
+    width: auto; /* Only occupy the exact width of the text */
+    padding: var(--space-sm) 0.75rem;
+    font-size: 0.8rem; /* Drop the scale so it balances beautifully */
+  }
+
+  /* --- 2. Compact Multi-Column Motif Selector Grid --- */
+  #ui-motif-selector {
+    /* Force exactly 2 columns side-by-side instead of stacking vertically */
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm); /* Tighten spacing to maximize viewport territory */
+    padding: var(--space-sm) 0;
+  }
+
+  .motif-pad {
+    min-height: 46px; /* Sleek, touch-friendly but space-conscious height */
+    font-size: 0.9rem;
+    padding: 4px var(--space-sm);
+    gap: 4px;
+  }
+
+  .motif-pad .svg-container {
+    height: 32px; /* Scale the music notation down to fit the split columns */
+  }
+}

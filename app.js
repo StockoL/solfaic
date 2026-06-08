@@ -483,8 +483,23 @@ function evaluateSubmission() {
 
   const config = sessionState.activeConfig;
 
+  // FIX: Deprecated native alert banner for a physical horizontal microgesture
   if (sessionState.userSubmission.includes(null)) {
-    alert("Please fill all slots before submitting your answer!");
+    // 1. Inject the horizontal shake curve into the main slate
+    DOM.workspace.classList.add("is-shaking");
+
+    // 2. Query and highlight all structural empty placeholders instantly
+    const missingSlots = DOM.workspace.querySelectorAll(
+      ".workspace-card.is-placeholder",
+    );
+    missingSlots.forEach((card) => card.classList.add("is-empty-panic"));
+
+    // 3. Clear modifiers cleanly after the animation finishes so it can be re-triggered
+    setTimeout(() => {
+      DOM.workspace.classList.remove("is-shaking");
+      missingSlots.forEach((card) => card.classList.remove("is-empty-panic"));
+    }, 450);
+
     return;
   }
 
