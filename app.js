@@ -317,12 +317,28 @@ function startLevel(levelId) {
       btn.innerHTML = `<span class="music-font">${motifData.symbol}</span> ${motifData.label}`;
     }
 
-    btn.addEventListener("click", () => handleMotifClick(motifId));
+    // NEW: Smart slot-preservation pad selector logic
+    btn.addEventListener("click", () => {
+      if (sessionState.currentState === "PLAYING") return;
+
+      // Check if there is an empty placeholder hole anywhere in the sequence
+      const firstNullIndex = sessionState.userSubmission.indexOf(null);
+
+      if (firstNullIndex !== -1) {
+        // Drop the new note right into the historical hole!
+        sessionState.userSubmission[firstNullIndex] = motifId;
+      } else {
+        // No holes found, append to the end normally
+        sessionState.userSubmission.push(motifId);
+      }
+
+      renderWorkspace();
+    });
 
     DOM.motifSelector.appendChild(btn);
   });
 
-  // NEW: Immediately draw the empty bars so the metronome has something to flash!
+  // Immediately draw the empty bars so the metronome has something to flash!
   renderWorkspace();
 
   console.log(
@@ -337,7 +353,6 @@ function startLevel(levelId) {
  * Renders the workspace array to the DOM.
  * This ensures the UI is always perfectly synced with sessionState.userSubmission.
  */
-
 function renderWorkspace() {
   DOM.workspace.innerHTML = ""; // Clear existing UI
   const config = sessionState.activeConfig;
@@ -356,10 +371,11 @@ function renderWorkspace() {
   let ticksInCurrentBar = 0;
 
   sessionState.userSubmission.forEach((motifId, index) => {
-    const motifData = MOTIF_LIBRARY[motifId];
+    // If it's an empty placeholder (null), we default its physical spacing to 1 tick
+    const ticks = motifId ? MOTIF_LIBRARY[motifId].ticks : 1;
 
-    // If adding this card overflows the current bar, move to the next one
-    if (ticksInCurrentBar + motifData.ticks > config.ticksPerBar) {
+    // If adding this card/placeholder overflows the current bar, move to the next one
+    if (ticksInCurrentBar + ticks > config.ticksPerBar) {
       currentBarIndex++;
       ticksInCurrentBar = 0;
     }
@@ -367,19 +383,36 @@ function renderWorkspace() {
     // Safety check to ensure we don't render outside the allowed bars
     if (currentBarIndex < bars.length) {
       const card = document.createElement("div");
-      card.className = "workspace-card";
-      card.innerHTML = `<div class="svg-container">${motifData.svg}</div>`;
-      card.style.cursor = "pointer";
-      card.title = "Click to remove";
 
-      card.addEventListener("click", () => {
-        if (sessionState.currentState === "PLAYING") return;
-        sessionState.userSubmission.splice(index, 1);
-        renderWorkspace();
-      });
+      if (motifId) {
+        // --- SCENARIO A: ACTIVE NOTE CARD ---
+        const motifData = MOTIF_LIBRARY[motifId];
+        card.className = "workspace-card";
+        card.innerHTML = `<div class="svg-container">${motifData.svg}</div>`;
+        card.title = "Click to clear this beat";
+
+        card.addEventListener("click", () => {
+          if (sessionState.currentState === "PLAYING") return;
+          // Leave a slot-preserving placeholder instead of shifting downstream notes!
+          sessionState.userSubmission[index] = null;
+          renderWorkspace();
+        });
+      } else {
+        // --- SCENARIO B: EMPTY PLACEHOLDER SLOT ---
+        card.className = "workspace-card is-placeholder";
+        card.innerHTML = `<div class="svg-container">•</div>`;
+        card.title = "Click to delete this slot entirely";
+
+        card.addEventListener("click", () => {
+          if (sessionState.currentState === "PLAYING") return;
+          // If they click the empty slot itself, splice it out completely
+          sessionState.userSubmission.splice(index, 1);
+          renderWorkspace();
+        });
+      }
 
       bars[currentBarIndex].appendChild(card);
-      ticksInCurrentBar += motifData.ticks;
+      ticksInCurrentBar += ticks;
     }
   });
 }
