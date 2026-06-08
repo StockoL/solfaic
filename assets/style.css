@@ -243,6 +243,12 @@ button:active {
   font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.2s ease;
+
+  cursor: grab;
+}
+
+.motif-pad:active {
+  cursor: grabbing;
 }
 
 .motif-pad .svg-container {
@@ -285,11 +291,12 @@ button:active {
   transition: all 0.2s ease;
 }
 
-.workspace-card.is-placeholder {
-  border: 2px dashed var(--color-border);
-  background-color: transparent; /* Hollows out the card slot */
-  color: var(--color-border);
-  box-shadow: none;
+/* Highlights a specific targeted slot during mobile editing passes */
+.workspace-card.is-placeholder.is-targeted {
+  border: 2px solid #3b82f6;
+  background-color: #eff6ff;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+  transform: scale(1.05);
 }
 
 .workspace-card .music-font {

@@ -31,7 +31,6 @@ const SVG_ICONS = {
 };
 
 const MOTIF_LIBRARY = {
-  // --- SIMPLE TIME ---
   ta: {
     type: "simple",
     duration: "4n",
@@ -89,7 +88,6 @@ const MOTIF_LIBRARY = {
     playback: ["2n"],
   },
 
-  // --- COMPOUND TIME ---
   tai: {
     type: "compound",
     duration: "4n.",
@@ -160,10 +158,12 @@ const sessionState = {
   currentLevel: 1,
   playCount: 0,
   streak: 0,
-  maxPlays: 2,
+  maxPlays: 3,
   activeConfig: null,
   targetTimeline: [],
   userSubmission: [],
+  slotStates: [],
+  selectedSlotIndex: null,
   currentState: "IDLE",
 };
 
@@ -267,13 +267,16 @@ function startLevel(levelId) {
   sessionState.currentLevel = levelId;
   sessionState.playCount = 0;
   sessionState.currentState = "IDLE";
+  sessionState.selectedSlotIndex = null;
 
   sessionState.targetTimeline = generateRhythmTimeline(levelId);
   const config = sessionState.activeConfig;
 
-  // INITIALIZE A COMPLETELY UN-HINTED BEAT GRID MATRIX
   sessionState.userSubmission = Array(config.bars * config.ticksPerBar).fill(
     null,
+  );
+  sessionState.slotStates = Array(config.bars * config.ticksPerBar).fill(
+    "idle",
   );
 
   DOM.submitBtn.classList.remove("is-locked");
@@ -301,22 +304,28 @@ function startLevel(levelId) {
       btn.innerHTML = `<span class="music-font">${motifData.symbol}</span> ${motifData.label}`;
     }
 
+    btn.setAttribute("draggable", "true");
+    btn.addEventListener("dragstart", (e) => {
+      if (sessionState.currentState === "PLAYING") {
+        e.preventDefault();
+        return;
+      }
+      e.dataTransfer.setData("text/plain", motifId);
+    });
+
     btn.addEventListener("click", () => {
       if (sessionState.currentState === "PLAYING") return;
 
-      const firstNullIndex = sessionState.userSubmission.indexOf(null);
-      if (firstNullIndex !== -1) {
-        const duration = motifData.ticks || 1;
+      let targetIndex = sessionState.selectedSlotIndex;
+      if (
+        targetIndex === null ||
+        sessionState.userSubmission[targetIndex] !== null
+      ) {
+        targetIndex = sessionState.userSubmission.indexOf(null);
+      }
 
-        // Ensure the selected block fits within the remaining parameters of the ledger
-        if (firstNullIndex + duration <= sessionState.userSubmission.length) {
-          sessionState.userSubmission[firstNullIndex] = motifId;
-          // Label structural extension slots to maintain absolute visual sync
-          for (let i = 1; i < duration; i++) {
-            sessionState.userSubmission[firstNullIndex + i] = `${motifId}_ext`;
-          }
-          renderWorkspace();
-        }
+      if (targetIndex !== -1) {
+        insertMotifAt(targetIndex, motifId);
       }
     });
 
@@ -350,26 +359,51 @@ function renderWorkspace() {
     if (currentBarIndex < bars.length) {
       const card = document.createElement("div");
 
+      if (sessionState.slotStates[index] === "success") {
+        card.classList.add("is-success");
+      } else if (sessionState.slotStates[index] === "error") {
+        card.classList.add("is-error");
+      }
+
+      card.addEventListener("dragover", (e) => {
+        if (sessionState.currentState === "PLAYING") return;
+        e.preventDefault();
+      });
+
+      card.addEventListener("drop", (e) => {
+        if (sessionState.currentState === "PLAYING") return;
+        e.preventDefault();
+        const motifId = e.dataTransfer.getData("text/plain");
+        insertMotifAt(index, motifId);
+      });
+
       if (token === null) {
-        // --- SCENARIO A: UNIFORM EMPTY BEAT PLACEHOLDER ---
-        card.className = "workspace-card is-placeholder";
+        card.className += " workspace-card is-placeholder";
         card.innerHTML = `<div class="svg-container">•</div>`;
-        card.title = "Select a motif option from below to fill this beat";
+        card.title = "Tap to highlight target, or drag note here";
+
+        if (index === sessionState.selectedSlotIndex) {
+          card.classList.add("is-targeted");
+        }
+
+        card.addEventListener("click", () => {
+          if (sessionState.currentState === "PLAYING") return;
+          sessionState.selectedSlotIndex = index;
+          renderWorkspace();
+        });
       } else if (token.endsWith("_ext")) {
-        // --- SCENARIO B: MULTI-BEAT ELONGATION EXTENSION ---
         const rootId = token.replace("_ext", "");
-        card.className = "workspace-card is-extension";
+        card.className += " workspace-card is-extension";
         card.innerHTML = `<div class="svg-container" style="font-size: 1.5rem; color: var(--color-text-muted); font-weight:800;">—</div>`;
-        card.title = "Click to clear this note";
+        card.title = "Click to clear this structural note";
 
         card.addEventListener("click", () => {
           if (sessionState.currentState === "PLAYING") return;
           clearMultiBeatNote(index, rootId);
         });
       } else {
-        // --- SCENARIO C: STANDARD ACTIVE CARD ---
         const motifData = MOTIF_LIBRARY[token];
-        card.className = "workspace-card";
+        card.className += " workspace-card";
         if (motifData && motifData.svg) {
           card.innerHTML = `<div class="svg-container">${motifData.svg}</div>`;
         } else {
@@ -388,7 +422,33 @@ function renderWorkspace() {
   });
 }
 
-// Helper controller to cleanly execute atomic multi-slot deletions
+function insertMotifAt(index, motifId) {
+  const duration = MOTIF_LIBRARY[motifId].ticks || 1;
+
+  if (index + duration <= sessionState.userSubmission.length) {
+    for (let i = 0; i < duration; i++) {
+      const existingToken = sessionState.userSubmission[index + i];
+      if (existingToken) {
+        const rootId = existingToken.replace("_ext", "");
+        clearMultiBeatNote(index + i, rootId);
+      }
+    }
+
+    sessionState.userSubmission[index] = motifId;
+    sessionState.slotStates[index] = "idle";
+
+    for (let i = 1; i < duration; i++) {
+      sessionState.userSubmission[index + i] = `${motifId}_ext`;
+      sessionState.slotStates[index + i] = "idle";
+    }
+
+    sessionState.selectedSlotIndex = null;
+    renderWorkspace();
+  } else {
+    alert("This note is too long to fit in the remaining space of this bar!");
+  }
+}
+
 function clearMultiBeatNote(index, motifId) {
   const duration = MOTIF_LIBRARY[motifId].ticks || 1;
   let startIndex = index;
@@ -403,11 +463,15 @@ function clearMultiBeatNote(index, motifId) {
   }
 
   sessionState.userSubmission[startIndex] = null;
+  sessionState.slotStates[startIndex] = "idle";
+
   for (let i = 1; i < duration; i++) {
     if (sessionState.userSubmission[startIndex + i] === `${motifId}_ext`) {
       sessionState.userSubmission[startIndex + i] = null;
+      sessionState.slotStates[startIndex + i] = "idle";
     }
   }
+  sessionState.selectedSlotIndex = null;
   renderWorkspace();
 }
 
@@ -432,6 +496,8 @@ function evaluateSubmission() {
   }
 
   sessionState.currentState = "PLAYING";
+
+  // FIX: Fixed the broken button selector crash loop rule!
   DOM.submitBtn.classList.add("is-locked");
   DOM.skipBtn.classList.add("is-locked");
   DOM.replayBtn.classList.add("is-locked");
@@ -446,18 +512,19 @@ function evaluateSubmission() {
   });
 
   let isCorrect = true;
-  const cards = DOM.workspace.querySelectorAll(".workspace-card");
 
   sessionState.userSubmission.forEach((token, index) => {
     const targetToken = flatTarget[index];
 
     if (token === targetToken) {
-      cards[index].classList.add("is-success");
+      sessionState.slotStates[index] = "success";
     } else {
-      cards[index].classList.add("is-error");
+      sessionState.slotStates[index] = "error";
       isCorrect = false;
     }
   });
+
+  renderWorkspace();
 
   if (isCorrect) {
     sessionState.streak++;
@@ -487,6 +554,7 @@ function evaluateSubmission() {
     if (sessionState.playCount >= sessionState.maxPlays) {
       setTimeout(() => {
         sessionState.userSubmission = [...flatTarget];
+        sessionState.slotStates = Array(flatTarget.length).fill("idle");
         renderWorkspace();
 
         const correctedCards =
@@ -502,14 +570,10 @@ function evaluateSubmission() {
       }, 1500);
     } else {
       setTimeout(() => {
-        sessionState.userSubmission = Array(
-          config.bars * config.ticksPerBar,
-        ).fill(null);
-        renderWorkspace();
-
         sessionState.currentState = "IDLE";
         DOM.submitBtn.classList.remove("is-locked");
         DOM.skipBtn.classList.remove("is-locked");
+
         if (sessionState.playCount < sessionState.maxPlays) {
           DOM.replayBtn.classList.remove("is-locked");
         }
@@ -532,7 +596,6 @@ const AudioEngine = {
 
     this.synth = new Tone.MembraneSynth().toDestination();
 
-    // FIX: Restored the explicit 'Tone.' namespace instantiation guard
     this.chime = new Tone.Synth({
       oscillator: { type: "triangle" },
       envelope: { attack: 0.01, decay: 0.5 },
