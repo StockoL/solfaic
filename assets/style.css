@@ -168,6 +168,32 @@ main,
     padding-top: var(--space-md);
   }
 
+  /* --- NEW PREMIUM DESKTOP BALANCING PATCHES --- */
+
+  /* 1. Stop the play and submit buttons from stretching into giant banners */
+  #btn-replay,
+  #btn-submit {
+    max-width: 480px; /* Restricts the button width to a professional, clean footprint */
+    margin-left: auto; /* Centers the button in the application pane */
+    margin-right: auto; /* Centers the button in the application pane */
+  }
+
+  /* 2. Format the motif selection pad blocks into a beautiful, centered tray grid */
+  #ui-motif-selector {
+    display: grid !important;
+    /* Fixes exactly 3 columns side-by-side with an elegant capped card size limit */
+    grid-template-columns: repeat(3, minmax(140px, 180px)) !important;
+    justify-content: center; /* Centers the selector cluster underneath the stave display */
+    gap: var(--space-md);
+  }
+
+  /* 3. Space out the musical bars/measures so they look like professional sheet music systems */
+  #ui-workspace {
+    justify-content: center;
+    gap: 3rem; /* Widens the gap between bar 1 and bar 2 for clean metric reading */
+    padding: var(--space-lg) 0;
+  }
+
   /* Hide mobile-only buttons on high-res monitors */
   .hamburger-btn,
   .sidebar-close-btn,
@@ -753,8 +779,12 @@ main,
 }
 
 /* ==========================================================================
-   10. MOBILE VIEW REFINEMENTS (Responsive Breakpoints)
+   10. RESPONSIVE MEDIA QUERIES (Mobile & Desktop Environments)
    ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   A. MOBILE VIEW REFINEMENTS (Screens up to 480px wide)
+   -------------------------------------------------------------------------- */
 @media (max-width: 480px) {
   .global-header {
     padding-bottom: var(--space-sm);
@@ -797,5 +827,65 @@ main,
   .motif-pad .svg-container {
     height: 28px;
     width: 100%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   B. PREMIUM DESKTOP BALANCING (Screens 1024px wide and above)
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+  .app-grid-shell {
+    display: grid;
+    /* Lock the sidebar to a clean 320px, give the application canvas 100% of remaining fluid width */
+    grid-template-columns: 320px 1fr;
+    gap: var(--space-xl);
+    padding-right: var(--space-xl);
+  }
+
+  .application-canvas.l-center {
+    max-width: 100% !important; /* FIX: Shatters the old 65ch constraint so the app fills the screen */
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .application-canvas {
+    padding-top: var(--space-md);
+  }
+
+  /* Corrects action button centering behaviors */
+  #btn-replay,
+  #btn-submit {
+    display: block; /* FIX: Converts inline-block to block level so margin: auto works */
+    width: 100%;
+    max-width: 480px; /* Restricts the button width to a professional, clean footprint */
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Format the motif selection pad blocks into a beautiful, centered 3-column deck */
+  #ui-motif-selector {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(140px, 180px)) !important;
+    justify-content: center;
+    gap: var(--space-md);
+  }
+
+  /* Space out the musical bars/measures so they look like professional sheet music systems */
+  #ui-workspace {
+    justify-content: center;
+    gap: 3rem;
+    padding: var(--space-lg) 0;
+  }
+
+  /* Fixes desktop status bar alignment squeezing by maintaining the 1fr layout track */
+  .status-bar .ghost-btn {
+    display: block !important;
+    visibility: hidden !important; /* FIX: Makes it completely invisible while preserving its spacing slot! */
+  }
+
+  /* Hide remaining mobile-only UI triggers on high-res monitors */
+  .hamburger-btn,
+  .sidebar-close-btn {
+    display: none !important;
   }
 }
