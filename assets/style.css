@@ -912,3 +912,133 @@ main,
 .text-muted {
   color: var(--color-text-muted);
 }
+
+/* ==========================================================================
+   12. INTERACTIVE ONBOARDING TOUR WIZARD STYLES
+   ========================================================================== */
+
+/* The Master Dimming Mask Curtain */
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 5000; /* Floats high above everything, including your celebration modals */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.tour-overlay.is-hidden,
+.tour-prompt-card.is-hidden,
+.tour-tooltip.is-hidden {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Initial Option Selection Prompt Box */
+.tour-prompt-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: var(--space-xl);
+  border-radius: 16px;
+  max-width: 440px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  transform: scale(1);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tour-prompt-card h2 {
+  margin-top: 0;
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+.tour-prompt-card p {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: var(--space-lg);
+}
+
+.tour-prompt-actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+}
+
+/* Dynamic Context-Aware Floating Information Box */
+.tour-tooltip {
+  position: absolute;
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-primary);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: 12px;
+  width: 320px;
+  max-width: 90vw;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+  z-index: 5200;
+  /* Smooth positional transition physics as box walks component-by-component */
+  transition:
+    top 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+    left 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.tour-text-content {
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: var(--space-md);
+}
+
+.tour-tooltip-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Onboarding Buttons Engine Token Overrides */
+.tour-btn-primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.9rem;
+}
+
+.tour-btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.tour-btn-secondary {
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.9rem;
+}
+
+.tour-btn-secondary:hover {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/**
+ * THE SPOTLIGHT MECHANISM
+ * This style block rips an element out of the background flow, forcing it 
+ * forward into the physical foreground plane above our curtain overlay mask.
+ */
+.tour-highlight-active {
+  position: relative !important;
+  z-index: 5100 !important;
+  pointer-events: none !important; /* Locks structural interaction down during walk routines */
+  box-shadow:
+    0 0 0 8px rgba(255, 255, 255, 0.2),
+    0 0 0 12px var(--color-primary),
+    0 20px 25px -5px rgba(0, 0, 0, 0.4) !important;
+}

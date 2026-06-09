@@ -192,6 +192,45 @@ const sessionState = {
 };
 
 // ==========================================
+// 2b. GUIDED TOUR ARCHITECTURE CONFIGURATION
+// ==========================================
+let tourCurrentStepIndex = 0;
+let activeTourSteps = [];
+
+/**
+ * Dynamic Tour Mapping Dictionary Builder
+ * Detects device screen constraints instantly to swap target spotlights.
+ */
+function compileTourSequence() {
+  const isMobileViewport = window.innerWidth < 1024;
+
+  return [
+    {
+      elementId: isMobileViewport ? "btn-toggle-sidebar" : "ui-sidebar",
+      text: isMobileViewport
+        ? "Welcome! Tap this hamburger menu button at any time to open up your Kodály reference table."
+        : "Welcome to Solfaic! This is your permanent curriculum matrix guide. Reference your syllables and notation rules here.",
+    },
+    {
+      elementId: "btn-replay",
+      text: "Step 1: Hit this primary action button to listen to your target sound wave. Listen carefully—you have 3 plays maximum!",
+    },
+    {
+      elementId: "ui-workspace",
+      text: "Step 2: This is your dictation staff. Your rhythm cards will assemble across these active, segmented measure beat boxes.",
+    },
+    {
+      elementId: "ui-motif-selector",
+      text: "Step 3: Choose your musical building block components here. Tap or drag them up onto the staves to arrange your dictation answer.",
+    },
+    {
+      elementId: "btn-submit",
+      text: "Step 4: Once every empty measure placeholder slot is completely populated, smash this button to evaluate your rhythmic precision. Good luck!",
+    },
+  ];
+}
+
+// ==========================================
 // 3. UI DOM CACHE (View Connections)
 // ==========================================
 
@@ -747,6 +786,140 @@ function triggerCelebrationModal(targetLevelId) {
 }
 
 // ==========================================
+// 7b. ONBOARDING TOUR PROCEDURAL CONTROLLERS
+// ==========================================
+function startGuidedTour() {
+  document.getElementById("ui-tour-prompt").classList.add("is-hidden");
+
+  const tooltipContainer = document.getElementById("ui-tour-tooltip");
+  tooltipContainer.classList.remove("is-hidden");
+
+  activeTourSteps = compileTourSequence();
+  tourCurrentStepIndex = 0;
+
+  executeTourStepPass();
+}
+
+function executeTourStepPass() {
+  // 1. Clear any lingering highlight anchors left by previous cycles
+  document.querySelectorAll(".tour-highlight-active").forEach((el) => {
+    el.classList.remove("tour-highlight-active");
+  });
+
+  const tourOverlayElement = document.getElementById("ui-tour");
+
+  // Final State Departure: Check if tracking index has run past the step limits
+  if (tourCurrentStepIndex >= activeTourSteps.length) {
+    document.getElementById("ui-tour-tooltip").classList.add("is-hidden");
+    tourOverlayElement.classList.add("is-hidden");
+
+    // Save state flag to local client memory so the tour stays hidden on returning loads
+    localStorage.setItem("solfaic_onboarded_matrix", "true");
+
+    // Fire the soft custom overlay completion modal instead of a generic browser alert
+    triggerTourCompletionModal();
+    return;
+  }
+
+  const currentStep = activeTourSteps[tourCurrentStepIndex];
+  const targetElement = document.getElementById(currentStep.elementId);
+  const tooltipBox = document.getElementById("ui-tour-tooltip");
+  const textBox = document.getElementById("ui-tour-text");
+
+  // Hydrate string details
+  textBox.innerHTML = currentStep.text;
+
+  if (targetElement) {
+    // 2. Push target forward into the foreground plane
+    targetElement.classList.add("tour-highlight-active");
+
+    const targetRect = targetElement.getBoundingClientRect();
+    const tooltipWidth = 320; // Matches explicit width set in style.css variables
+
+    let computedLeft = 0;
+    let computedTop = 0;
+
+    // FIX: Special conditional override branch for the persistent desktop sidebar element
+    if (currentStep.elementId === "ui-sidebar") {
+      // Anchor the card right next to the sidebar's right edge, floating 120px down the page
+      computedLeft = targetRect.right + 24;
+      computedTop = targetRect.top + window.scrollY + 120;
+    } else {
+      // Standard layout: Position the tooltip below or above the targeted element
+      computedLeft = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
+      computedLeft = Math.max(
+        10,
+        Math.min(computedLeft, window.innerWidth - tooltipWidth - 10),
+      );
+
+      computedTop = targetRect.bottom + window.scrollY + 16;
+
+      // Fallback: If it overflows the bottom viewport edge, float it ABOVE the element instead
+      if (targetRect.bottom + 200 > window.innerHeight) {
+        computedTop = targetRect.top + window.scrollY - 16 - 130;
+      }
+    }
+
+    // 4. Update structural coordinate properties instantly
+    tooltipBox.style.top = `${computedTop}px`;
+    tooltipBox.style.left = `${computedLeft}px`;
+
+    // Force overlay tracking context configuration
+    tourOverlayElement.style.alignItems = "flex-start";
+    tourOverlayElement.style.justifyContent = "flex-start";
+  } else {
+    // Structural Fallback: If element is invisible or missing, snap card to the center of the screen curtain
+    tourOverlayElement.style.alignItems = "center";
+    tourOverlayElement.style.justifyContent = "center";
+    tooltipBox.style.position = "static";
+  }
+}
+
+function terminateTourImmediately() {
+  document.getElementById("ui-tour").classList.add("is-hidden");
+  localStorage.setItem("solfaic_onboarded_matrix", "true");
+}
+
+/**
+ * Onboarding Tour Completion Modal Injector
+ * Reuses premium layout overlays and scaling physics frames without triggering confetti loops.
+ */
+function triggerTourCompletionModal() {
+  const overlay = document.createElement("div");
+  overlay.className = "celebration-overlay";
+
+  const modal = document.createElement("div");
+  modal.className = "celebration-modal";
+
+  // Formats custom title layout grids and copy blocks
+  modal.innerHTML = `
+    <div class="celebration-title">You're Ready!</div>
+    <div class="celebration-subtext">Your interactive dictation workspace is fully unlocked and ready for practice.<br><br>Good luck, Maestro! 🎻</div>
+  `;
+
+  const btn = document.createElement("button");
+  btn.className = "celebration-btn";
+  btn.innerText = "Let's Begin! 🚀";
+
+  // Dismiss overlay smoothly on button clicks
+  btn.addEventListener("click", () => {
+    overlay.classList.remove("is-active");
+    setTimeout(() => {
+      overlay.remove();
+    }, 300);
+  });
+
+  modal.appendChild(btn);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  // FORCE REFLOW: Breaks browser render batches to guarantee scale transitions fire smoothly
+  void overlay.offsetHeight;
+
+  overlay.classList.add("is-active");
+}
+
+// ==========================================
 // 8. AUDIO ENGINE (Tone.js Integration)
 // ==========================================
 
@@ -958,28 +1131,46 @@ function fireMasteryConfetti() {
 // BOOT UP THE APP
 // ==========================================
 window.addEventListener("DOMContentLoaded", () => {
-  // Core application submit/control hooks
   DOM.submitBtn.addEventListener("click", evaluateSubmission);
   DOM.skipBtn.addEventListener("click", () =>
     startLevel(sessionState.currentLevel),
   );
   DOM.replayBtn.addEventListener("click", () => AudioEngine.playSequence());
 
-  // NEW: Curriculum Sidebar Drawer Toggle Interface Hooks
   const sidebarElement = document.getElementById("ui-sidebar");
   const toggleBtn = document.getElementById("btn-toggle-sidebar");
   const closeBtn = document.getElementById("btn-close-sidebar");
 
   if (toggleBtn && sidebarElement) {
-    toggleBtn.addEventListener("click", () => {
-      sidebarElement.classList.add("is-open");
+    toggleBtn.addEventListener("click", () =>
+      sidebarElement.classList.add("is-open"),
+    );
+  }
+  if (closeBtn && sidebarElement) {
+    closeBtn.addEventListener("click", () =>
+      sidebarElement.classList.remove("is-open"),
+    );
+  }
+
+  // --- NEW: ONBOARDING TOUR WIZARD ROUTINE LISTENERS ---
+  const tourOverlay = document.getElementById("ui-tour");
+  const tourBtnYes = document.getElementById("btn-tour-yes");
+  const tourBtnNo = document.getElementById("btn-tour-no");
+  const tourBtnNext = document.getElementById("btn-tour-next");
+
+  if (tourBtnYes) tourBtnYes.addEventListener("click", startGuidedTour);
+  if (tourBtnNo) tourBtnNo.addEventListener("click", terminateTourImmediately);
+  if (tourBtnNext) {
+    tourBtnNext.addEventListener("click", () => {
+      tourCurrentStepIndex++;
+      executeTourStepPass();
     });
   }
 
-  if (closeBtn && sidebarElement) {
-    closeBtn.addEventListener("click", () => {
-      sidebarElement.classList.remove("is-open");
-    });
+  // Verification Check: Wake overlay matrix up if storage key string is missing
+  const isAlreadyOnboarded = localStorage.getItem("solfaic_onboarded_matrix");
+  if (!isAlreadyOnboarded && tourOverlay) {
+    tourOverlay.classList.remove("is-hidden");
   }
 
   // Launch Level 1 entry point on boot
