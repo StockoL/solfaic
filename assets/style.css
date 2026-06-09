@@ -91,7 +91,7 @@ button:active {
 }
 
 /* ==========================================================================
-   3. LAYOUT PRIMITIVES (Structural Architecture - Every Layout Model)
+   3. LAYOUT PRIMITIVES (Structural Architecture)
    ========================================================================== */
 
 /* Layout Protection Pass: Ensures scaling components can breathe without edge clipping */
@@ -148,60 +148,6 @@ main,
   min-height: 100vh;
 }
 
-/* --- Persistent Desktop Mode Sidebar Settings --- */
-@media (min-width: 1024px) {
-  .app-grid-shell {
-    display: grid;
-    /* Lock the sidebar to a clean 320px, give the application canvas 100% of remaining fluid width */
-    grid-template-columns: 320px 1fr;
-    gap: var(--space-xl);
-    padding-right: var(--space-xl);
-  }
-
-  .application-canvas.l-center {
-    max-width: 100%; /* Shatters the old 65ch constraint so the app fills the screen */
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .application-canvas {
-    padding-top: var(--space-md);
-  }
-
-  /* --- NEW PREMIUM DESKTOP BALANCING PATCHES --- */
-
-  /* 1. Stop the play and submit buttons from stretching into giant banners */
-  #btn-replay,
-  #btn-submit {
-    max-width: 480px; /* Restricts the button width to a professional, clean footprint */
-    margin-left: auto; /* Centers the button in the application pane */
-    margin-right: auto; /* Centers the button in the application pane */
-  }
-
-  /* 2. Format the motif selection pad blocks into a beautiful, centered tray grid */
-  #ui-motif-selector {
-    display: grid !important;
-    /* Fixes exactly 3 columns side-by-side with an elegant capped card size limit */
-    grid-template-columns: repeat(3, minmax(140px, 180px)) !important;
-    justify-content: center; /* Centers the selector cluster underneath the stave display */
-    gap: var(--space-md);
-  }
-
-  /* 3. Space out the musical bars/measures so they look like professional sheet music systems */
-  #ui-workspace {
-    justify-content: center;
-    gap: 3rem; /* Widens the gap between bar 1 and bar 2 for clean metric reading */
-    padding: var(--space-lg) 0;
-  }
-
-  /* Hide mobile-only buttons on high-res monitors */
-  .hamburger-btn,
-  .sidebar-close-btn,
-  .status-bar .ghost-btn {
-    display: none !important;
-  }
-}
-
 /* --- Core Curriculum Sidebar Panel Component --- */
 .curriculum-sidebar {
   background-color: var(--color-surface);
@@ -256,37 +202,6 @@ main,
   padding: var(--space-sm) 0;
   border-bottom: 1px dashed var(--color-border);
   font-size: 0.9rem;
-}
-
-/* --- Collapsed Mobile Off-Canvas Drawer Mechanics --- */
-@media (max-width: 1023px) {
-  .curriculum-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 280px;
-    z-index: 3000; /* Floats safely high above workspace interactive components */
-    box-shadow: 25px 0 50px -12px rgba(0, 0, 0, 0.15);
-
-    /* Pulls panel completely off-screen to the left by default */
-    transform: translateX(-100%);
-
-    /* Spring slide-out physics translation curve */
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  /* Open state drawer modifier */
-  .curriculum-sidebar.is-open {
-    transform: translateX(0);
-  }
-
-  .sidebar-close-btn {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: var(--color-text-muted);
-    padding: var(--space-sm);
-  }
 }
 
 /* ==========================================================================
@@ -556,7 +471,7 @@ main,
   background-color: #e8f0fe;
 }
 
-/* Validation Pass Success Mappings */
+/* Validation Pass Success Mappings (Hard-locked overrides ensure stability against script thread injections) */
 .workspace-card.is-success,
 .motif-pad.is-success {
   border-color: var(--color-success) !important;
@@ -642,7 +557,7 @@ main,
   100% {
     background-color: transparent;
     transform: scale(1);
-    box-shadow: inset 0 0 0px rgba(59, 130, 246, 0);
+    box-shadow: inset 0 0px 0px rgba(59, 130, 246, 0);
   }
 }
 
@@ -741,7 +656,6 @@ main,
 
 /* --- Tactile Frustration Microgestures --- */
 .is-shaking {
-  /* Dynamic animation keyframe assignment targeting structural stave bar nodes */
   animation: horizontalShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
@@ -753,8 +667,6 @@ main,
 }
 
 @keyframes horizontalShake {
-  /* HARD-LOCKED ANCHORS: Explicit 0% and 100% states preserve browser-rendering layouts.
-     Standardized translateX properties avoid rendering conflicts inside nested containers. */
   0%,
   100% {
     transform: translateX(0);
@@ -779,12 +691,56 @@ main,
 }
 
 /* ==========================================================================
-   10. RESPONSIVE MEDIA QUERIES (Mobile & Desktop Environments)
+   10. RESPONSIVE MEDIA QUERIES (Mobile & Desktop Clean Pipeline)
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   A. MOBILE VIEW REFINEMENTS (Screens up to 480px wide)
+   A. COMPREHENSIVE TOUCH MECHANICS (Viewports up to 1023px)
    -------------------------------------------------------------------------- */
+@media (max-width: 1023px) {
+  .curriculum-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 85vw; /* Fluid wide canvas runway avoids row text clipping on phone glass */
+    max-width: 420px; /* Tablet layout anchor block */
+    z-index: 3000;
+    box-shadow: 25px 0 50px -12px rgba(0, 0, 0, 0.15);
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .curriculum-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+    padding: var(--space-sm);
+  }
+
+  /* Mobile Grid Matrix Optimization Pass */
+  .curriculum-table td {
+    padding: var(--space-sm) 6px;
+    font-size: 0.78rem; /* Streamlines character metrics to maintain single line columns */
+  }
+
+  .table-svg-preview {
+    width: 38px;
+    height: 36px;
+    padding: 2px;
+  }
+
+  .syllable-token {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+  }
+}
+
+/* Tight Phone System Formats (Up to 480px) */
 @media (max-width: 480px) {
   .global-header {
     padding-bottom: var(--space-sm);
@@ -805,8 +761,7 @@ main,
   }
 
   #ui-motif-selector {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: var(--space-sm);
     padding: var(--space-sm) 0;
   }
@@ -814,14 +769,14 @@ main,
   .motif-pad {
     -webkit-appearance: none;
     appearance: none;
-    min-width: 0; /* FIX: Blocks content expansion from throwing columns out of view */
-    flex-direction: column; /* Rearranges design blocks vertically on small screens */
+    min-width: 0;
+    flex-direction: column;
     min-height: 68px;
     font-size: 0.75rem;
     padding: var(--space-sm);
     gap: 4px;
-    background-color: var(--color-surface) !important;
-    color: var(--color-text) !important;
+    background-color: var(--color-surface);
+    color: var(--color-text);
   }
 
   .motif-pad .svg-container {
@@ -836,33 +791,30 @@ main,
 @media (min-width: 1024px) {
   .app-grid-shell {
     display: grid;
-    /* Lock the sidebar to a clean 320px, give the application canvas 100% of remaining fluid width */
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 400px 1fr; /* Symmetrical split tracks */
     gap: var(--space-xl);
     padding-right: var(--space-xl);
   }
 
   .application-canvas.l-center {
-    max-width: 100% !important; /* FIX: Shatters the old 65ch constraint so the app fills the screen */
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    max-width: 100% !important; /* Overrides top specificity levels cleanly through double class selection */
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .application-canvas {
     padding-top: var(--space-md);
   }
 
-  /* Corrects action button centering behaviors */
   #btn-replay,
   #btn-submit {
-    display: block; /* FIX: Converts inline-block to block level so margin: auto works */
+    display: block; /* Activates margin alignment behaviors */
     width: 100%;
-    max-width: 480px; /* Restricts the button width to a professional, clean footprint */
+    max-width: 480px;
     margin-left: auto;
     margin-right: auto;
   }
 
-  /* Format the motif selection pad blocks into a beautiful, centered 3-column deck */
   #ui-motif-selector {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(140px, 180px)) !important;
@@ -870,22 +822,93 @@ main,
     gap: var(--space-md);
   }
 
-  /* Space out the musical bars/measures so they look like professional sheet music systems */
   #ui-workspace {
     justify-content: center;
     gap: 3rem;
     padding: var(--space-lg) 0;
   }
 
-  /* Fixes desktop status bar alignment squeezing by maintaining the 1fr layout track */
+  /* Preserves status grid width alignments by retaining the spacing frame */
   .status-bar .ghost-btn {
     display: block !important;
-    visibility: hidden !important; /* FIX: Makes it completely invisible while preserving its spacing slot! */
+    visibility: hidden !important;
   }
 
-  /* Hide remaining mobile-only UI triggers on high-res monitors */
   .hamburger-btn,
   .sidebar-close-btn {
     display: none !important;
   }
+}
+
+/* ==========================================================================
+   11. DATA LAYOUT COMPONENT CUSTOM STYLES (Curriculum Grid)
+   ========================================================================== */
+.curriculum-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.curriculum-table th {
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  padding: 0 var(--space-sm) var(--space-sm) var(--space-sm);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.curriculum-table td {
+  padding: var(--space-sm);
+  vertical-align: middle;
+  background-color: var(--color-bg);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.curriculum-table td:first-child {
+  border-left: 1px solid var(--color-border);
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.curriculum-table td:last-child {
+  border-right: 1px solid var(--color-border);
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.syllable-token {
+  font-family: monospace;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.table-svg-preview {
+  height: 40px;
+  width: 44px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-svg-preview svg {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+}
+
+.text-muted {
+  color: var(--color-text-muted);
 }
