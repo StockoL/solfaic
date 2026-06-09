@@ -415,3 +415,42 @@ To clean up technical debt, the global stylesheet was audited to eliminate redun
 
 - **The Specificity Layer:** Retained critical `!important` boundaries exclusively on programmatic engine rules (like `.is-success`, `.is-error`, and `.is-placeholder.is-targeted`). This guarantees that runtime inline injections from `app.js` can never be overridden or ignored by layout batching filters.
 - **Layout Track Protection:** Maintained padding locks on core primitive components (`#ui-workspace`, `#ui-motif-selector`) to ensure dynamic scaling transformations never trigger unexpected vertical shifts or alignment breaks.
+
+---
+
+## Interactive Guided Onboarding Tour Wizard
+
+To reduce the cognitive barrier to entry for new users studying solfège dictation, an isolated, zero-dependency Guided Tour Engine was engineered. This system wraps the workspace canvas inside an ambient dimming mask, systematically spotlighting key components alongside context-aware informational tooltips.
+
+[User Session Load] -> Checks localStorage
+|
++--> Flag Found ----> Launch App Standard IDLE Mode
+|
++--> Flag Missing --> Trigger Interactive Tour Overlay Mask
+
+### 1. Adaptive Viewport Step Mapping
+
+The onboarding engine initialises an evaluation array that automatically recalculates step targets based on the user's active device architecture:
+
+- **Desktop Viewports ($\ge 1024\text{px}$):** Focus pass step one highlights the persistent, widescreen **Kodály Reference Matrix Table** panel anchored on the left flank of the grid shell.
+- **Mobile Viewports ($< 1023\text{px}$):** Focus pass step one shifts dynamically to target the **Hamburger Menu Trigger Button (`☰`)**, alerting mobile touch users where their curriculum guide lives.
+
+### 2. Bounding Box Layout Mathematics (`getBoundingClientRect()`)
+
+To guarantee that the informational tooltip box aligns accurately next to the highlighted element across varying monitor resolutions, the engine queries the layout thread in real time:
+
+- **The Maths:** The script extracts element coordinate parameters via `getBoundingClientRect()`, calculating absolute positioning vectors relative to scroll progress (`window.scrollY`).
+- **The Sidebar Override:** A specialised positional branch intercepts the persistent desktop sidebar step. Because it spans the full viewport height (`100vh`), standard vertical placement would result in a negative offset pushing the card into the browser's native address bar. The override anchors the tooltip precisely **24px to the right** of the sidebar rail instead.
+- **Overflow Protection Fallback:** For standard items, if a target element sits too close to the bottom viewport edge, the engine automatically flips the tooltip vertically, floating it safely **above** the element.
+
+### 3. Non-Destructive Foreground Spotlight Masking
+
+- **The Layering Strategy:** The master dimming curtain (`.tour-overlay`) introduces a dark masking backdrop (`rgba(15, 23, 42, 0.75)`) utilising CSS backdrop blurs to isolate the interface.
+- **The Spotlight:** When a component is targeted, the utility class `.tour-highlight-active` bumps its relative state and injects an isolated `z-index: 5100` alongside an aggressive white-and-blue drop-shadow blend. This rips the native element forward through the curtain mask without altering the static DOM tree or breaking its container layout parameters. Primary action button colors (like the deep-blue submit button) are fully preserved.
+
+### 4. Client-Side Persistence & Custom Modal Departure
+
+- **State Preservation:** To ensure returning users are never interrupted, completing or skipping the tour saves a defensive boolean key (`solfaic_onboarded_matrix: true`) inside the client's browser **`localStorage`**.
+- **Premium Confirmation Drawer:** Passing the final stop of the tour bypasses generic browser alert scripts. It triggers a custom, transition-scaled completion modal sheet, utilising our unified design system guidelines (previously engineering celebration modal) to welcome the student into the active dictation workspace.
+
+---
