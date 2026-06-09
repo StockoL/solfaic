@@ -326,7 +326,7 @@ Instead of a sudden visual flash, the victory sequence initiates a highly dense,
 
 ---
 
-## 💡 Acknowledgments & Inspirations
+## Acknowledgments & Inspirations
 
 While this platform's technical structure is built on vanilla web systems and Tone.js, its heart, soul, and interactive delight are deeply inspired by external pioneers:
 
@@ -334,7 +334,7 @@ While this platform's technical structure is built on vanilla web systems and To
 
 ---
 
-## 🪵 The Mobile Chronicles & Cross-Browser Bug Hunt (The Hardened Release)
+## The Mobile Chronicles & Cross-Browser Bug Hunt (The Hardened Release)
 
 While building for desktop web browsers provides a highly predictable sandbox, deploying a highly interactive canvas to modern mobile touchscreens exposed aggressive, device-specific optimisations to solve. This section documents the cross-browser rendering bugs encountered during our mobile deployment phase and the hardware-level engineering architectures deployed to solve them.
 
@@ -370,7 +370,7 @@ While building for desktop web browsers provides a highly predictable sandbox, d
 
 ---
 
-## 📱 Touch-First Sensation Mapping
+## Touch-First Sensation Mapping
 
 To bridge the UX divide between hardware platforms, the interactive physics layers were fully bifurcated:
 
@@ -378,3 +378,40 @@ To bridge the UX divide between hardware platforms, the interactive physics laye
 - **Touchscreens (Glass Screens):** Hover definitions are suppressed entirely to eliminate sticky layout card scaling freezes on mobile browsers. Instead, touch inputs focus exclusively on the high-fidelity **`:active`** state, delivering a crisp, immediate touch-down spring compression feel (`scale(0.96)`) the precise millisecond a finger makes contact.
 
 ---
+
+## The Desktop Dashboard & Curriculum Matrix Sprint
+
+Following the core mobile stabilisation phase, the application's viewport matrix was refactored to optimise widescreen real estate. This sprint introduced a dual-column layout strategy that transforms empty desktop space into a training studio without degrading the touch-first mobile core.
+
+### 1. Asymmetric Fluid Grid Shell (`320px` to `400px` Left Rail)
+
+- **The Architecture:** On displays wider than `1024px`, the layout automatically fractures into an elegant asymmetrical grid system (`grid-template-columns: 400px 1fr`).
+- **The UX Philosophy:** Placing the curriculum reference panel on the left ensures the user's eye scans the educational rules and terminology matrices _before_ executing interactions in the workspace canvas ledger on the right. The old `65ch` paragraph width constraint is completely bypassed on desktop monitors, allowing the sheet-music staves to stretch naturally across the viewport.
+
+### 2. Structured Kodály Reference Matrix Table
+
+The static bulleted rule lists were refactored into a high-density semantic data table tracking three primary musical parameters:
+
+1. **Syllable Token:** High-contrast, custom monospace bubbles highlighting the core Kodály vocalisations (`ta`, `ti-ti`, `ta-a`, etc.).
+2. **Notation Preview:** Embedded micro-vector SVG thumbnail cells providing instant visual feedback that exactly matches the active draggable entry cards.
+3. **Value & British Nomenclature:** Definitive rhythmic values paired with traditional notation classifications (e.g., _1 Beat Crotchet_, _2 Beat Minim_, _Four Semiquavers_).
+
+| Syllable    | Notation | Value & British Term                  |
+| :---------- | :------: | :------------------------------------ |
+| `ta`        | `[SVG]`  | 1 Beat Crotchet (Single Sound)        |
+| `ti-ti`     | `[SVG]`  | 1 Beat Pair of Quavers (Dual Sounds)  |
+| `ta rest`   | `[SVG]`  | 1 Beat Rest (Silent Space)            |
+| `ta-a`      | `[SVG]`  | 2 Beat Minim (Sustained Tone)         |
+| `tika-tika` | `[SVG]`  | 1 Beat Four Semiquavers (Quad Sounds) |
+
+### 3. The 85vw Off-Canvas Mobile Drawer Optimization
+
+- **The Bug:** Introducing the dense 3-column curriculum table caused columns to crunch, clipping text boundaries or causing aggressive text-wrapping on compact smartphone viewports.
+- **The Fix:** Expanded the mobile drawer slide-out width from a rigid `280px` up to a fluid **`85vw`** constraint (capped at `420px` for tablets). Combined with a localised mobile typography pass (`font-size: 0.78rem` on cells and compressed padding tracks), the complex musical tables now render with absolute geometric spacing on any iOS or Android glass surface.
+
+### 4. Cascade Architecture Refactoring & Specificity Defenses
+
+To clean up technical debt, the global stylesheet was audited to eliminate redundant override declarations while keeping strict defensive rules intact:
+
+- **The Specificity Layer:** Retained critical `!important` boundaries exclusively on programmatic engine rules (like `.is-success`, `.is-error`, and `.is-placeholder.is-targeted`). This guarantees that runtime inline injections from `app.js` can never be overridden or ignored by layout batching filters.
+- **Layout Track Protection:** Maintained padding locks on core primitive components (`#ui-workspace`, `#ui-motif-selector`) to ensure dynamic scaling transformations never trigger unexpected vertical shifts or alignment breaks.
