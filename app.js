@@ -199,7 +199,7 @@ let activeTourSteps = [];
 
 /**
  * Dynamic Tour Mapping Dictionary Builder
- * Detects device screen constraints instantly to swap target spotlights.
+ * Configures exact tracking identifiers and intent coordinates for mobile steps.
  */
 function compileTourSequence() {
   const isMobileViewport = window.innerWidth < 1024;
@@ -210,22 +210,27 @@ function compileTourSequence() {
       text: isMobileViewport
         ? "Welcome! Tap this hamburger menu button at any time to open up your Kodály reference table."
         : "Welcome to Solfaic! This is your permanent curriculum matrix guide. Reference your syllables and notation rules here.",
+      mobilePosition: "bottom",
     },
     {
       elementId: "btn-replay",
       text: "Step 1: Hit this primary action button to listen to your target sound wave. Listen carefully—you have 3 plays maximum!",
+      mobilePosition: "bottom",
     },
     {
       elementId: "ui-workspace",
       text: "Step 2: This is your dictation staff. Your rhythm cards will assemble across these active, segmented measure beat boxes.",
+      mobilePosition: "bottom",
     },
     {
       elementId: "ui-motif-selector",
       text: "Step 3: Choose your musical building block components here. Tap or drag them up onto the staves to arrange your dictation answer.",
+      mobilePosition: "top",
     },
     {
       elementId: "btn-submit",
       text: "Step 4: Once every empty measure placeholder slot is completely populated, smash this button to evaluate your rhythmic precision. Good luck!",
+      mobilePosition: "top",
     },
   ];
 }
@@ -797,93 +802,109 @@ function startGuidedTour() {
   activeTourSteps = compileTourSequence();
   tourCurrentStepIndex = 0;
 
+  window.addEventListener("click", handleGlobalTourProgression);
+  window.addEventListener("keydown", handleGlobalTourKeydown);
+
   executeTourStepPass();
 }
 
 function executeTourStepPass() {
-  // 1. Clear any lingering highlight anchors left by previous cycles
   document.querySelectorAll(".tour-highlight-active").forEach((el) => {
     el.classList.remove("tour-highlight-active");
   });
 
   const tourOverlayElement = document.getElementById("ui-tour");
+  const tooltipBox = document.getElementById("ui-tour-tooltip");
+  const textBox = document.getElementById("ui-tour-text");
 
-  // Final State Departure: Check if tracking index has run past the step limits
   if (tourCurrentStepIndex >= activeTourSteps.length) {
-    document.getElementById("ui-tour-tooltip").classList.add("is-hidden");
+    tooltipBox.classList.add("is-hidden");
     tourOverlayElement.classList.add("is-hidden");
 
-    // Save state flag to local client memory so the tour stays hidden on returning loads
-    localStorage.setItem("solfaic_onboarded_matrix", "true");
+    window.removeEventListener("click", handleGlobalTourProgression);
+    window.removeEventListener("keydown", handleGlobalTourKeydown);
 
-    // Fire the soft custom overlay completion modal instead of a generic browser alert
+    localStorage.setItem("solfaic_onboarded_matrix", "true");
     triggerTourCompletionModal();
     return;
   }
 
+  // Drop opacity to 0 instantly to hide position-swapping jumps from view
+  tooltipBox.removeAttribute("style");
+  tooltipBox.style.opacity = "0";
+
   const currentStep = activeTourSteps[tourCurrentStepIndex];
   const targetElement = document.getElementById(currentStep.elementId);
-  const tooltipBox = document.getElementById("ui-tour-tooltip");
-  const textBox = document.getElementById("ui-tour-text");
 
-  // Hydrate string details
   textBox.innerHTML = currentStep.text;
 
   if (targetElement) {
-    // 2. Push target forward into the foreground plane
-    targetElement.classList.add("tour-highlight-active");
+    targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
 
-    const targetRect = targetElement.getBoundingClientRect();
-    const tooltipWidth = 320; // Matches explicit width set in style.css variables
+    setTimeout(() => {
+      targetElement.classList.add("tour-highlight-active");
 
-    let computedLeft = 0;
-    let computedTop = 0;
+      const targetRect = targetElement.getBoundingClientRect();
+      const tooltipWidth = 320;
 
-    // FIX: Special conditional override branch for the persistent desktop sidebar element
-    if (currentStep.elementId === "ui-sidebar") {
-      // Anchor the card right next to the sidebar's right edge, floating 120px down the page
-      computedLeft = targetRect.right + 24;
-      computedTop = targetRect.top + window.scrollY + 120;
-    } else {
-      // Standard layout: Position the tooltip below or above the targeted element
-      computedLeft = targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
-      computedLeft = Math.max(
-        10,
-        Math.min(computedLeft, window.innerWidth - tooltipWidth - 10),
-      );
+      tooltipBox.classList.remove("is-mobile-top", "is-mobile-bottom");
 
-      computedTop = targetRect.bottom + window.scrollY + 16;
+      tooltipBox.style.display = "block";
+      const tooltipHeight = tooltipBox.offsetHeight;
 
-      // Fallback: If it overflows the bottom viewport edge, float it ABOVE the element instead
-      if (targetRect.bottom + 200 > window.innerHeight) {
-        computedTop = targetRect.top + window.scrollY - 16 - 130;
+      const isMobile = window.innerWidth < 1024;
+
+      if (isMobile) {
+        if (currentStep.mobilePosition === "top") {
+          tooltipBox.classList.add("is-mobile-top");
+        } else {
+          tooltipBox.classList.add("is-mobile-bottom");
+        }
+      } else {
+        let computedLeft = 0;
+        let computedTop = 0;
+
+        if (currentStep.elementId === "ui-sidebar") {
+          computedLeft = targetRect.right + 24;
+          computedTop = targetRect.top + window.scrollY + 120;
+        } else {
+          computedLeft =
+            targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
+          computedLeft = Math.max(
+            10,
+            Math.min(computedLeft, window.innerWidth - tooltipWidth - 10),
+          );
+          computedTop = targetRect.bottom + window.scrollY + 16;
+
+          if (targetRect.bottom + tooltipHeight + 40 > window.innerHeight) {
+            computedTop = targetRect.top + window.scrollY - tooltipHeight - 16;
+          }
+        }
+
+        tooltipBox.style.left = `${computedLeft}px`;
+        tooltipBox.style.top = `${computedTop}px`;
       }
-    }
 
-    // 4. Update structural coordinate properties instantly
-    tooltipBox.style.top = `${computedTop}px`;
-    tooltipBox.style.left = `${computedLeft}px`;
+      tourOverlayElement.style.alignItems = "flex-start";
+      tourOverlayElement.style.justifyContent = "flex-start";
 
-    // Force overlay tracking context configuration
-    tourOverlayElement.style.alignItems = "flex-start";
-    tourOverlayElement.style.justifyContent = "flex-start";
+      // Hardware-accelerated fade-in once alignment coordinates match perfectly
+      tooltipBox.style.opacity = "1";
+    }, 320);
   } else {
-    // Structural Fallback: If element is invisible or missing, snap card to the center of the screen curtain
     tourOverlayElement.style.alignItems = "center";
     tourOverlayElement.style.justifyContent = "center";
     tooltipBox.style.position = "static";
+    tooltipBox.style.opacity = "1";
   }
 }
 
 function terminateTourImmediately() {
   document.getElementById("ui-tour").classList.add("is-hidden");
+  document.getElementById("ui-tour-tooltip").classList.add("is-hidden");
   localStorage.setItem("solfaic_onboarded_matrix", "true");
 }
 
-/**
- * Onboarding Tour Completion Modal Injector
- * Reuses premium layout overlays and scaling physics frames without triggering confetti loops.
- */
 function triggerTourCompletionModal() {
   const overlay = document.createElement("div");
   overlay.className = "celebration-overlay";
@@ -891,7 +912,6 @@ function triggerTourCompletionModal() {
   const modal = document.createElement("div");
   modal.className = "celebration-modal";
 
-  // Formats custom title layout grids and copy blocks
   modal.innerHTML = `
     <div class="celebration-title">You're Ready!</div>
     <div class="celebration-subtext">Your interactive dictation workspace is fully unlocked and ready for practice.<br><br>Good luck, Maestro! 🎻</div>
@@ -901,7 +921,6 @@ function triggerTourCompletionModal() {
   btn.className = "celebration-btn";
   btn.innerText = "Let's Begin! 🚀";
 
-  // Dismiss overlay smoothly on button clicks
   btn.addEventListener("click", () => {
     overlay.classList.remove("is-active");
     setTimeout(() => {
@@ -913,10 +932,21 @@ function triggerTourCompletionModal() {
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 
-  // FORCE REFLOW: Breaks browser render batches to guarantee scale transitions fire smoothly
   void overlay.offsetHeight;
-
   overlay.classList.add("is-active");
+}
+
+function handleGlobalTourProgression() {
+  tourCurrentStepIndex++;
+  executeTourStepPass();
+}
+
+function handleGlobalTourKeydown(e) {
+  if (e.code === "Space" || e.code === "Enter") {
+    e.preventDefault();
+    tourCurrentStepIndex++;
+    executeTourStepPass();
+  }
 }
 
 // ==========================================
@@ -1156,14 +1186,18 @@ window.addEventListener("DOMContentLoaded", () => {
   const tourOverlay = document.getElementById("ui-tour");
   const tourBtnYes = document.getElementById("btn-tour-yes");
   const tourBtnNo = document.getElementById("btn-tour-no");
-  const tourBtnNext = document.getElementById("btn-tour-next");
 
-  if (tourBtnYes) tourBtnYes.addEventListener("click", startGuidedTour);
-  if (tourBtnNo) tourBtnNo.addEventListener("click", terminateTourImmediately);
-  if (tourBtnNext) {
-    tourBtnNext.addEventListener("click", () => {
-      tourCurrentStepIndex++;
-      executeTourStepPass();
+  if (tourBtnYes) {
+    tourBtnYes.addEventListener("click", (e) => {
+      e.stopPropagation(); // Prevents choice-click from bubbling up to the window instantly and skipping step 1
+      startGuidedTour();
+    });
+  }
+
+  if (tourBtnNo) {
+    tourBtnNo.addEventListener("click", (e) => {
+      e.stopPropagation();
+      terminateTourImmediately();
     });
   }
 

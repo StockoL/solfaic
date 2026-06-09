@@ -2,45 +2,25 @@
    1. TOKENS & SYSTEM VARIABLES
    ========================================================================== */
 
-/**
- * Universal Structural Layout Box Reset
- * Forces borders and paddings inside explicitly assigned component widths,
- * preventing sizing overflows across screen updates.
- */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/**
- * Application Design Token Variables System Dictionary
- * Centralized token database mapping color spaces, typography metrics, and spatial scales.
- */
 :root {
-  /* System Base Canvas Underlays */
   --color-bg: #f8fafc;
   --color-surface: #ffffff;
-
-  /* Typography Design Stems */
   --font-ui: "Inter", system-ui, sans-serif;
   --font-music: "Noto Music", serif;
-
-  /* Primary Accent Identities */
   --color-primary: #1e3a8a;
   --color-primary-hover: #155dbb;
-
-  /* Interface State Feedback Channels */
   --color-success: #34a853;
   --color-error: #ea4335;
   --color-remedial: #fbbc05;
-
-  /* Structural Inks & Lines */
   --color-text: #202124;
   --color-text-muted: #5f6368;
   --color-border: #dadce0;
-
-  /* Fluid Metric Scale Steps */
   --space-sm: 0.5rem;
   --space-md: 1rem;
   --space-lg: 1.5rem;
@@ -70,7 +50,6 @@ button:active {
   transform: scale(0.98);
 }
 
-/* Vector Graphic Blueprint Core Layout Wrappers */
 .svg-container {
   height: 36px;
   width: auto;
@@ -79,11 +58,6 @@ button:active {
   justify-content: center;
 }
 
-/**
- * iOS WebKit SVG Workaround Constraint
- * Forces internal vector coordinates to obey parent bounds width metrics,
- * preventing aspect ratio explosions inside mobile browsers.
- */
 .svg-container svg {
   height: 100%;
   width: auto;
@@ -93,8 +67,6 @@ button:active {
 /* ==========================================================================
    3. LAYOUT PRIMITIVES (Structural Architecture)
    ========================================================================== */
-
-/* Layout Protection Pass: Ensures scaling components can breathe without edge clipping */
 main,
 .container,
 #ui-workspace,
@@ -104,7 +76,6 @@ main,
   overflow: visible !important;
 }
 
-/* The Center Primitive: Centers content and provides responsive side gutters */
 .l-center {
   width: 100%;
   max-width: 65ch;
@@ -114,7 +85,6 @@ main,
   padding-right: var(--space-md);
 }
 
-/* The Stack Primitive: Manages linear vertical spacing between sibling flows */
 .l-stack {
   display: flex;
   flex-direction: column;
@@ -125,7 +95,6 @@ main,
   margin-top: var(--space-lg);
 }
 
-/* The Switcher Primitive: Runs horizontally on desktop, reflows to vertical columns on mobile */
 .l-switcher {
   display: flex;
   flex-wrap: wrap;
@@ -140,15 +109,12 @@ main,
 /* ==========================================================================
    3b. DASHBOARD PRIMITIVES (Dual-Column Architecture)
    ========================================================================== */
-
-/* Universal Layout Shell Grid */
 .app-grid-shell {
-  display: block; /* Default block layout for mobile viewports */
+  display: block;
   width: 100%;
   min-height: 100vh;
 }
 
-/* --- Core Curriculum Sidebar Panel Component --- */
 .curriculum-sidebar {
   background-color: var(--color-surface);
   border-right: 2px solid var(--color-border);
@@ -177,7 +143,7 @@ main,
 }
 
 .sidebar-scroll-content {
-  overflow-y: auto; /* Makes menu track standalone scroll inputs if data updates grow long */
+  overflow-y: auto;
   flex-grow: 1;
 }
 
@@ -342,12 +308,6 @@ main,
   min-height: 116px;
   height: auto;
   padding: 1rem 0;
-
-  /**
-   * ADVANCED WORKAROUND: Pre-promote container permanently to its own GPU layer.
-   * Isolates rendering logic from parent flows, preventing dynamic class additions
-   * from freezing fast microinteraction frames.
-   */
   will-change: transform;
 }
 
@@ -371,9 +331,7 @@ main,
   align-items: center;
   justify-content: center;
   background: var(--color-surface);
-  color: var(
-    --color-text
-  ); /* Hard-locks default text palette color to override mobile styles */
+  color: var(--color-text);
   border: 2px solid var(--color-border);
   border-radius: 6px;
   height: 100%;
@@ -427,7 +385,6 @@ main,
 .motif-pad:active {
   cursor: grabbing;
 }
-
 .motif-pad .svg-container {
   height: 44px;
 }
@@ -449,7 +406,6 @@ main,
   color: var(--color-text-muted);
 }
 
-/* FIX: Content-visibility and containment properties completely cleared to prevent animation locks */
 .playback-panel,
 .input-display-panel,
 .motif-selector-pane,
@@ -471,7 +427,6 @@ main,
   background-color: #e8f0fe;
 }
 
-/* Validation Pass Success Mappings (Hard-locked overrides ensure stability against script thread injections) */
 .workspace-card.is-success,
 .motif-pad.is-success {
   border-color: var(--color-success) !important;
@@ -482,7 +437,6 @@ main,
   background-color: var(--color-success) !important;
 }
 
-/* Validation Pass Failure Mappings */
 .workspace-card.is-error,
 .motif-pad.is-error {
   border-color: var(--color-error) !important;
@@ -496,7 +450,6 @@ main,
   color: #b06000;
 }
 
-/* Mobile Tapping Interaction Target Highlights */
 .workspace-card.is-placeholder.is-targeted {
   border: 2px solid #3b82f6 !important;
   background-color: #eff6ff !important;
@@ -507,8 +460,6 @@ main,
 /* ==========================================================================
    8. WHIMSICAL INTERACTION ENGINE & SQUISHY PHYSICS (Comeau Core)
    ========================================================================== */
-
-/* Unified structural transition parameters leveraging standard elastic spring physics curves */
 .workspace-card,
 .motif-pad,
 #btn-replay,
@@ -519,11 +470,6 @@ main,
     box-shadow 0.3s ease;
 }
 
-/**
- * Isolated Desktop Hover Feature Query
- * Encloses hover transforms inside pointing-device query wrappers.
- * Completely eliminates permanent sticky-card zoom glitches from mobile screen viewports.
- */
 @media (hover: hover) {
   .workspace-card:hover,
   .motif-pad:hover {
@@ -532,14 +478,12 @@ main,
   }
 }
 
-/* Active touch feedback compression physics across physical tapping screens */
 .workspace-card:active,
 .motif-pad:active {
   transform: translateY(1px) scale(0.96);
   transition: transform 0.05s ease;
 }
 
-/* Audio timeline play pulsation animation triggers */
 .workspace-bar.is-metronome-pulse {
   animation: barHeartbeat 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
@@ -561,7 +505,6 @@ main,
   }
 }
 
-/* Celebration particles layout anchors */
 .confetti-particle {
   position: fixed;
   width: 10px;
@@ -654,7 +597,6 @@ main,
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-/* --- Tactile Frustration Microgestures --- */
 .is-shaking {
   animation: horizontalShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
@@ -687,156 +629,6 @@ main,
   40%,
   60% {
     transform: translateX(10px);
-  }
-}
-
-/* ==========================================================================
-   10. RESPONSIVE MEDIA QUERIES (Mobile & Desktop Clean Pipeline)
-   ========================================================================== */
-
-/* --------------------------------------------------------------------------
-   A. COMPREHENSIVE TOUCH MECHANICS (Viewports up to 1023px)
-   -------------------------------------------------------------------------- */
-@media (max-width: 1023px) {
-  .curriculum-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 85vw; /* Fluid wide canvas runway avoids row text clipping on phone glass */
-    max-width: 420px; /* Tablet layout anchor block */
-    z-index: 3000;
-    box-shadow: 25px 0 50px -12px rgba(0, 0, 0, 0.15);
-    transform: translateX(-100%);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .curriculum-sidebar.is-open {
-    transform: translateX(0);
-  }
-
-  .sidebar-close-btn {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: var(--color-text-muted);
-    padding: var(--space-sm);
-  }
-
-  /* Mobile Grid Matrix Optimization Pass */
-  .curriculum-table td {
-    padding: var(--space-sm) 6px;
-    font-size: 0.78rem; /* Streamlines character metrics to maintain single line columns */
-  }
-
-  .table-svg-preview {
-    width: 38px;
-    height: 36px;
-    padding: 2px;
-  }
-
-  .syllable-token {
-    font-size: 0.75rem;
-    padding: 2px 4px;
-  }
-}
-
-/* Tight Phone System Formats (Up to 480px) */
-@media (max-width: 480px) {
-  .global-header {
-    padding-bottom: var(--space-sm);
-    gap: var(--space-sm);
-  }
-
-  .logo {
-    font-size: 1.2rem;
-  }
-
-  .btn-escape,
-  #btn-skip {
-    white-space: nowrap;
-    flex-shrink: 0;
-    width: auto;
-    padding: var(--space-sm) 0.75rem;
-    font-size: 0.8rem;
-  }
-
-  #ui-motif-selector {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: var(--space-sm);
-    padding: var(--space-sm) 0;
-  }
-
-  .motif-pad {
-    -webkit-appearance: none;
-    appearance: none;
-    min-width: 0;
-    flex-direction: column;
-    min-height: 68px;
-    font-size: 0.75rem;
-    padding: var(--space-sm);
-    gap: 4px;
-    background-color: var(--color-surface);
-    color: var(--color-text);
-  }
-
-  .motif-pad .svg-container {
-    height: 28px;
-    width: 100%;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   B. PREMIUM DESKTOP BALANCING (Screens 1024px wide and above)
-   -------------------------------------------------------------------------- */
-@media (min-width: 1024px) {
-  .app-grid-shell {
-    display: grid;
-    grid-template-columns: 400px 1fr; /* Symmetrical split tracks */
-    gap: var(--space-xl);
-    padding-right: var(--space-xl);
-  }
-
-  .application-canvas.l-center {
-    max-width: 100% !important; /* Overrides top specificity levels cleanly through double class selection */
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .application-canvas {
-    padding-top: var(--space-md);
-  }
-
-  #btn-replay,
-  #btn-submit {
-    display: block; /* Activates margin alignment behaviors */
-    width: 100%;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  #ui-motif-selector {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(140px, 180px)) !important;
-    justify-content: center;
-    gap: var(--space-md);
-  }
-
-  #ui-workspace {
-    justify-content: center;
-    gap: 3rem;
-    padding: var(--space-lg) 0;
-  }
-
-  /* Preserves status grid width alignments by retaining the spacing frame */
-  .status-bar .ghost-btn {
-    display: block !important;
-    visibility: hidden !important;
-  }
-
-  .hamburger-btn,
-  .sidebar-close-btn {
-    display: none !important;
   }
 }
 
@@ -914,16 +706,14 @@ main,
 }
 
 /* ==========================================================================
-   12. INTERACTIVE ONBOARDING TOUR WIZARD STYLES
+   12. INTERACTIVE ONBOARDING TOUR WIZARD BASE STYLES
    ========================================================================== */
-
-/* The Master Dimming Mask Curtain */
 .tour-overlay {
   position: fixed;
   inset: 0;
   background-color: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(4px);
-  z-index: 5000; /* Floats high above everything, including your celebration modals */
+  z-index: 5000;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -939,7 +729,6 @@ main,
   pointer-events: none;
 }
 
-/* Initial Option Selection Prompt Box */
 .tour-prompt-card {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -972,7 +761,6 @@ main,
   justify-content: center;
 }
 
-/* Dynamic Context-Aware Floating Information Box */
 .tour-tooltip {
   position: absolute;
   background-color: var(--color-surface);
@@ -982,9 +770,10 @@ main,
   width: 320px;
   max-width: 90vw;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-  z-index: 5200;
-  /* Smooth positional transition physics as box walks component-by-component */
+  z-index: 5200; /* Direct sibling under body sits clean on top of highlighted layers */
   transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
     top 0.3s cubic-bezier(0.25, 1, 0.5, 1),
     left 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -1002,7 +791,6 @@ main,
   justify-content: flex-end;
 }
 
-/* Onboarding Buttons Engine Token Overrides */
 .tour-btn-primary {
   background-color: var(--color-primary);
   color: #ffffff;
@@ -1028,17 +816,185 @@ main,
   color: var(--color-text);
 }
 
-/**
- * THE SPOTLIGHT MECHANISM
- * This style block rips an element out of the background flow, forcing it 
- * forward into the physical foreground plane above our curtain overlay mask.
- */
 .tour-highlight-active {
   position: relative !important;
   z-index: 5100 !important;
-  pointer-events: none !important; /* Locks structural interaction down during walk routines */
+  pointer-events: none !important;
   box-shadow:
     0 0 0 8px rgba(255, 255, 255, 0.2),
     0 0 0 12px var(--color-primary),
     0 20px 25px -5px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ==========================================================================
+   13. MASTER RESPONSIVE MEDIA QUERIES (Cascades Last to Win Override Rules)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   A. MOBILE VIEWPORTS ONLY (Up to 1023px Display Bounds)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1023px) {
+  .curriculum-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 85vw;
+    max-width: 420px;
+    z-index: 3000;
+    box-shadow: 25px 0 50px -12px rgba(0, 0, 0, 0.15);
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .curriculum-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+    padding: var(--space-sm);
+  }
+
+  .curriculum-table td {
+    padding: var(--space-sm) 6px;
+    font-size: 0.78rem;
+  }
+
+  .table-svg-preview {
+    width: 38px;
+    height: 36px;
+    padding: 2px;
+  }
+
+  .syllable-token {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+  }
+
+  /* --- FLUID SAFE-AREA MOBILE TOUR TOOLTIP ALIGNMENTS --- */
+  .tour-tooltip {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: 360px;
+    top: auto;
+    bottom: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    z-index: 5200;
+  }
+
+  .tour-tooltip.is-mobile-top {
+    top: 24px;
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    bottom: auto;
+  }
+
+  .tour-tooltip.is-mobile-bottom {
+    bottom: 24px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px) + 12px);
+    top: auto;
+  }
+}
+
+/* Tight Phone Systems (Up to 480px Display Bounds) */
+@media (max-width: 480px) {
+  .global-header {
+    padding-bottom: var(--space-sm);
+    gap: var(--space-sm);
+  }
+
+  .logo {
+    font-size: 1.2rem;
+  }
+
+  .btn-escape,
+  #btn-skip {
+    white-space: nowrap;
+    flex-shrink: 0;
+    width: auto;
+    padding: var(--space-sm) 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  #ui-motif-selector {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: var(--space-sm);
+    padding: var(--space-sm) 0;
+  }
+
+  .motif-pad {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    flex-direction: column;
+    min-height: 68px;
+    font-size: 0.75rem;
+    padding: var(--space-sm);
+    gap: 4px;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  .motif-pad .svg-container {
+    height: 28px;
+    width: 100%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   B. PREMIUM DESKTOP VIEWPORTS ONLY (1024px wide and above)
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+  .app-grid-shell {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: var(--space-xl);
+    padding-right: var(--space-xl);
+  }
+
+  .application-canvas.l-center {
+    max-width: 100% !important;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .application-canvas {
+    padding-top: var(--space-md);
+  }
+
+  #btn-replay,
+  #btn-submit {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #ui-motif-selector {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(140px, 180px)) !important;
+    justify-content: center;
+    gap: var(--space-md);
+  }
+
+  #ui-workspace {
+    justify-content: center;
+    gap: 3rem;
+    padding: var(--space-lg) 0;
+  }
+
+  .status-bar .ghost-btn {
+    display: block !important;
+    visibility: hidden !important;
+  }
+
+  .hamburger-btn,
+  .sidebar-close-btn {
+    display: none !important;
+  }
 }
