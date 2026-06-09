@@ -138,6 +138,132 @@ main,
 }
 
 /* ==========================================================================
+   3b. DASHBOARD PRIMITIVES (Dual-Column Architecture)
+   ========================================================================== */
+
+/* Universal Layout Shell Grid */
+.app-grid-shell {
+  display: block; /* Default block layout for mobile viewports */
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* --- Persistent Desktop Mode Sidebar Settings --- */
+@media (min-width: 1024px) {
+  .app-grid-shell {
+    display: grid;
+    /* Lock the sidebar to a clean 320px, give the application canvas 100% of remaining fluid width */
+    grid-template-columns: 320px 1fr;
+    gap: var(--space-xl);
+    padding-right: var(--space-xl);
+  }
+
+  .application-canvas.l-center {
+    max-width: 100%; /* Shatters the old 65ch constraint so the app fills the screen */
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .application-canvas {
+    padding-top: var(--space-md);
+  }
+
+  /* Hide mobile-only buttons on high-res monitors */
+  .hamburger-btn,
+  .sidebar-close-btn,
+  .status-bar .ghost-btn {
+    display: none !important;
+  }
+}
+
+/* --- Core Curriculum Sidebar Panel Component --- */
+.curriculum-sidebar {
+  background-color: var(--color-surface);
+  border-right: 2px solid var(--color-border);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.sidebar-scroll-content {
+  overflow-y: auto; /* Makes menu track standalone scroll inputs if data updates grow long */
+  flex-grow: 1;
+}
+
+.guide-section {
+  margin-bottom: var(--space-xl);
+}
+
+.guide-section h3 {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-top: 0;
+}
+
+.guide-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.guide-list li {
+  padding: var(--space-sm) 0;
+  border-bottom: 1px dashed var(--color-border);
+  font-size: 0.9rem;
+}
+
+/* --- Collapsed Mobile Off-Canvas Drawer Mechanics --- */
+@media (max-width: 1023px) {
+  .curriculum-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    z-index: 3000; /* Floats safely high above workspace interactive components */
+    box-shadow: 25px 0 50px -12px rgba(0, 0, 0, 0.15);
+
+    /* Pulls panel completely off-screen to the left by default */
+    transform: translateX(-100%);
+
+    /* Spring slide-out physics translation curve */
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Open state drawer modifier */
+  .curriculum-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+    padding: var(--space-sm);
+  }
+}
+
+/* ==========================================================================
    4. CORE APPLICATION COMPONENTS (Aesthetics & Interface)
    ========================================================================== */
 .global-header {

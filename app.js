@@ -958,11 +958,29 @@ function fireMasteryConfetti() {
 // BOOT UP THE APP
 // ==========================================
 window.addEventListener("DOMContentLoaded", () => {
+  // Core application submit/control hooks
   DOM.submitBtn.addEventListener("click", evaluateSubmission);
   DOM.skipBtn.addEventListener("click", () =>
     startLevel(sessionState.currentLevel),
   );
   DOM.replayBtn.addEventListener("click", () => AudioEngine.playSequence());
+
+  // NEW: Curriculum Sidebar Drawer Toggle Interface Hooks
+  const sidebarElement = document.getElementById("ui-sidebar");
+  const toggleBtn = document.getElementById("btn-toggle-sidebar");
+  const closeBtn = document.getElementById("btn-close-sidebar");
+
+  if (toggleBtn && sidebarElement) {
+    toggleBtn.addEventListener("click", () => {
+      sidebarElement.classList.add("is-open");
+    });
+  }
+
+  if (closeBtn && sidebarElement) {
+    closeBtn.addEventListener("click", () => {
+      sidebarElement.classList.remove("is-open");
+    });
+  }
 
   // Launch Level 1 entry point on boot
   startLevel(1);
