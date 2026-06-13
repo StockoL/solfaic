@@ -1,35 +1,52 @@
-# Solfaic - Solfege Ear Trainer: Technical Specification
+# Solfaic - Solfège Ear Trainer
 
-1. ## Project Idea and User Stories
+**[🔴 LIVE APPLICATION: Click here to view the deployed site](https://stockol.github.io/solfaic/)**
 
-Solfaic is an interactive web application designed to isolate and build rhythmic dictation and metric internalisation through a pedagogical progressive "ladder". It adheres to a core tenet of music theory education that a foundation in structural rhythm processing must be developed before pitch in the understanding of melody. The underlying software architecture is intentionally decoupled and extensible, built as a standalone module ready to support a future Solfege pitch-training framework without structural rewrites.
+Solfaic is an interactive web application designed to isolate and build rhythmic dictation and metric internalisation through a pedagogical progressive "ladder". It adheres to a core tenet of music theory education that a foundation in structural rhythm processing must be developed before pitch in the understanding of melody.
 
-### User Groups & Stories
+The underlying software architecture is intentionally decoupled and extensible, built as a standalone module ready to support a future Solfège pitch-training framework without structural rewrites.
 
-#### 1. The Examination/Audition Candidate
+---
+
+## Table of Contents
+
+1. [Project Purpose & User Stories](#1-project-purpose--user-stories)
+2. [Strategic Research](#2-strategic-research)
+3. [UX Design Strategy (The 5 Planes)](#3-ux-design-strategy-the-5-planes)
+4. [System Architecture & Logic Maps](#4-system-architecture--logic-maps)
+5. [Core Features & UI Overhauls](#5-core-features--ui-overhauls)
+6. [Testing & The Mobile Chronicles (Bug Tracking)](#6-testing--the-mobile-chronicles-bug-tracking)
+7. [Deployment Guide](#7-deployment-guide)
+8. [Credits & Acknowledgements](#8-credits--acknowledgements)
+9. [Development Log & Engineering Phases](#9-development-log--engineering-phases)
+
+---
+
+## 1. Project Purpose & User Stories
+
+### 1. The Examination/Audition Candidate
 
 _Focus: Precision, pressure-testing, and structural success._
 
-- **User Story:** As an aural examination applicant, I want to practice identifying rhythmic motifs within a structured progression so that I can build the metric accuracy required for my upcoming entrance test.
-  - **Acceptance Criterion:** The user is presented with generated exercises that increase in metric complexity (varying time signatures and subdivisions) across distinct levels.
+- **User Story:** As an aural examination applicant, I want to practise identifying rhythmic motifs within a structured progression so that I can build the metric accuracy required for my upcoming entrance test.
+  - _Acceptance Criterion:_ The user is presented with generated exercises that increase in metric complexity (varying time signatures and subdivisions) across distinct levels.
 - **User Story:** As a music student, I want to receive immediate diagnostic feedback when I submit an incorrect motif sequence so that I do not "rehearse" the wrong rhythmical patterns into long-term memory.
-  - **Acceptance Criterion (BDD):**
-    - **Given** the user has submitted an incorrect motif sequence.
-    - **When** the system evaluates the response array against the target timeline.
-    - **Then** a diagnostic modal appears explaining the specific durational or structural motif error.
+  - _Acceptance Criterion (BDD):_ **Given** the user has submitted an incorrect motif sequence, **When** the system evaluates the response array against the target timeline, **Then** a diagnostic modal appears explaining the specific durational or structural motif error.
 - **User Story:** As a candidate simulating exam conditions, I want a strict limit on audio playbacks so that I am forced to rely on internal memory rather than continuous looping.
-  - **Acceptance Criterion:** Once the audio playback has been triggered twice, the playback option becomes unavailable for that specific exercise.
+  - _Acceptance Criterion:_ Once the audio playback has been triggered three times, the playback option becomes unavailable for that specific exercise.
 
-#### 2. The Music Educator (The Facilitator)
+### 2. The Music Educator (The Facilitator)
 
 _Focus: Pedagogy, motif-based learning, and consistency._
 
-- **User Story:** As a music teacher, I want my students to practice with real pedagogical rhythmic motifs (e.g., dotted rhythms, pairs of quavers) rather than continuous random durations so that training mirrors real-world repertoire.
-  - **Acceptance Criterion:** All generated exercises are algorithmically composed from predefined musical motif object blocks that sum perfectly to the level's designated time signature and bar constraints.
+- **User Story:** As a music teacher, I want my students to practise with real pedagogical rhythmic motifs (e.g., dotted rhythms, pairs of quavers) rather than continuous random durations so that training mirrors real-world repertoire.
+  - _Acceptance Criterion:_ All generated exercises are algorithmically composed from predefined musical motif object blocks that sum perfectly to the level's designated time signature and bar constraints.
 - **User Story:** As a teacher recommending a practice tool, I want the app to function cleanly on small mobile browsers so that students can execute training sessions efficiently on the go.
-  - **Acceptance Criterion:** The layout utilises **Intrinsic Web Design** principles (The Switcher and The Stack) to ensure all interactive elements remain accessible and well-spaced on small viewports without vertical overflow.
+  - _Acceptance Criterion:_ The layout utilises **Intrinsic Web Design** principles (The Switcher and The Stack) to ensure all interactive elements remain accessible and well-spaced on small viewports without vertical overflow.
 
-2. ## Strategic Research
+---
+
+## 2. Strategic Research
 
 ### 1. Teoria (The Desktop Maestro)
 
@@ -45,356 +62,99 @@ _Focus: Pedagogy, motif-based learning, and consistency._
 
 ---
 
-3. ## UX Design
+## 3. UX Design Strategy (The 5 Planes)
+
+### Initial Wireframes
+
+![Initial Desktop Concept](./docs\wireframes/solfaic-wireframe-level-view-desktop.png)
+
+![Initial Mobile Concept](./docs\wireframes/solfaic-wireframe-level-view-mobile.png)
+
+![Performance Workspace](./docs\wireframes/solfaic-wireframe-performance-view-mobile.png)
 
 ### I. Strategy
 
-This plane defines the "Why" and "Who" of the application.
-
-- **User Goals**: To master complex metric identification and rhythmic cell dictation through an interactive, step-by-step training workspace.
-- **Target Audience**: Practical music candidates, choral applicants, and contemporary musicians seeking to formalise their rhythmic perception.
-- **The Future Runway**: The system architecture functions as an isolated structural base; the event timelines are pre-wired to integrate a pitch module seamlessly.
+- **User Goals:** To master complex metric identification and rhythmic cell dictation through an interactive, step-by-step training workspace.
+- **Target Audience:** Practical music candidates, choral applicants, and contemporary musicians seeking to formalise their rhythmic perception.
+- **The Future Runway:** The system architecture functions as an isolated structural base; the event timelines are pre-wired to integrate a pitch module seamlessly.
 
 ### II. Scope
 
-This plane defines the strict functional requirements and limitations of the MVP.
-
-- **Algorithmic Rhythm Synthesis**: Exercises are compiled dynamically at runtime by reading level parameters (metre, bar count) and randomly assembling predefined motif blocks until the necessary beat boundaries are completely met.
-- **Extensible Event Architecture**: To support future pitch expansion, all generation loops output an array of Event Objects featuring explicit `pitch: null` metadata spaces. The application's playback pipeline is designed to process these properties automatically once enabled.
-- **Diagnostic Evaluation Engine**: The system evaluates user-submitted response arrays item-by-item against the hidden target timeline array to identify errors without maintaining data-heavy tracking profiles.
-- **Session-Only Memory Profile**: To maintain a rapid, performant runtime footprint, progression, scores, and streak data are handled entirely in active session memory, completely bypassing backend database requirements for the MVP.
+- **Algorithmic Rhythm Synthesis:** Exercises are compiled dynamically at runtime by reading level parameters (metre, bar count) and randomly assembling predefined motif blocks.
+- **Extensible Event Architecture:** To support future pitch expansion, all generation loops output an array of Event Objects featuring explicit `pitch: null` metadata spaces.
+- **Diagnostic Evaluation Engine:** Evaluates user-submitted arrays item-by-item against a hidden target timeline to identify errors without maintaining data-heavy tracking profiles.
+- **Session-Only Memory Profile:** Progression, scores, and streaks are handled entirely in active session memory, bypassing backend database requirements for the MVP.
 
 ### III. Structure
 
-This plane defines the interactive design patterns and logical framework of the game loop.
-
-- **Gated Dual-Phase Identification**: Interaction is structurally separated into two chronological steps to mirror professional rehearsal techniques: the user must successfully reconstruct the rhythmic timeline before the system unlocks the movable-Do pitch entry interface.
-- **The Controlled Playback Lifecycle (The Conductor's Rule)**: To maintain maximum concentration, all workspace pads are disabled while the audio player executes the timeline sequence. Play count tokens are spent on playback initialisation, permanently locking the engine once the token pool hits zero.
-- **The Audio Signal Chain**:
-
-1. **The Count-In**: The engine generates a steady click metronome pattern to lock the student's ear into the target tempo and time signature.
-2. **The Call**: A decoupled audio wrapper plays back the target motif sequence timeline utilising a high-fidelity woodblock audio sample.
+- **Gated Dual-Phase Identification:** The user must successfully reconstruct the rhythmic timeline before the system advances (mirroring professional rehearsal techniques).
+- **The Controlled Playback Lifecycle:** To maintain maximum concentration, all workspace pads are disabled while the audio player executes the timeline sequence. Play count tokens permanently lock the engine once the pool hits zero.
+- **The Audio Signal Chain:** 1. **The Count-In:** Generates a steady click metronome pattern to lock the student's ear. 2. **The Call:** A decoupled audio wrapper plays back the target sequence using a high-fidelity synth.
 
 ### IV. Skeleton
 
-This plane defines the visual arrangement of components using layout primitives.
-
-- **The Motif Switcher Console**: The core input panel utilises a dynamic wrapping grid mechanism. On desktop views, the motif choice pads layout in a streamlined horizontal bar; on compact mobile screens, they automatically stack into stacked, touch-target accessible blocks.
-- **The Input Workspace Stack**: View elements flow in a strict vertical order derived from a Modular Scale, preventing text crowding and ensuring clear spatial context between the active workspace display, control blocks, and primary CTAs.
-- **Workspace State Highlighting**: Adding inputs updates internal state arrays while attaching utility classes (.is-active, .is-locked) to DOM nodes, giving instant visual validation of user selections.
+- **The Motif Switcher Console:** The core input panel utilises a dynamic wrapping grid. On desktop, pads layout in a horizontal bar; on mobile, they automatically stack into thumb-friendly touch targets.
+- **The Input Workspace Stack:** View elements flow in a strict vertical order derived from a Modular Scale, preventing text crowding.
 
 ### V. Surface
 
-This plane establishes the sensory presentation and styling principles.
+- **Aesthetic Principle:** "Timeless, not cutting edge" — prioritising immediate cognitive clarity, minimal distraction, and structural accessibility.
+- **Axiomatic Typography:** Instructional text measures are capped at a readable layout width to ensure eye-tracking comfort.
+- **Semantic Colour Palette:** AAA-accessible high-contrast schema conveying states immediately: Active Focus (Blue), Validation Success (Green), and Diagnostic Remediation (Amber/Red).
 
-- **Aesthetic Principle**: "Timeless, not cutting edge" — prioritising immediate cognitive clarity, minimal distraction, and structural accessibility over stylistic animations.
-- **Axiomatic Typography**: Instructional text measures are strictly capped at a highly readable layout width (e.g. 60ch) to ensure eye tracking comfort during dense training blocks.
-- **Semantic Colour Palette**: Utilises a strict, AAA-accessible high-contrast colour schema to convey operational system states immediately: Active Focus (Blue), Validation Success (Green), and Diagnostic Remediation (Amber).
+### Pedagogical Whimsy & Interaction Philosophy
 
-4. ## System Architecture and Logic Maps
+Educational software requires engagement. To fight cognitive fatigue, we injected subtle moments of interaction "whimsy":
+
+- **Custom Spring-Loaded Success Overlays:** Deprecated disruptive browser alerts in favor of an elegant, canvas-wide custom HTML5 victory modal utilising custom spring-physics curves.
+- **Staggered Cinematic Confetti Downpour:** Initiates a highly dense, 160-particle colorful confetti storm with 3D-depth and randomised start delays up to 1.5 seconds.
+- **Tactile Frustration Microgestures (Error Handling):** Attempting to submit an incomplete exercise causes the entire canvas row to execute an aggressive **horizontal frustration shake** (`is-shaking`), while empty slots flash with a **crimson halo pulse** (`is-empty-panic`).
+- **Touch-First Sensation Mapping:** Hover definitions are suppressed entirely on mobile to eliminate sticky layout scaling freezes. Touch inputs focus exclusively on the high-fidelity `:active` state, delivering a crisp, immediate touch-down spring compression feel (`scale(0.96)`) the precise millisecond a finger makes contact.
+
+---
+
+## 4. System Architecture & Logic Maps
 
 To guarantee clean maintainability and extensible software updates, Solfiac isolates its core processes across distinct modules: Data Generation, State Control, and a Decoupled Playback Wrapper.
 
-Below is the technical blueprint of the application's engine.
-
 ### The Global State Machine (The Game Loop)
 
-The application operates as a deterministic State Machine. This architectural choice strictly controls what actions are permitted at any given moment to preserve the integrity of examination conditions and prevent cognitive overload.
+The application operates as a deterministic State Machine, strictly controlling permitted actions to preserve examination conditions.
 
-![Global State Machine](./docs/architecturemaps/state-machine-solfaic.png)
+- Defensive Lockout (`playbackState`): Safely prevents the user from registering answers early or breaking the layout flow during audio execution.
+- The Modular Gateway (`loadLevelSettings`): Flushes workspace arrays, pulls configuration rules, and triggers generation modules without mutating global files.
 
-**Architectural Breakdown**
-
-- Defensive Lockout (playbackState): While the audio controller handles transport scheduling, the system transitions to a locked playback state. This safely prevents the user from registering answers early or breaking the layout flow during audio execution.
-- The Play Limit Guard (evaluatePlayLimit): Monitors consumer asset access. Once the threshold is breached, it assigns a `.is-locked` selector state to the player DOM elements, preserving testing conditions.
-- The Modular Gateway (loadLevelSettings): Centralises setup commands. When a round loads, this node flushes workspace tracking arrays, pulls configuration rules, and triggers the generation modules without mutating global files.
+![Proposed Global State Machine](./docs/architecturemaps/state-machine-solfaic.png)
 
 ### The Multi-Phase Data Pipeline (The Movable-Do Bridge)
 
-This flowchart shows how data is modeled as modular arrays of objects, transforming raw configuration files into a timed sequence map that is fully prepared for future pitch characteristics.
+Transforms raw configuration files into a timed sequence map.
 
-![Data Pipeline](./docs/architecturemaps/data-logic-solfaic.png)
+- **Decoupled Data Contracts:** The sequence matrix revolves around a unified object schema containing `pitch: null` placeholders. Melodic integration later will require absolutely no structural rewrites.
 
-**Architectural Breakdown**
-
-- **Deterministic Composition Assembly**: The configuration engine treats inputs as exact mathematical blocks. It compiles patterns until the total beats match the metric requirements, establishing a foundation for sequence checking.
-- **Decoupled Data Contracts**: By designing the core sequence matrix around a unified object schema containing explicit `pitch: null` placeholders, the evaluation engine can run its array comparison pipeline cleanly. Integrating melodic elements down the line requires absolutely no structural rewrites to this pipeline.
-- **Gated Validation Array Mapping**: User entries map straight into linear payload indexes. The processing routine checks values in order, flagging index mismatch locations and routing the system state directly to the corrective remediation views.
+![Proposed Data Pipeline](./docs/architecturemaps/data-logic-solfaic.png)
 
 ### Asynchronous Timeline Synchronisation (The Sequence Map)
 
-This mapping details how the browser interface UI, the Central Engine Controller, and the Web Audio API wrappers share execution data asynchronously without clogging the primary browser thread.
+Maps how the browser UI, Central Engine, and Web Audio API share execution data asynchronously without clogging the primary browser thread.
 
-![Sequence Map](./docs/architecturemaps/verification-sequence.png)
+- **Callback-Driven Unlocking:** The workspace stays locked until a clean `onComplete` signal clears the native audio runtime scheduling buffer, protecting timing against system discrepancies.
 
-**Architectural Breakdown**
-
-- **Callback-Driven Interface Unlocking**: Instead of utilising inaccurate JavaScript intervals to guess completion metrics, the layout links directly into native audio runtime scheduling buffers. The workspace stays locked until a clean `onComplete` signal clears the thread, protecting timing against system discrepancies.
-- **Isomorphic Error Isolation**: When validation failures occur, the checker isolates the precise faulty sequence metadata index. It blocks level advancement and immediately assigns rendering parameters to initialise the remediation modal window.
-
-5. ## Engineering the MVP
-
-To ensure a clean, maintainable, and scalable codebase, this application was built using atomic commits following the Model-View-Controller (MVC) design pattern. The development was broken into three distinct phases.
-
-### Phase 1: The Intrinsic Skeleton (HTML/CSS)
-
-Before writing any application logic, the physical bounds and visual tokens of the application were established.
-
-**The Commits:**
-
-- `feat(ui): scaffold raw semantic HTML skeleton for rhythm workspace`
-- `style: establish design tokens and Every Layout intrinsic primitives`
-- `style: apply visual hierarchy and component styling to workspace elements`
-- `style: define chained CSS state modifiers for JS interaction feedback`
-- `style(typography): integrate Inter for UI and Noto Music for cross-platform notation rendering`
-
-**Justifications:**
-
-- **Intrinsic Web Design:** I relied on Every Layout CSS primitives (such as the stack and grid) to create mathematical, content-aware layouts rather than relying on bloated media queries. This was essential in meeting the demands of user story 2.
-- **Separation of State:** All JavaScript UI changes are handled by toggling CSS utility classes (e.g., `.is-locked`, `.is-active`) rather than writing inline styles via JS.
-
-**Challenge & Resolution:**
-
-- _The Problem:_ Initially, I used a flexbox "Switcher" primitive for the motif pads. However, on narrow mobile screens, this forced the buttons into a single vertical column, which made for a poor user experience (touch targets were too spread out). Additionally, my CSS included the `-webkit-font-smoothing` hack.
-- _The Fix:_ I upgraded the layout to a true CSS Grid with the RAM pattern (`repeat(auto-fit, minmax(min(140px, 100%), 1fr))`). The `min()` function guarantees the grid never causes horizontal scrolling, while allowing a neat 2x2 grid on mobile. After consulting documentation again regarding the `font-smooth` property, I also deliberately removed `-webkit-font-smoothing` to prioritise native accessibility.
-
-### Phase 2: The Data Brain (Model & State)
-
-With the UI ready, I built the foundational mathematical rules and memory banks of the application isolated from the DOM.
-
-**The Commits:**
-
-- `chore(architecture): map JS module stubs and establish musical domain library`
-- `feat(core): initialise data models, global state machine, and DOM cache`
-
-**Justifications:**
-
-- **Architectural Stubbing:** I laid out empty section headers for the entire `app.js` file before writing logic. This ensured I kept my State Machine, Generator, and View Controllers completely decoupled.
-- **Centralised DOM Cache:** Instead of querying `document.getElementById` inside every function, I cached all elements in a single `DOM` object on load to improve performance.
-
-**Challenge & Resolution:**
-
-- _The Problem:_ I needed an algorithmic way to generate randomised rhythms, but if I scheduled them using milliseconds, the audio would break completely if the tempo changed later. Furthermore, my JavaScript functions risked taking the wrong data types, leading to silent bugs.
-- _The Fix:_ I "future-proofed" the Generator sequence by hard-calculating Tone.js compatible `Bars:Beats:Sixteenths` timestamps (e.g., `0:2:0`). To fix the typing issue, I implemented JSDoc (`/** @param ... */`) to establish data contracts, allowing my IDE to catch errors before they hit the browser.
-
-### Phase 3: The View Controller (Wiring the Logic)
-
-The final step was building the bridge between the mathematical models and the HTML View.
-
-**The Commits:**
-
-- `feat(engine): implement algorithmic rhythm sequence generator`
-- `feat(view): implement dynamic DOM rendering cycle for level initialisation`
-- `feat(interaction): implement state-aware event handlers for motif selection`
-- `feat(core): implement DOM load boot sequence and initialisation diagnostics`
-
-**Justifications:**
-
-- **Atomic Integrations:** Committing the UI render cycle (`startLevel`) and the interaction handlers (`handleMotifClick`) separately ensured successful curation of the event delegation and UI state management.
-
-**Challenge & Resolution:**
-
-- _The Problem:_ Dropping all the controller logic into the file at once risks triggering `undefined` errors if the boot sequence calls a function that hasn't been written yet.
-- _The Fix:_ I left the `window.addEventListener("DOMContentLoaded")` block empty until the very last commit. This allowed me to safely build and verify the logic in a modular fashion without breaking the live prototype during development.
+![Proposed Sequence Map](./docs/architecturemaps/verification-sequence.png)
 
 ---
 
-## Current Status & Next Steps
+## 5. Core Features & UI Overhauls
 
-- **Phase 1-3:** ✅ UI Layout, State Machine, Rhythm Generator, and DOM Controllers complete.
-- **Phase 4:** ⏳ Implementation of the Evaluation Engine (Grading logic for sequence submission).
-- **Phase 5:** ⏳ Integration of Tone.js for accurate Audio Playback.
+### The Desktop Dashboard & Curriculum Matrix Sprint
 
----
+The application's viewport matrix was refactored to optimise widescreen real estate, introducing a dual-column layout strategy.
 
-### Phase 4: The Evaluation Engine & Pedagogical Refinement
+**1. Asymmetric Fluid Grid Shell**
+On displays wider than `1024px`, the layout fractures into an asymmetrical grid system (`grid-template-columns: 400px 1fr`). Placing the curriculum reference panel on the left ensures the user's eye scans educational rules before executing interactions.
 
-With the core generator working invisibly, I needed to build the grading logic that compares the user's input to the generated sequence, alongside a robust educational data model.
-
-**The Commits:**
-
-- `feat(data): implement British Kodaly Academy curriculum mapping for MVP levels 1-3`
-- `feat(engine): decouple metre logic from motif generation to support dynamic phrase assembly`
-- `feat(evaluation): implement granular beat-by-beat validation engine and state routing`
-- `refactor(ui): migrate from unicode text characters to inline SVG library for pixel-perfect notation rendering`
-
-**Justifications:**
-
-- **Pedagogical Rigour:** Rather than generating completely random arrays, the data model was refactored to explicitly align with the British Kodály Academy curriculum. Levels dynamically unlock specific syllables (ta, ti-ti, tai) and metres.
-- **Granular Feedback:** I deliberately chose to evaluate the sequence beat-by-beat rather than using a binary "Pass/Fail" for the whole bar. By highlighting specific correct/incorrect cards, the app minimises cognitive load and directs the student's focus to exactly where they misheard the rhythm.
-- **Decoupled Metric Architecture:** Simple motifs and Compound motifs were strictly isolated into separate arrays within the blueprint settings. This physically prevents the engine from generating mathematically breaking sequences (e.g., mixing a simple crotchet with a compound dotted-crotchet in the same bar).
-
-**Challenge & Resolution:**
-
-- _The Problem:_ The "Unicode Typography Wall." I initially used the `Noto Music` font to render the notes. However, because different symbols belong to different Unicode blocks (e.g., beamed quavers are standard dingbats, while single crotchets are modern layout glyphs), they have wildly different bounding boxes. This pushed the buttons and workspace cards completely out of alignment, and global CSS transforms could not fix the discrepancies.
-- _The Fix:_ I abandoned text-based font rendering entirely and have started to implement an inline SVG architecture, mirroring industry standards (like Soundtrap or Flat.io). This guaranteed pixel-perfect mathematical alignment across all browsers and will introduce a UX benefit: leveraging CSS `currentColor` inheritance so the notes themselves change colour to green or red during the evaluation phase.
-
----
-
-## Current Status & Next Steps
-
-- **Phase 1-4:** ✅ UI Layout, State Machine, Rhythm Generator, Kodály Data Model, and SVG Evaluation Engine complete.
-- **Phase 5:** ⏳ Integration of Tone.js for accurate Audio Playback and Metronome scheduling.
-- **UX Refinement:** ⏳ Possible implementation of a "click-to-remove" feature in the workspace to allow users to edit single mistakes without clearing the entire board.
-
----
-
-### Phase 5: The Audio Engine & Pedagogical Scaffolding
-
-With the visual grading logic complete, the application needed to generate mathematically perfect audio playback to function as a true dictation tool.
-
-**The Commits:**
-
-- `feat(audio): integrate Tone.js scheduling engine for accurate target array playback`
-- `fix(audio): implement subdivision parsing array to render accurate dictation rhythms`
-- `refactor(data): align SVG library keys to strictly match Kodaly domain nomenclature`
-- `fix(core): remove legacy text fallbacks and stabilise audio engine with native math`
-- `fix(ui): reset replay button locked state upon level initialisation`
-- `feat(audio): implement visual and auditory count-in modal synchronised with Tone.Transport`
-
-**Justifications:**
-
-- **Decoupled Pitch/Rhythm Architecture:** When building the `targetTimeline` array, I explicitly set `pitch: null` for every rhythmic event. This future-proofs the MVP: the X-axis (Time/Duration) is completely isolated from the Y-axis (Pitch). When Phase 6 introduces melody, the generator logic will not need to be rewritten.
-- **Native Math for Absolute Timing:** To prevent silent browser caching errors with Tone.js `Time` objects, I refactored the audio scheduling to calculate absolute seconds using native JavaScript addition.
-- **Pedagogical Scaffolding:** Initial testing revealed that raw rhythm dictation without a tempo anchor is virtually impossible to parse. I implemented a frosted-glass modal that uses `Tone.Draw` to perfectly synchronise a 4-beat visual count-in with a high-pitched metronome click before dropping the user into the dictation.
-
-**Challenge & Resolution:**
-
-- _The Problem:_ The "Robotic Crotchet" Bug. Initially, Tone.js played a single woodblock hit for every motif block on the screen, failing to distinguish between the internal subdivisions of a `ta` and a `ti-ti`.
-- _The Fix:_ I added a `playback` array to the `MOTIF_LIBRARY` (e.g., `["8n", "8n"]` for a quaver pair) and wrote a "smart parser" that loops through the timeline and flattens the sequence into precisely timed micro-events.
-- _The Problem:_ The State/UI Desync. Exhausting all "plays" correctly locked the play button, but successfully evaluating and auto-generating the next level left the button locked, freezing the app.
-- _The Fix:_ Updated the `startLevel` View Controller to explicitly remove the `.is-locked` CSS class upon generating a new blueprint.
-
----
-
-## Current Status & Next Steps
-
-- **Phase 1-5:** ✅ UI, State Machine, SVG Engine, Kodaly Data Model, and Tone.js Audio Integration complete.
-- **Phase 6:** ⏳ The Phrase Engine. Refactoring the random rhythm generator to pull from a curated dictionary of real musical phrases (e.g., call-and-response, standard classical/pop motifs) to teach musical syntax rather than raw data entry.
-
----
-
-## Recent Core Architecture & UX Milestones
-
-We have recently completed a massive infrastructure and user experience overhaul, transitioning the platform from a strict, linear text loop into a robust, tactile musical grid system. Below are the core technical features and enhancements implemented in this version:
-
-### 1. Persistent Slot-State Memory & Surgical Error Workflow
-
-- **The Problem:** Wiping a student's entire input ledger after a single incorrect rhythm element introduces an aggressive cognitive penalty, forcing them to waste working memory reconstructing components they already got right.
-- **The Solution:** Implemented a persistent state tracking matrix (`slotStates`). Individual cards now retain their targeted validation memory (`success` or `error`) independently. When a student attempts a corrective pass, clicking an error card clears _only that specific beat_, leaving the remaining correct blocks perfectly preserved and visible as an interactive roadmap.
-- **Expanded Runway:** Boosted the total play capital from 2 to 3 attempts, establishing a highly encouraging, gamified environment before triggering the automatic blue-tinted visual correction sequence.
-
-### 2. Unified Dual-Input Interaction Engine
-
-To provide a smooth, native experience across all hardware screens without bloated third-party layout dependencies, the user interaction loop was completely decoupled and rebuilt:
-
-- **Desktop Environments:** Full HTML5 native **Drag-and-Drop** implementation allows students to grab selector motif pads from the tray and drop them directly onto any targeted coordinate on the musical stave ledger.
-- **Mobile Environments:** A targeted **Touchscreen Focus Ring Modifier**. Tapping an empty placeholder pulse highlights that exact coordinate with an active blue focus ring, allowing subsequent pad selections to snap instantly into the targeted slot rather than defaulting to the first available empty point.
-
-### 3. Articulated Audio Synthesis Engine
-
-- **Acoustic Delineation:** Shifted from a percussive kick-drum simulator (`MembraneSynth`) to a warm, resonant triangle wave oscillator (`Synth`) voiced at a crisp, mid-range register (`G3`) in order to distinguish between a crotchet "ta" and minim "ta-a".
-- **The Articulation Gap:** Solved the problem of consecutive identical notes blending into a muddy, continuous tone by introducing a mathematical trim equation into the scheduler (`Tone.Part`). Note durations are scaled to **82% of their structural metric space**, creating a uniform, crisp acoustic separation between attacks without altering the underlying metronome grid alignment.
-
-### 4. Universal Layout & Box-Sizing Calibration
-
-- Implemented a strict global `border-box` calculation reset alongside structural left/right safety margins inside the primary `.l-center` shell primitive.
-- This completely eliminates right-side horizontal layout bleed and truncation clipping errors, ensuring the springy CSS scale-up transformations can breathe smoothly on any viewport size.
-
----
-
-## Pedagogical Whimsy & Interaction Philosophy
-
-While consumer software prioritises speed and raw efficiency, **educational software requires engagement, pacing, and cognitive pacing blocks.** Dictating long 4-bar fragments can quickly induce cognitive fatigue. To fight this, we injected subtle moments of interaction "whimsy" to lower affective filters and reward metric mastery.
-
-### Custom Spring-Loaded Success Overlays
-
-We deprecated disruptive browser alert dialog lines in favor of an elegant, canvas-wide custom HTML5 victory modal. The pop-up container leverages custom spring-physics curves (`cubic-bezier(0.34, 1.6, 0.64, 1)`) to slide out and inflate organically over a soft backdrop blur, presenting clear line-broken milestone encouragement.
-
-### Staggered Cinematic Confetti Downpour
-
-Instead of a sudden visual flash, the victory sequence initiates a highly dense, 160-particle colourful confetti storm.
-
-- **Depth Perception:** Particles are dynamically assigned random width and height values (ranging between 6px and 16px) to trick the human eye into perceiving organic 3D spatial depth.
-- **The Staggered Rain:** Particles are ghosted at birth (`opacity: 0`) and assigned randomised start delays up to 1.5 seconds. They burst into vision dynamically mid-flight, drifting across the width of modern monitors over a full 5-second flight window.
-
-### Tactile Frustration Microgestures (Error Handling)
-
-- **The Problem:** Interrupting a student with a jarring, hard-edged browser error dialog box when they click submit early shatters their focus and breaks immersion.
-- **The Solution:** Completely eliminated validation text boxes in favor of physical, kinesthetic interface feedback. Attempting to submit an incomplete exercise causes the entire canvas row to execute an aggressive **horizontal frustration shake** (`is-shaking`) built with a snappy, tightly coiled physics curve.
-- Simultaneously, any empty slots on the board flash with a brief **crimson halo pulse** (`is-empty-panic`), highlighting exactly what needs attention without forcing the student to click out of an annoying popup window.
-
----
-
-## Acknowledgments & Inspirations
-
-While this platform's technical structure is built on vanilla web systems and Tone.js, its heart, soul, and interactive delight are deeply inspired by external pioneers:
-
-- **Josh Comeau ("Whimsical Animations" Course):** A massive portion of this release's visual delight is directly inspired by Josh's design philosophy. His teachings on digital weight, spring physics, and intentional micro-interactions provided the groundwork for our tactile card scaling and metronome heartbeat pulses. The foundational logic for the staggered confetti particle engine and the intentional choice to craft delightful, non-transactional visual payoffs are a direct result of his educational impact.
-
----
-
-## The Mobile Chronicles & Cross-Browser Bug Hunt (The Hardened Release)
-
-While building for desktop web browsers provides a highly predictable sandbox, deploying a highly interactive canvas to modern mobile touchscreens exposed aggressive, device-specific optimisations to solve. This section documents the cross-browser rendering bugs encountered during our mobile deployment phase and the hardware-level engineering architectures deployed to solve them.
-
-### 1. The iOS WebKit SVG Flexbox Collapse
-
-- **The Pain:** Rhythmic motif cards suddenly expanded horizontally, rendering twice their intended size and spilling cleanly off the right-hand edge of mobile screens.
-- **The Diagnostic:** By default, it seems CSS Flexbox tracks use an implicit calculation rule: `min-width: auto`. On desktop engines, vector graphics utilise internal `viewBox` coordinates to compute missing aspect ratios. On iOS mobile Safari (WebKit), flexible rows ignore aspect calculations for SVGs containing dynamic `width="100%"` configurations, expanding the wrapper container outward to fit the unconstrained vector scale.
-- **The Architecture:** Hardened grid track items with a strict structural reset override (`min-width: 0`) and forced the internal vector children to observe strict relative proportions (`height: 100%; width: auto; max-width: 100%;`).
-
-### 2. The Native iOS Interactive Tint Override
-
-- **The Pain:** Buttons and text labels inside selection cards suddenly discarded our unified style guide variables and rendered in an aggressive, un-styled hyper-link blue color scheme.
-- **The Diagnostic:** To save data, mobile Safari intercepts interactive semantic tags (like `<button>`) and forces them to inherit native device interactive identifiers, completely overriding CSS background colour cascades unless a design block is strictly isolated.
-- **The Architecture:** Injected a deep-level appearance strip command (`-webkit-appearance: none; appearance: none;`) across the interaction deck and hard-locked typography variables with explicit priority declarations (`color: var(--color-text) !important;`).
-
-### 3. The 'Content-Visibility' Animation Strike
-
-- **The Pain:** All custom spring animations and tactile hover transitions suddenly froze solid across both mobile viewports and desktop device simulations.
-- **The Diagnostic:** In an effort to optimise viewports, a rendering boundary utility (`content-visibility: auto`) was introduced into core wrapper containers. While this keeps static elements lightweight, it segregates elements into completely isolated layout contexts. The browser stops tracking dynamic transforms mid-flight because it decides the off-screen animations are a low processing priority.
-- **The Architecture:** Completely removed visibility containment properties (`contain: none;`) on active validation lanes, restoring fully fluid 60FPS script execution runways.
-
-### 4. The Simultaneous Layer Promotion Trap
-
-- **The Pain:** The tactile horizontal frustration shake microgesture vanished entirely from existence, refusing to fire on clicks even when code paths were verified perfectly.
-- **The Diagnostic:** We attempted to optimise the shake by adding a GPU layer instruction (`will-change: transform`) directly inside the active animation utility class. When the error class was injected, the browser received two instructions at the exact same millisecond: _promote this element to the hardware graphics processor_ AND _run a high-speed shake loop_. Because layer creation causes a tiny 1-frame paint freeze, the animation lifecycle was completely bypassed by the engine.
-- **The Architecture:** Moved the hardware allocation instruction (`will-change: transform`) up to the **base workspace element style permanently**, ensuring the layout row is pre-cached on the graphics processor and ready to execute physical shudders instantly.
-
-### 5. Style Batching Optimisation & The Forced Reflow Solution
-
-- **The Pain:** Even after fixing the GPU layers, JavaScript successfully added and removed the `.is-shaking` class, but the visual elements remained totally rigid.
-- **The Diagnostic:** Modern browser layout threads are highly optimised to skip redundant work. When JavaScript adds an error style class and schedules a `setTimeout` loop to strip it away 500ms later, the layout engine batches the operations together. It reasons that since the state returns to normal instantly, it can skip painting the intermediate frames entirely to save battery power.
-- **The Architecture:** Targeted the localised `.workspace-bar` components directly and injected an explicit, legal layout calculation interrupt command (**`void bar.offsetWidth;`**). Reading a physical layout measurement breaks the browser's batching mechanism, forces an immediate frame refresh, and guarantees the microgesture paints onto the screen before JavaScript can reset it.
-
----
-
-## Touch-First Sensation Mapping
-
-To bridge the UX divide between hardware platforms, the interactive physics layers were fully bifurcated:
-
-- **Pointing Environments (Mouse/Trackpad):** Smooth bounding box elevation curves (`translateY(-4px)`) remain enclosed within dedicated hover feature queries (`@media (hover: hover)`) to maximise desktop immersion.
-- **Touchscreens (Glass Screens):** Hover definitions are suppressed entirely to eliminate sticky layout card scaling freezes on mobile browsers. Instead, touch inputs focus exclusively on the high-fidelity **`:active`** state, delivering a crisp, immediate touch-down spring compression feel (`scale(0.96)`) the precise millisecond a finger makes contact.
-
----
-
-## The Desktop Dashboard & Curriculum Matrix Sprint
-
-Following the core mobile stabilisation phase, the application's viewport matrix was refactored to optimise widescreen real estate. This sprint introduced a dual-column layout strategy that transforms empty desktop space into a training studio without degrading the touch-first mobile core.
-
-### 1. Asymmetric Fluid Grid Shell (`320px` to `400px` Left Rail)
-
-- **The Architecture:** On displays wider than `1024px`, the layout automatically fractures into an elegant asymmetrical grid system (`grid-template-columns: 400px 1fr`).
-- **The UX Philosophy:** Placing the curriculum reference panel on the left ensures the user's eye scans the educational rules and terminology matrices _before_ executing interactions in the workspace canvas ledger on the right. The old `65ch` paragraph width constraint is completely bypassed on desktop monitors, allowing the sheet-music staves to stretch naturally across the viewport.
-
-### 2. Structured Kodály Reference Matrix Table
-
-The static bulleted rule lists were refactored into a high-density semantic data table tracking three primary musical parameters:
-
-1. **Syllable Token:** High-contrast, custom monospace bubbles highlighting the core Kodály vocalisations (`ta`, `ti-ti`, `ta-a`, etc.).
-2. **Notation Preview:** Embedded micro-vector SVG thumbnail cells providing instant visual feedback that exactly matches the active draggable entry cards.
-3. **Value & British Nomenclature:** Definitive rhythmic values paired with traditional notation classifications (e.g., _1 Beat Crotchet_, _2 Beat Minim_, _Four Semiquavers_).
+**2. Structured Kodály Reference Matrix Table**
+Refactored static bulleted lists into a high-density semantic data table:
 
 | Syllable    | Notation | Value & British Term                  |
 | :---------- | :------: | :------------------------------------ |
@@ -404,84 +164,179 @@ The static bulleted rule lists were refactored into a high-density semantic data
 | `ta-a`      | `[SVG]`  | 2 Beat Minim (Sustained Tone)         |
 | `tika-tika` | `[SVG]`  | 1 Beat Four Semiquavers (Quad Sounds) |
 
-### 3. The 85vw Off-Canvas Mobile Drawer Optimization
+**3. The 85vw Off-Canvas Mobile Drawer Optimization**
+Expanded the mobile drawer slide-out width from a rigid `280px` up to a fluid **`85vw`** constraint (capped at `420px`). Combined with a localised mobile typography pass, the complex musical tables render with absolute geometric spacing on any iOS or Android glass surface without crunching adjacent columns.
 
-- **The Bug:** Introducing the dense 3-column curriculum table caused columns to crunch, clipping text boundaries or causing aggressive text-wrapping on compact smartphone viewports.
-- **The Fix:** Expanded the mobile drawer slide-out width from a rigid `280px` up to a fluid **`85vw`** constraint (capped at `420px` for tablets). Combined with a localised mobile typography pass (`font-size: 0.78rem` on cells and compressed padding tracks), the complex musical tables now render with absolute geometric spacing on any iOS or Android glass surface.
+### Persistent Slot-State Memory & Surgical Error Workflow
 
-### 4. Cascade Architecture Refactoring & Specificity Defenses
+Wiping a student's entire input ledger after a single incorrect rhythm element introduces an aggressive cognitive penalty.
 
-To clean up technical debt, the global stylesheet was audited to eliminate redundant override declarations while keeping strict defensive rules intact:
+- **The Solution:** Implemented a persistent state tracking matrix (`slotStates`). Individual cards now retain their targeted validation memory (`success` or `error`) independently. When a student attempts a corrective pass, clicking an error card clears _only that specific beat_, leaving correct blocks perfectly preserved as an interactive roadmap.
 
-- **The Specificity Layer:** Retained critical `!important` boundaries exclusively on programmatic engine rules (like `.is-success`, `.is-error`, and `.is-placeholder.is-targeted`). This guarantees that runtime inline injections from `app.js` can never be overridden or ignored by layout batching filters.
-- **Layout Track Protection:** Maintained padding locks on core primitive components (`#ui-workspace`, `#ui-motif-selector`) to ensure dynamic scaling transformations never trigger unexpected vertical shifts or alignment breaks.
+### Unified Dual-Input Interaction Engine
 
----
+- **Desktop Environments:** Full HTML5 native **Drag-and-Drop** implementation allows students to grab selector pads and drop them onto the ledger.
+- **Mobile Environments:** A targeted **Touchscreen Focus Ring Modifier**. Tapping an empty placeholder highlights that coordinate with an active blue focus ring, allowing subsequent pad selections to snap instantly into the targeted slot.
 
-## Interactive Guided Onboarding Tour Wizard (v2.0 Architecture)
+### Articulated Audio Synthesis Engine
 
-To reduce the cognitive barrier to entry for new users studying solfège dictation, an isolated, zero-dependency Guided Tour Engine was engineered. Following a comprehensive UX and Accessibility (a11y) audit, the system was recently refactored from a forced-interruption modal into a voluntary, persistent tool that smoothly spotlights key components without breaking the viewport flow.
-
-[User Clicks 'Help Tour ?' Button]
-|
-+--> Engine Clears Previous States
-|
-+--> Flushes Stale DOM Layout Rules
-|
-+--> Triggers Interactive Tour Overlay Mask & Steps
-
-### 1. Accessibility (a11y) First & Opt-In Architecture
-
-Early iterations of the app utilied a localStorage check to force the onboarding curtain on first load. This was deprecated to meet strict accessibility standards:
-
-Reduced Cognitive Friction: Forcing focus-trapping modals immediately upon page load is disruptive to screen readers and user agency.
-
-Persistent Header Trigger: The tour is now mapped to a high-contrast, permanent action button in the global header. Users retain total control over their learning environment and can re-trigger the walkthrough at any time.
-
-### 2. The Fluid Viewport Lock (Resolving the Post-Scroll Paradox)
-
-Previously, the engine relied on scrollIntoView({ behavior: "smooth" }) to bring targets into view on mobile devices before calculating tooltip coordinates. This created a severe asynchronous race condition (The Post-Scroll Paradox): smooth scrolling would shift the screen while JavaScript calculated the getBoundingClientRect(), causing tooltips to clip into the browser's dynamic URL bars or fly off-screen entirely.
-
-To solve this, the application layout was completely overhauled:
-
-- Flex-Compression Engine: The master grid shell was refactored to utilise a rigid 100dvh (Dynamic Viewport Height) lock coupled with overflow: hidden.
-
-- Fluid Component Squish: By relying on min-height: 0, clamp() mathematics, and justify-content: space-between, all musical staves, action buttons, and curriculum tables dynamically compress or expand to fit perfectly within the glass of any device (from a tiny iPhone SE to a wide Zenbook Fold).
-
-- Coordinate Stability: Because vertical scrolling was eradicated, DOM elements never move asynchronously. Tooltip coordinate math is now completely stable and predictable on all screen sizes.
-
-### 3. Adaptive Positional Routing
-
-With the viewport locked, the engine handles component targeting via an explicit layout map injected straight into the configuration array:
-
-- Desktop Viewports ($\ge 1024\text{px}$): The script extracts absolute positional vectors relative to the target's bounding box. Special routing intercepts the persistent Kodály sidebar (which spans 100vh), anchoring the tooltip precisely 24px to the right of the rail to prevent top-clipping.
-- Mobile Viewports ($< 1023\text{px}$): Live JS maths is intentionally bypassed. Instead, the engine reads explicit step intents (mobilePosition: "top" | "bottom") and applies strict CSS safe-area tracking parameters (env(safe-area-inset-bottom)), ensuring tooltips permanently dodge mobile OS navigation bars.
-- DOM Hygiene: To prevent desktop absolute positioning pixels from leaking into mobile viewports during window resizing, the engine runs tooltipBox.removeAttribute("style") on every step transition.
-
-### 4. Non-Destructive Foreground Spotlight Masking
-
-- The Layering Strategy: The master dimming curtain (.tour-overlay) introduces a dark masking backdrop (rgba(15, 23, 42, 0.75)) utilizing CSS backdrop blurs to isolate the interface.
-
-- The Spotlight: When a component is targeted, the utility class .tour-highlight-active bumps its relative state and injects an isolated z-index: 5100 alongside an aggressive white-and-blue drop-shadow blend. This rips the native element forward through the curtain mask without altering the static DOM tree or breaking its newly established fluid flex parameters.
-
-- The Kodály Matrix Protection: The curriculum table was reinforced with table-layout: fixed and fluid interior padding, ensuring that when the spotlight mask highlights it on narrow screens, the syllables and SVG icons cannot be crushed or wrap erratically.
+- **Acoustic Delineation:** Shifted to a warm, resonant triangle wave oscillator (`Synth`) voiced at a crisp, mid-range register (`G3`).
+- **The Articulation Gap:** Solved the problem of consecutive identical notes blending into a muddy tone by scaling durations to **82% of their structural metric space**, creating crisp acoustic separation between attacks.
 
 ---
 
-## 📜 Architecture Evolution & Development Log
+## 6. Testing & The Mobile Chronicles (Bug Tracking)
 
-### v2.0: The Accessibility & Fluid Viewport Refactor (Current)
+### Manual & Automated Testing
+
+- **[PLACEHOLDER: Document manual testing methodology here]**
+
+- Lighthouse Scores:
+
+### The Mobile Chronicles (Cross-Browser Bug Hunt)
+
+Deploying a highly interactive canvas to modern mobile touchscreens exposed aggressive, device-specific optimisations.
+
+**1. The iOS WebKit SVG Flexbox Collapse**
+
+- **The Pain:** Rhythmic motif cards expanded horizontally, spilling off the right-hand edge of mobile screens.
+- **The Diagnostic/Architecture:** iOS Safari ignores aspect calculations for SVGs containing dynamic `width="100%"` configurations in flexible rows. We hardened grid track items with a strict structural reset override (`min-width: 0`) and forced internal vector children to observe strict relative proportions (`height: 100%; width: auto; max-width: 100%;`).
+
+**2. The Native iOS Interactive Tint Override**
+
+- **The Pain:** Buttons discarded style guide variables and rendered in an aggressive native blue hyperlink colour.
+- **The Diagnostic/Architecture:** Mobile Safari intercepts `<button>` tags to save data. Injected a deep-level appearance strip command (`-webkit-appearance: none; appearance: none;`) across the interaction deck and hard-locked typography variables with `!important`.
+
+**3. The 'Content-Visibility' Animation Strike**
+
+- **The Pain:** Custom spring animations froze solid.
+- **The Diagnostic/Architecture:** The `content-visibility: auto` utility segregated elements into isolated layout contexts, causing the browser to stop tracking dynamic transforms mid-flight. Completely removed visibility containment properties (`contain: none;`) to restore 60FPS execution runways.
+
+**4. The Simultaneous Layer Promotion Trap**
+
+- **The Pain:** The tactile horizontal frustration shake microgesture vanished entirely on clicks.
+- **The Diagnostic/Architecture:** Adding `will-change: transform` inside the active animation class caused a GPU layer creation delay (1-frame paint freeze), bypassing the animation lifecycle. Moved the hardware allocation instruction up to the base workspace element style permanently.
+
+**5. Style Batching Optimisation & The Forced Reflow Solution**
+
+- **The Pain:** JavaScript successfully added/removed the `.is-shaking` class, but visual elements remained totally rigid.
+- **The Diagnostic/Architecture:** Modern layout threads batch redundant work to save battery. Adding a class and scheduling a `setTimeout` to strip it 500ms later caused the browser to skip painting the intermediate frames entirely. We injected an explicit layout calculation interrupt (**`void bar.offsetWidth;`**) to break the batching mechanism and force an immediate frame refresh.
+
+---
+
+## 7. Deployment Guide
+
+This project was developed using Git version control and is hosted on GitHub. It has been deployed as a live web application using **GitHub Pages**.
+
+### Deployment Steps
+
+To deploy the site to GitHub Pages, the following steps were executed:
+
+1. **Repository Access:** Navigate to the project's repository on GitHub.
+2. **Settings:** Click on the **Settings** tab located in the repository's main navigation bar.
+3. **Pages Configuration:** In the left-hand sidebar, scroll down to the "Code and automation" section and click on **Pages**.
+4. **Source Selection:** Under the "Build and deployment" section, ensure the "Source" dropdown is set to **Deploy from a branch**.
+5. **Branch Targeting:** Under the "Branch" section, click the primary dropdown and select the **`main`** branch. Ensure the folder dropdown next to it is set to **`/ (root)`**.
+6. **Save & Build:** Click the **Save** button. This triggers a GitHub Actions workflow that builds and deploys the site.
+7. **Live Link:** After a few minutes, a notification appears at the top of the Pages settings stating, _"Your site is live at [[URL](https://stockol.github.io/solfaic/)]"_. This link was then added to the top of this README document.
+
+### Local Deployment (Cloning)
+
+To run this project locally on your own machine:
+
+1. Navigate to the GitHub repository.
+2. Click the green **`<> Code`** button.
+3. Copy the HTTPS URL provided.
+4. Open your local terminal/IDE and run: `git clone [https://github.com/StockoL/solfaic.git]`
+5. Open the cloned directory and launch `index.html` in your browser (or use an extension like VSCode's Live Server for hot-reloading).
+
+---
+
+## 8. Credits & Acknowledgements
+
+- **Tone.js (v14):** External library used to power the Web Audio API synthesis pipeline.
+- **Josh Comeau ("Whimsical Animations" Course):** A massive portion of this release's visual delight is directly inspired by Josh's design philosophy. His teachings on digital weight, spring physics, and intentional micro-interactions provided the groundwork for our tactile card scaling, staggered confetti particle engine, and non-transactional visual payoffs.
+- **Every Layout:** Principles of "Intrinsic Web Design" (The Stack, The Switcher) heavily informed the CSS architecture.
+
+### AI Pair Programming & Academic Integrity
+
+In alignment with modern software engineering practices and course academic integrity guidelines, Artificial Intelligence (LLMs) was utilised strictly as a "Pair Programmer" and technical sounding board throughout the development lifecycle, rather than an automated generation tool.
+
+The core pedagogical logic, Kodály curriculum mapping, system architecture, and UX design decisions were entirely human-engineered. AI tooling was leveraged specifically as an accelerator for the following tasks:
+
+- **Cross-Browser Debugging:** Diagnosing obscure, device-specific rendering engines (e.g., identifying the root cause of the iOS WebKit SVG Flexbox collapse and diagnosing the CSS transition race conditions causing tooltips to flicker).
+- **Architecture Consultation:** Discussing the mathematical tradeoffs between static media queries versus the modern fluid `clamp()` viewport flex-compression model used in the final build.
+- **Code Review & Linting:** Acting as a strict linter to suggest cleaner, more performant ES6 syntax during the refactoring phases (e.g., ensuring DOM elements were safely cached and defensive programming checks were in place).
+- **Documentation Structuring:** Assisting in formatting the development logs and technical specs into a professional, open-source standard layout.
+
+Every line of code suggested by AI was critically reviewed, tested, and manually integrated by the developer to ensure absolute comprehension and complete ownership of the final application architecture.
+
+### Technologies Used
+
+- **HTML5:** Semantic structural markup providing an accessible foundation.
+- **CSS3:** Custom properties (variables), Flexbox, CSS Grid, and modern dynamic viewport units (`dvh`) to engineer a responsive, intrinsic layout without relying on heavy external frameworks like Bootstrap.
+- **JavaScript (ES6+):** Vanilla JavaScript powering the Model-View-Controller (MVC) architecture, custom state machine, event delegation, and DOM rendering pipelines.
+- **Tone.js (v14):** A Web Audio API framework utilised for high-fidelity triangle wave synthesis, precise metric timing, and transport sequence scheduling.
+- **Inline SVG:** Scalable Vector Graphics embedded directly into the DOM for pixel-perfect, infinitely scalable musical notation that inherits CSS colour states.
+- **Git & GitHub:** Utilised for atomic version control, feature branching, and live cloud deployment via GitHub Pages.
+- **W3C & JSHint:** Strict code validation tools used during the final polish phase to ensure 100% compliant HTML/CSS and error-free JavaScript execution.
+
+---
+
+## 9. Development Log & Engineering Phases
+
+To ensure a clean, maintainable, and scalable codebase, this application was built using atomic commits following the Model-View-Controller (MVC) design pattern.
+
+### Phase 1: The Intrinsic Skeleton (HTML/CSS)
+
+- `feat(ui): scaffold raw semantic HTML skeleton for rhythm workspace`
+- `style: establish design tokens and Every Layout intrinsic primitives`
+- `style: apply visual hierarchy and component styling to workspace elements`
+- `style(typography): integrate Inter for UI and Noto Music for cross-platform notation rendering`
+
+**Challenge & Resolution:** Initially used a flexbox "Switcher" primitive for motif pads, which forced buttons into a single un-usable vertical column on mobile. Upgraded the layout to a true CSS Grid with the RAM pattern (`repeat(auto-fit, minmax(min(140px, 100%), 1fr))`), guaranteeing neat 2x2 grids on mobile.
+
+### Phase 2: The Data Brain (Model & State)
+
+- `chore(architecture): map JS module stubs and establish musical domain library`
+- `feat(core): initialise data models, global state machine, and DOM cache`
+
+**Challenge & Resolution:** Needed an algorithmic way to generate randomised rhythms, but scheduling in milliseconds would break audio if tempo changed. Future-proofed the generator by hard-calculating Tone.js compatible `Bars:Beats:Sixteenths` timestamps (e.g., `0:2:0`). Used JSDoc (`/** @param ... */`) to establish data contracts.
+
+### Phase 3: The View Controller (Wiring the Logic)
+
+- `feat(engine): implement algorithmic rhythm sequence generator`
+- `feat(view): implement dynamic DOM rendering cycle for level initialisation`
+- `feat(interaction): implement state-aware event handlers for motif selection`
+
+**Challenge & Resolution:** Dropping all controller logic into the file at once risks triggering `undefined` errors. Left the `window.addEventListener("DOMContentLoaded")` block empty until the very last commit to safely build and verify logic in a modular fashion.
+
+### Phase 4: The Evaluation Engine & Pedagogical Refinement
+
+- `feat(data): implement British Kodaly Academy curriculum mapping for MVP levels 1-3`
+- `feat(evaluation): implement granular beat-by-beat validation engine and state routing`
+- `refactor(ui): migrate from unicode text characters to inline SVG library`
+
+**Challenge & Resolution:** The "Unicode Typography Wall." I initially used the `Noto Music` font to render notes. Because different symbols belong to different Unicode blocks, they had wildly different bounding boxes, breaking alignment. Abandoned text-based font rendering for an inline SVG architecture, mirroring industry standards (Soundtrap/Flat.io) and guaranteeing pixel-perfect alignment.
+
+### Phase 5: The Audio Engine
+
+- `feat(audio): integrate Tone.js scheduling engine for accurate target array playback`
+- `fix(audio): implement subdivision parsing array to render accurate dictation rhythms`
+- `feat(audio): implement visual and auditory count-in modal synchronised with Tone.Transport`
+
+**Challenge & Resolution:** The "Robotic Crotchet" Bug. Initially, Tone.js played a single woodblock hit for every motif block, failing to distinguish subdivisions of a `ti-ti`. Added a `playback` array to the library (e.g., `["8n", "8n"]`) and wrote a smart parser to flatten the sequence into precisely timed micro-events.
+
+---
+
+### Phase 6: The Onboarding Architecture Evolution (v1.0 to v2.1)
+
+**v2.0: The Accessibility & Fluid Viewport Refactor**
 
 - **The Problem:** The V1 onboarding modal forced an immediate interruption on load (poor accessibility), and the layout relied on Javascript scroll-tracking that failed unpredictably on mobile browsers due to asynchronous rendering (The Post-Scroll Paradox).
-- **The Solution:** Moved the tour to a persistent, user-triggered 'Help' button. Completely rebuilt the application shell using a fluid `100dvh` flex-compression model to eliminate vertical scrolling. Tooltip coordinates are now mapped statically, resulting in a locked, native-app feel across all screen sizes.
+- **The Solution:** Moved the tour to a persistent, user-triggered 'Help' button. Completely rebuilt the application shell using a fluid `100dvh` flex-compression model (`min-height: 0`, `clamp()`) to eliminate vertical scrolling. Tooltip coordinates are now mapped statically, resulting in a locked, native-app feel across all screen sizes.
 
-### v1.0: The Dynamic Coordinate Prototype
+**v2.1: Resolving Animation Race Conditions & FOUC**
 
-- **The Concept:** A zero-dependency engine that automatically scrolled to target UI components and calculated tooltip coordinates on the fly using `getBoundingClientRect()`.
-- **The Execution:** Relied heavily on absolute positioning and a foreground spotlight mask (`z-index` elevation) to draw focus. State was preserved via `localStorage` to prevent repeating the tour on subsequent loads.
-
-### v2.1: Resolving Animation Race Conditions & FOUC
-
-- **The Problem:** During onboarding step transitions, the tooltip exhibited a "Top-Left Flying Flicker" and a "Flash of Future Content" (FOUC). This occurred because CSS transitions on spatial coordinates (`top`/`left`) conflicted with JavaScript's instantaneous DOM text mutations and coordinate recalculations. The browser attempted to animate the box flying across the screen while simultaneously swapping the text before the fade-out sequence had finished.
-
-- **The Solution:** Decoupled spatial properties from CSS transitions, restricting CSS animations strictly to `opacity` and `transform` so the box can teleport invisibly. Refactored the JavaScript execution block to leverage delayed DOM injection (`setTimeout`), ensuring text mutations and coordinate updates only occur _after_ the element drops to `opacity: 0`. Finally, forced a synchronous browser reflow (`void element.offsetWidth`) before fading back in to guarantee perfectly smooth, flicker-free rendering.
+- **The Problem:** During onboarding step transitions, the tooltip exhibited a "Top-Left Flying Flicker" and a "Flash of Future Content" (FOUC). CSS transitions on spatial coordinates (`top`/`left`) conflicted with JavaScript's instantaneous DOM text mutations and coordinate recalculations.
+- **The Solution:** Decoupled spatial properties from CSS transitions, restricting CSS animations strictly to `opacity` and `transform`. Refactored the JS execution block to leverage delayed DOM injection (`setTimeout`), ensuring text mutations occur _after_ the element drops to `opacity: 0`. Finally, forced a synchronous browser reflow (`void element.offsetWidth`) before fading back in to guarantee flicker-free rendering.

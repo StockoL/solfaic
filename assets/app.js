@@ -1,9 +1,12 @@
+/* jshint esversion: 8 */
+/* global Tone */
+
 /**
  * ============================================================================
  * SOLFAIC! - Rhythm Dictation Core Application Engine
  * ============================================================================
  * Architecture: Model-View-Controller (MVC) Hybrid
- * * - MODEL: `sessionState`, `MOTIF_LIBRARY`, `levelRules` (The raw data)
+ * - MODEL: `sessionState`, `MOTIF_LIBRARY`, `levelRules` (The raw data)
  * - VIEW: `renderWorkspace()`, `renderStreakTracker()` (The DOM updates)
  * - CONTROLLER: `startLevel()`, `evaluateSubmission()`, `insertMotifAt()` (The logic)
  * ============================================================================
@@ -353,15 +356,17 @@ function evaluateSubmission() {
   if (DOM.skipBtn) DOM.skipBtn.classList.add("is-locked");
   if (DOM.replayBtn) DOM.replayBtn.classList.add("is-locked");
 
-  const config = sessionState.activeConfig;
-
   // Early Return: Block submission if there are empty holes in the board
   if (sessionState.userSubmission.includes(null)) {
     const bars = DOM.workspace.querySelectorAll(".workspace-bar");
     bars.forEach((bar) => {
       bar.classList.remove("is-shaking");
-      void bar.offsetWidth; // TRICK: Force a browser reflow to reset CSS animation states
-      bar.classList.add("is-shaking");
+      // LIGHTHOUSE FIX: Replaced offsetWidth with double requestAnimationFrame to prevent forced reflows
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          bar.classList.add("is-shaking");
+        });
+      });
     });
 
     const missingSlots = DOM.workspace.querySelectorAll(
@@ -676,9 +681,13 @@ function triggerCelebrationModal(targetLevelId) {
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 
-  // Force reflow before adding active class ensures the CSS transform scale animates cleanly
-  void overlay.offsetHeight;
-  overlay.classList.add("is-active");
+  // LIGHTHOUSE FIX: Use requestAnimationFrame instead of forced layout recalculation
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      overlay.classList.add("is-active");
+    });
+  });
+
   fireMasteryConfetti();
 }
 
@@ -860,11 +869,12 @@ function executeTourStepPass() {
       tourOverlayElement.style.alignItems = "flex-start";
       tourOverlayElement.style.justifyContent = "flex-start";
 
-      // Force browser reflow
-      void tooltipBox.offsetWidth;
-
-      // Fade back in with the new text safely loaded
-      tooltipBox.style.opacity = "1";
+      // LIGHTHOUSE FIX: Safely trigger animation without forcing reflow
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          tooltipBox.style.opacity = "1";
+        });
+      });
     }, 320);
   } else {
     // Fallback if target element doesn't exist
@@ -874,8 +884,11 @@ function executeTourStepPass() {
       tourOverlayElement.style.justifyContent = "center";
       tooltipBox.style.position = "static";
 
-      void tooltipBox.offsetWidth;
-      tooltipBox.style.opacity = "1";
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          tooltipBox.style.opacity = "1";
+        });
+      });
     }, 200);
   }
 }
@@ -926,8 +939,12 @@ function triggerTourCompletionModal() {
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 
-  void overlay.offsetHeight;
-  overlay.classList.add("is-active");
+  // LIGHTHOUSE FIX: Replaced offsetHeight reflow hack
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      overlay.classList.add("is-active");
+    });
+  });
 }
 
 // ============================================================================
@@ -1080,7 +1097,7 @@ const AudioEngine = {
 };
 
 // ============================================================================
-// 8. BOOTSTRAP PIPELINE (DOM Content Loaded)
+// 8. BOOTSTRAP/INITIALISATION PIPELINE (DOM Content Loaded)
 // ============================================================================
 
 window.addEventListener("DOMContentLoaded", () => {

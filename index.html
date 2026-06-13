@@ -8,6 +8,7 @@
       name="description"
       content="Solfaic is an interactive musical dictation and sight-reading tool designed to train rhythmic ears using the British Kodaly Academy curriculum."
     />
+    <link rel="preload" href="assets/style.css" as="style" />
     <link rel="stylesheet" href="assets/style.css" />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -280,25 +281,25 @@
         </header>
 
         <main class="workspace l-stack">
-          <section class="status-bar">
+          <div class="status-bar">
             <button id="btn-skip" class="ghost-btn">← Levels</button>
             <div id="ui-level-badge" class="level-badge"></div>
             <div id="ui-streak-tracker" class="streak-tracker"></div>
-          </section>
+          </div>
 
-          <section class="playback-panel l-stack">
+          <div class="playback-panel l-stack">
             <button id="btn-replay" class="btn-primary-audio">
               🔊 PLAY RHYTHM
             </button>
             <p id="ui-plays-remaining" class="plays-remaining"></p>
-          </section>
+          </div>
 
-          <section class="input-display-panel">
+          <div class="input-display-panel">
             <p class="section-label">YOUR INPUT WORKSPACE:</p>
             <div id="ui-workspace" class="workspace-array"></div>
-          </section>
+          </div>
 
-          <section class="motif-selector-pane l-stack">
+          <div class="motif-selector-pane l-stack">
             <div class="blueprint-anchor">
               <span id="ui-metre-display">Metre: --</span>
               <span class="divider">|</span>
@@ -310,11 +311,11 @@
             </div>
 
             <div id="ui-motif-selector" class="l-switcher"></div>
-          </section>
+          </div>
 
-          <section class="action-panel">
+          <div class="action-panel">
             <button id="btn-submit" class="btn-submit">SUBMIT SEQUENCE</button>
-          </section>
+          </div>
         </main>
       </div>
     </div>
@@ -322,6 +323,6 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"
       defer
     ></script>
-    <script src="app.js" defer></script>
+    <script src="assets/app.js" defer></script>
   </body>
 </html>
