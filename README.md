@@ -479,3 +479,9 @@ With the viewport locked, the engine handles component targeting via an explicit
 
 - **The Concept:** A zero-dependency engine that automatically scrolled to target UI components and calculated tooltip coordinates on the fly using `getBoundingClientRect()`.
 - **The Execution:** Relied heavily on absolute positioning and a foreground spotlight mask (`z-index` elevation) to draw focus. State was preserved via `localStorage` to prevent repeating the tour on subsequent loads.
+
+### v2.1: Resolving Animation Race Conditions & FOUC
+
+- **The Problem:** During onboarding step transitions, the tooltip exhibited a "Top-Left Flying Flicker" and a "Flash of Future Content" (FOUC). This occurred because CSS transitions on spatial coordinates (`top`/`left`) conflicted with JavaScript's instantaneous DOM text mutations and coordinate recalculations. The browser attempted to animate the box flying across the screen while simultaneously swapping the text before the fade-out sequence had finished.
+
+- **The Solution:** Decoupled spatial properties from CSS transitions, restricting CSS animations strictly to `opacity` and `transform` so the box can teleport invisibly. Refactored the JavaScript execution block to leverage delayed DOM injection (`setTimeout`), ensuring text mutations and coordinate updates only occur _after_ the element drops to `opacity: 0`. Finally, forced a synchronous browser reflow (`void element.offsetWidth`) before fading back in to guarantee perfectly smooth, flicker-free rendering.
