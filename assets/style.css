@@ -118,7 +118,8 @@ main,
 .curriculum-sidebar {
   background-color: var(--color-surface);
   border-right: 2px solid var(--color-border);
-  padding: var(--space-lg);
+  /* FIX: Fluid padding breathes nicely on desktop but tightens up on narrow mobile sidebars */
+  padding: clamp(1rem, 2vw, var(--space-lg));
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -170,6 +171,99 @@ main,
   font-size: 0.9rem;
 }
 
+/* ==========================================================================
+   THE KODÁLY MATRIX (Squish-Proof Table Architecture)
+   ========================================================================== */
+.curriculum-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 var(--space-sm);
+  margin-top: var(--space-sm);
+  /* FIX: Forces the browser to strictly obey our column width percentages */
+  table-layout: fixed;
+}
+
+/* Strategic Column Width Allocations */
+.curriculum-table th:nth-child(1) {
+  width: 28%;
+} /* Syllable */
+.curriculum-table th:nth-child(2) {
+  width: 26%;
+} /* Notation SVG */
+.curriculum-table th:nth-child(3) {
+  width: 46%;
+} /* Description */
+
+.curriculum-table th {
+  text-align: left;
+  font-size: clamp(0.65rem, 1vw, 0.75rem);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding: 0 4px var(--space-sm) 4px;
+  border-bottom: 2px solid var(--color-border);
+  white-space: nowrap; /* Prevents header text from awkward wrapping */
+}
+
+.curriculum-table td {
+  /* Fluid interior padding ensures content never touches the card border */
+  padding: clamp(6px, 1vw, 10px) 4px;
+  vertical-align: middle;
+  background-color: var(--color-bg);
+  font-size: clamp(0.75rem, 1.2vw, 0.85rem); /* Fluid text scaling */
+  font-weight: 600;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  word-wrap: break-word; /* Forces long description text to safely wrap downwards */
+}
+
+/* Card edge breathing room */
+.curriculum-table td:first-child {
+  padding-left: clamp(10px, 2vw, 14px);
+  border-left: 1px solid var(--color-border);
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.curriculum-table td:last-child {
+  padding-right: clamp(10px, 2vw, 14px);
+  border-right: 1px solid var(--color-border);
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.syllable-token {
+  display: inline-block;
+  font-family: monospace;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: clamp(0.7rem, 1vw, 0.85rem);
+  word-break: break-all; /* If viewport is incredibly narrow, break the token text safely */
+}
+
+.table-svg-preview {
+  height: clamp(32px, 4vw, 40px); /* Fluid SVG wrapper height */
+  width: clamp(36px, 5vw, 44px); /* Fluid SVG wrapper width */
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto; /* Centers the icon perfectly inside its column */
+}
+
+.table-svg-preview svg {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
 /* ==========================================================================
    4. CORE APPLICATION COMPONENTS (Aesthetics & Interface)
    ========================================================================== */
@@ -675,12 +769,19 @@ main,
 }
 
 .syllable-token {
+  display: inline-block;
   font-family: monospace;
   background-color: var(--color-primary);
   color: var(--color-surface);
-  padding: 2px 6px;
+  padding: 4px 6px; /* Added slightly more vertical padding for wrapped lines */
   border-radius: 4px;
-  font-size: 0.85rem;
+  font-size: clamp(0.7rem, 1vw, 0.85rem);
+  line-height: 1.2;
+  text-align: center; /* Keeps stacked syllables visually balanced */
+
+  /* FIX: Removes letter-tearing and restores natural hyphen/space wrapping */
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .table-svg-preview {
@@ -828,13 +929,141 @@ main,
 
 /* ==========================================================================
    12. MASTER RESPONSIVE MEDIA QUERIES
-   (These MUST cascade last so they correctly override desktop/base parameters)
+   (Cascades last to ensure layout overrides ALWAYS win without needing !important)
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
    A. MOBILE VIEWPORTS ONLY (Up to 1023px Display Bounds)
    -------------------------------------------------------------------------- */
 @media (max-width: 1023px) {
+  /* Absolute Viewport Lock: Zero scrolling permitted under any circumstance */
+  html,
+  body {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+  }
+
+  .app-grid-shell {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .application-canvas {
+    flex: 1;
+    padding: clamp(0.5rem, 1.5vh, 1rem) var(--space-md) !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .workspace.l-stack {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: clamp(0.25rem, 1.5vh, 1.5rem);
+    padding-bottom: clamp(0.25rem, 1vh, 1rem);
+    margin: 0;
+  }
+
+  .workspace.l-stack > * + * {
+    margin-top: 0;
+  }
+
+  .playback-panel,
+  .action-panel,
+  .status-bar {
+    flex-shrink: 0;
+  }
+
+  .input-display-panel {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+  }
+
+  .motif-selector-pane {
+    flex-shrink: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  #ui-workspace {
+    gap: clamp(4px, 1vh, 1rem);
+    padding: 0;
+    justify-content: center;
+    min-height: auto;
+  }
+
+  .workspace-bar {
+    height: clamp(40px, 8vh, 85px);
+    padding: clamp(2px, 0.5vh, 6px);
+  }
+
+  .workspace-card {
+    min-width: clamp(36px, 7vw, 65px);
+  }
+  .workspace-card .svg-container {
+    height: clamp(20px, 4vh, 38px);
+  }
+
+  #ui-motif-selector {
+    grid-template-columns: repeat(auto-fit, minmax(min(80px, 30%), 1fr));
+    gap: clamp(4px, 1vh, 8px);
+  }
+
+  .motif-pad {
+    min-height: clamp(38px, 6vh, 64px);
+    font-size: clamp(0.7rem, 1.5vh, 0.95rem);
+    gap: clamp(2px, 0.5vh, 6px);
+    padding: 4px;
+  }
+
+  .motif-pad .svg-container {
+    height: clamp(16px, 3vh, 32px);
+  }
+
+  .btn-primary-audio,
+  .btn-submit {
+    padding: clamp(0.5rem, 1.5vh, 1.25rem);
+    font-size: clamp(0.9rem, 2vh, 1.15rem);
+  }
+
+  .global-header {
+    padding-bottom: clamp(4px, 1vh, 8px);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-size: clamp(1.1rem, 2.5vh, 1.5rem);
+  }
+  .hamburger-btn {
+    font-size: clamp(1.1rem, 2.5vh, 1.5rem);
+  }
+  .section-label {
+    font-size: clamp(0.65rem, 1.2vh, 0.85rem);
+    margin-bottom: 2px;
+  }
+  .plays-remaining {
+    font-size: clamp(0.65rem, 1.2vh, 0.85rem);
+    margin-top: 2px;
+  }
+  .blueprint-anchor {
+    margin: 0 0 4px 0;
+    padding-bottom: 0;
+    border-bottom: none;
+    font-size: clamp(0.75rem, 1.5vh, 0.9rem);
+  }
+
   .curriculum-sidebar {
     position: fixed;
     top: 0;
@@ -844,7 +1073,6 @@ main,
     z-index: 3000;
     box-shadow: 25px 0 50px -12px rgba(0, 0, 0, 0.15);
     transform: translateX(-100%);
-    /* FIX: Hidden completely handles the mobile click trap natively without an overlay! */
     visibility: hidden;
     transition:
       transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
@@ -856,31 +1084,6 @@ main,
     visibility: visible;
   }
 
-  .sidebar-close-btn {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: var(--color-text-muted);
-    padding: var(--space-sm);
-  }
-
-  .curriculum-table td {
-    padding: var(--space-sm) 6px;
-    font-size: 0.78rem;
-  }
-
-  .table-svg-preview {
-    width: 38px;
-    height: 36px;
-    padding: 2px;
-  }
-
-  .syllable-token {
-    font-size: 0.75rem;
-    padding: 2px 4px;
-  }
-
-  /* FLUID SAFE-AREA MOBILE TOUR TOOLTIP ALIGNMENTS */
   .tour-tooltip {
     position: fixed;
     left: 50%;
@@ -889,20 +1092,15 @@ main,
     max-width: 360px;
     top: auto;
     bottom: auto;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     z-index: 5200;
   }
-
   .tour-tooltip.is-mobile-top {
     top: 24px;
     top: calc(16px + env(safe-area-inset-top, 0px));
-    bottom: auto;
   }
-
   .tour-tooltip.is-mobile-bottom {
     bottom: 24px;
     bottom: calc(16px + env(safe-area-inset-bottom, 0px) + 12px);
-    top: auto;
   }
 }
 
@@ -910,45 +1108,19 @@ main,
    B. TIGHT PHONE SYSTEMS (Up to 480px Display Bounds)
    -------------------------------------------------------------------------- */
 @media (max-width: 480px) {
-  .global-header {
-    padding-bottom: var(--space-sm);
-    gap: var(--space-sm);
-  }
-
-  .logo {
-    font-size: 1.2rem;
-  }
-
   .btn-escape,
   #btn-skip {
-    white-space: nowrap;
-    flex-shrink: 0;
-    width: auto;
-    padding: var(--space-sm) 0.75rem;
+    padding: 6px 10px;
     font-size: 0.8rem;
   }
-
   #ui-motif-selector {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: var(--space-sm);
-    padding: var(--space-sm) 0;
+    grid-template-columns: repeat(3, 1fr) !important;
   }
-
   .motif-pad {
-    -webkit-appearance: none;
-    appearance: none;
-    min-width: 0;
     flex-direction: column;
-    min-height: 68px;
-    font-size: 0.75rem;
-    padding: var(--space-sm);
-    gap: 4px;
-    background-color: var(--color-surface);
-    color: var(--color-text);
+    padding: 2px;
   }
-
   .motif-pad .svg-container {
-    height: 28px;
     width: 100%;
   }
 }
@@ -957,11 +1129,24 @@ main,
    C. PREMIUM DESKTOP VIEWPORTS ONLY (1024px wide and above)
    -------------------------------------------------------------------------- */
 @media (min-width: 1024px) {
+  /* 1. Expand the Absolute Viewport Lock to Desktop */
+  html,
+  body {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* 2. Fluid Sidebar width prevents it from eating Nest Hub horizontal space */
   .app-grid-shell {
+    height: 100dvh;
     display: grid;
-    grid-template-columns: 400px 1fr;
-    gap: var(--space-xl);
-    padding-right: var(--space-xl);
+    grid-template-columns: clamp(260px, 30vw, 400px) 1fr;
+    gap: clamp(1rem, 2vw, var(--space-xl));
+    padding-right: clamp(1rem, 2vw, var(--space-xl));
+    overflow: hidden;
   }
 
   .application-canvas.l-center {
@@ -970,8 +1155,61 @@ main,
     padding-right: 0;
   }
 
+  /* 3. The Desktop Flex Crush Architecture */
   .application-canvas {
+    height: 100%;
     padding-top: var(--space-md);
+    padding-bottom: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .workspace.l-stack {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: clamp(0.5rem, 2vh, 1.5rem);
+    margin: 0;
+    min-height: 0; /* CRITICAL: Permits vertical compression */
+  }
+
+  .workspace.l-stack > * + * {
+    margin-top: 0;
+  }
+
+  .input-display-panel {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0; /* Allows central staves to act as a sponge */
+  }
+
+  .motif-selector-pane {
+    flex-shrink: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* 4. Fluid Stave & Component Bounds for short landscape displays */
+  #ui-workspace {
+    justify-content: center;
+    gap: clamp(0.5rem, 2vh, 2rem);
+    min-height: auto;
+  }
+
+  #ui-motif-selector {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    justify-content: center;
+    gap: clamp(0.5rem, 1.5vh, 1rem);
+  }
+
+  .motif-pad {
+    min-height: clamp(40px, 8vh, 64px);
   }
 
   #btn-replay,
@@ -981,26 +1219,12 @@ main,
     max-width: 480px;
     margin-left: auto;
     margin-right: auto;
-  }
-
-  #ui-motif-selector {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(140px, 180px)) !important;
-    justify-content: center;
-    gap: var(--space-md);
-  }
-
-  #ui-workspace {
-    justify-content: center;
-    gap: 3rem;
-    padding: var(--space-lg) 0;
+    padding: clamp(0.5rem, 2vh, 1.25rem);
   }
 
   .status-bar .ghost-btn {
-    display: block !important;
     visibility: hidden !important;
   }
-
   .hamburger-btn,
   .sidebar-close-btn {
     display: none !important;
