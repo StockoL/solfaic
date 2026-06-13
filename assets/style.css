@@ -1,7 +1,6 @@
 /* ==========================================================================
    1. TOKENS & SYSTEM VARIABLES
    ========================================================================== */
-
 *,
 *::before,
 *::after {
@@ -115,6 +114,7 @@ main,
   min-height: 100vh;
 }
 
+/* Base Desktop Sidebar Rules */
 .curriculum-sidebar {
   background-color: var(--color-surface);
   border-right: 2px solid var(--color-border);
@@ -528,6 +528,41 @@ main,
   }
 }
 
+.is-shaking {
+  animation: horizontalShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.workspace-card.is-placeholder.is-empty-panic {
+  border-color: var(--color-error) !important;
+  box-shadow: 0 0 0 4px rgba(234, 67, 53, 0.35) !important;
+  background-color: #fce8e6 !important;
+  transform: scale(0.95);
+}
+
+@keyframes horizontalShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  90% {
+    transform: translateX(-6px);
+  }
+  20%,
+  80% {
+    transform: translateX(6px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-10px);
+  }
+  40%,
+  60% {
+    transform: translateX(10px);
+  }
+}
+
 /* ==========================================================================
    9. MODAL OVERLAY SYSTEMS (Success Screen Celebrations)
    ========================================================================== */
@@ -597,43 +632,8 @@ main,
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-.is-shaking {
-  animation: horizontalShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-}
-
-.workspace-card.is-placeholder.is-empty-panic {
-  border-color: var(--color-error) !important;
-  box-shadow: 0 0 0 4px rgba(234, 67, 53, 0.35) !important;
-  background-color: #fce8e6 !important;
-  transform: scale(0.95);
-}
-
-@keyframes horizontalShake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  10%,
-  90% {
-    transform: translateX(-6px);
-  }
-  20%,
-  80% {
-    transform: translateX(6px);
-  }
-  30%,
-  50%,
-  70% {
-    transform: translateX(-10px);
-  }
-  40%,
-  60% {
-    transform: translateX(10px);
-  }
-}
-
 /* ==========================================================================
-   11. DATA LAYOUT COMPONENT CUSTOM STYLES (Curriculum Grid)
+   10. DATA LAYOUT COMPONENT CUSTOM STYLES (Curriculum Grid)
    ========================================================================== */
 .curriculum-table {
   width: 100%;
@@ -706,7 +706,7 @@ main,
 }
 
 /* ==========================================================================
-   12. INTERACTIVE ONBOARDING TOUR WIZARD BASE STYLES
+   11. INTERACTIVE ONBOARDING TOUR WIZARD BASE STYLES
    ========================================================================== */
 .tour-overlay {
   position: fixed;
@@ -770,12 +770,12 @@ main,
   width: 320px;
   max-width: 90vw;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-  z-index: 5200; /* Direct sibling under body sits clean on top of highlighted layers */
+  z-index: 5200; /* Sits naturally above highlighted targets */
   transition:
     opacity 0.2s ease,
     transform 0.2s ease,
-    top 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-    left 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    top 0.3s ease,
+    left 0.3s ease;
 }
 
 .tour-text-content {
@@ -827,7 +827,8 @@ main,
 }
 
 /* ==========================================================================
-   13. MASTER RESPONSIVE MEDIA QUERIES (Cascades Last to Win Override Rules)
+   12. MASTER RESPONSIVE MEDIA QUERIES
+   (These MUST cascade last so they correctly override desktop/base parameters)
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -843,11 +844,16 @@ main,
     z-index: 3000;
     box-shadow: 25px 0 50px -12px rgba(0, 0, 0, 0.15);
     transform: translateX(-100%);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    /* FIX: Hidden completely handles the mobile click trap natively without an overlay! */
+    visibility: hidden;
+    transition:
+      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0.4s;
   }
 
   .curriculum-sidebar.is-open {
     transform: translateX(0);
+    visibility: visible;
   }
 
   .sidebar-close-btn {
@@ -874,7 +880,7 @@ main,
     padding: 2px 4px;
   }
 
-  /* --- FLUID SAFE-AREA MOBILE TOUR TOOLTIP ALIGNMENTS --- */
+  /* FLUID SAFE-AREA MOBILE TOUR TOOLTIP ALIGNMENTS */
   .tour-tooltip {
     position: fixed;
     left: 50%;
@@ -900,7 +906,9 @@ main,
   }
 }
 
-/* Tight Phone Systems (Up to 480px Display Bounds) */
+/* --------------------------------------------------------------------------
+   B. TIGHT PHONE SYSTEMS (Up to 480px Display Bounds)
+   -------------------------------------------------------------------------- */
 @media (max-width: 480px) {
   .global-header {
     padding-bottom: var(--space-sm);
@@ -946,7 +954,7 @@ main,
 }
 
 /* --------------------------------------------------------------------------
-   B. PREMIUM DESKTOP VIEWPORTS ONLY (1024px wide and above)
+   C. PREMIUM DESKTOP VIEWPORTS ONLY (1024px wide and above)
    -------------------------------------------------------------------------- */
 @media (min-width: 1024px) {
   .app-grid-shell {

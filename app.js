@@ -2,36 +2,30 @@
  * ============================================================================
  * SOLFAIC! - Rhythm Dictation Core Application Engine
  * ============================================================================
- * Architecture: Model-View-Controller (MVC) Hybrid Strategy
- * * This file serves as the singular brain of the application. It governs the
- * underlying musical data structures, coordinates state changes, drives the Web
- * Audio API synthesis pipeline, and updates the DOM in response to interactions.
+ * Architecture: Model-View-Controller (MVC) Hybrid
+ * * - MODEL: `sessionState`, `MOTIF_LIBRARY`, `levelRules` (The raw data)
+ * - VIEW: `renderWorkspace()`, `renderStreakTracker()` (The DOM updates)
+ * - CONTROLLER: `startLevel()`, `evaluateSubmission()`, `insertMotifAt()` (The logic)
  * ============================================================================
  */
 
-// ==========================================
-// 1. DATA MODEL (Configuration & Rules)
-// ==========================================
+// ============================================================================
+// 1. DATA DICTIONARIES (The Application "Database")
+// ============================================================================
 
 /**
  * SVG Vector Graphics Library
- * These inline vector strings render musical notation cleanly at any device resolution.
- * All dictionary object keys are strictly mapped using Kodály pedagogical terminologies.
- * * Fill/Stroke settings use 'currentColor' to gracefully absorb parent CSS theme palettes.
+ * Storing SVGs as strings allows us to inject them dynamically into the DOM.
+ * Using 'currentColor' allows the CSS to control the stroke/fill colors natively.
  */
 const SVG_ICONS = {
-  // Simple time values (Single-unit structures)
   ta: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/></svg>`,
   titi: `<svg viewBox="0 0 80 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="64" cy="85" rx="12" ry="8" transform="rotate(-20 64 85)"/><rect x="72" y="15" width="3" height="70"/><rect x="22" y="15" width="53" height="8"/></svg>`,
   taRest: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M 25 20 L 15 40 L 30 55 L 15 80" fill="none"/></svg>`,
   taa: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="3"><ellipse cx="14" cy="85" rx="10" ry="7" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70" fill="currentColor" stroke="none"/></svg>`,
-
-  // Simple Time Semiquavers (Level 3 subdivisions)
   tikatika: `<svg viewBox="0 0 160 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><ellipse cx="134" cy="85" rx="12" ry="8" transform="rotate(-20 134 85)"/><rect x="142" y="15" width="3" height="70"/><rect x="22" y="15" width="123" height="8"/><rect x="22" y="27" width="123" height="8"/></svg>`,
   tikati: `<svg viewBox="0 0 120 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><rect x="22" y="15" width="83" height="8"/><rect x="22" y="27" width="43" height="8"/></svg>`,
   titika: `<svg viewBox="0 0 120 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><rect x="22" y="15" width="83" height="8"/><rect x="62" y="27" width="43" height="8"/></svg>`,
-
-  // Compound Time Values (Level 2/3 triple-meter elements)
   tai: `<svg viewBox="0 0 50 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><circle cx="40" cy="80" r="4"/></svg>`,
   tititi: `<svg viewBox="0 0 120 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><rect x="22" y="15" width="83" height="8"/></svg>`,
   tati: `<svg viewBox="0 0 90 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="64" cy="85" rx="12" ry="8" transform="rotate(-20 64 85)"/><rect x="72" y="15" width="3" height="70"/><path d="M 72 15 C 85 15 85 40 72 45 C 80 40 80 25 72 25 Z"/></svg>`,
@@ -39,10 +33,9 @@ const SVG_ICONS = {
 };
 
 /**
- * Master Metric Motif Library
- * Defines the parameters for each note value.
- * 'ticks' mapped to spatial layout cost (1 tick = 1 standard quarter-note grid spot).
- * 'playback' maps string instructions to Tone.js time parameters.
+ * Master Motif Engine Configuration
+ * Maps visual tokens to mathematical time representations required by Tone.js.
+ * 'ticks' represent spatial cost (e.g., taa requires 2 empty layout slots).
  */
 const MOTIF_LIBRARY = {
   ta: {
@@ -101,7 +94,6 @@ const MOTIF_LIBRARY = {
     svg: SVG_ICONS.taa,
     playback: ["2n"],
   },
-
   tai: {
     type: "compound",
     duration: "4n.",
@@ -137,8 +129,8 @@ const MOTIF_LIBRARY = {
 };
 
 /**
- * Progression Level Rules Matrix
- * Curates structural generation limits and valid token dictionaries for each level.
+ * Progression Matrix
+ * Determines which mathematical signatures and blocks are allowed at each difficulty tier.
  */
 const levelRules = {
   1: {
@@ -169,79 +161,32 @@ const levelRules = {
   },
 };
 
-// ==========================================
-// 2. STATE MACHINE (Active Session Tracking)
-// ==========================================
+// ============================================================================
+// 2. STATE MACHINE & DOM CACHE
+// ============================================================================
 
 /**
- * Singular Source of Truth State Object
- * Holds session memory. Interacting elements mutate these values,
- * then trigger a clean rendering pipeline pass to match the view to the state.
+ * Single Source of Truth
+ * The UI is merely a reflection of these variables. Changing a variable here
+ * and calling renderWorkspace() guarantees UI consistency.
  */
 const sessionState = {
   currentLevel: 1,
   playCount: 0,
   streak: 0,
-  maxPlays: 3, // Capital allowance limit before corrections run
-  activeConfig: null, // Holds dynamic level metadata (bars, ticks, meter type)
-  targetTimeline: [], // The correct sequence generated by the algorithm
-  userSubmission: [], // The student's current construction lane state array
-  slotStates: [], // State mirrors tracking verification history ('idle', 'success', 'error')
-  selectedSlotIndex: null, // Touch focus variable tracking mobile input ring placement
-  currentState: "IDLE", // Engine flags: 'IDLE' or 'PLAYING' (locks system interactions)
+  maxPlays: 3,
+  activeConfig: null, // Stores current metre, bars, and tick allocations
+  targetTimeline: [], // The algorithmic 'correct' answer
+  userSubmission: [], // What the user has placed on the board
+  slotStates: [], // Validation feedback memory ('idle', 'success', 'error')
+  selectedSlotIndex: null, // Tracks mobile tap-to-target logic
+  currentState: "IDLE", // 'IDLE' or 'PLAYING' (locks UI during audio)
 };
 
-// ==========================================
-// 2b. GUIDED TOUR ARCHITECTURE CONFIGURATION
-// ==========================================
-let tourCurrentStepIndex = 0;
-let activeTourSteps = [];
-
 /**
- * Dynamic Tour Mapping Dictionary Builder
- * Configures exact tracking identifiers and intent coordinates for mobile steps.
- */
-function compileTourSequence() {
-  const isMobileViewport = window.innerWidth < 1024;
-
-  return [
-    {
-      elementId: isMobileViewport ? "btn-toggle-sidebar" : "ui-sidebar",
-      text: isMobileViewport
-        ? "Welcome! Tap this hamburger menu button at any time to open up your Kodály reference table."
-        : "Welcome to Solfaic! This is your permanent curriculum matrix guide. Reference your syllables and notation rules here.",
-      mobilePosition: "bottom",
-    },
-    {
-      elementId: "btn-replay",
-      text: "Step 1: Hit this primary action button to listen to your target sound wave. Listen carefully—you have 3 plays maximum!",
-      mobilePosition: "bottom",
-    },
-    {
-      elementId: "ui-workspace",
-      text: "Step 2: This is your dictation staff. Your rhythm cards will assemble across these active, segmented measure beat boxes.",
-      mobilePosition: "bottom",
-    },
-    {
-      elementId: "ui-motif-selector",
-      text: "Step 3: Choose your musical building block components here. Tap or drag them up onto the staves to arrange your dictation answer.",
-      mobilePosition: "top",
-    },
-    {
-      elementId: "btn-submit",
-      text: "Step 4: Once every empty measure placeholder slot is completely populated, smash this button to evaluate your rhythmic precision. Good luck!",
-      mobilePosition: "top",
-    },
-  ];
-}
-
-// ==========================================
-// 3. UI DOM CACHE (View Connections)
-// ==========================================
-
-/**
- * Document Object Model Pointer Cache
- * Eliminates repetitive layout lookups, boosting interaction performance.
+ * Cached DOM Node References
+ * Looking up elements via document.getElementById is slow.
+ * We do it once here and store the references to boost runtime performance.
  */
 const DOM = {
   levelBadge: document.getElementById("ui-level-badge"),
@@ -256,21 +201,20 @@ const DOM = {
   skipBtn: document.getElementById("btn-skip"),
 };
 
-// ==========================================
-// 4. RHYTHM GENERATOR (The Core Logic)
-// ==========================================
+// ============================================================================
+// 3. CORE LOGIC & EVALUATION
+// ============================================================================
 
 /**
- * Algorithmic Rhythm Sequence Generator
- * Creates mathematically valid rhythmic equations based on level constraints.
- * * @param {number} levelId - The active level target index.
- * @returns {Array} An array of event timelines ready for Tone.js scheduling.
+ * Algorithmic Rhythm Generator
+ * Builds a mathematically valid musical sequence based on the active level rules.
+ * * @param {number} levelId - The target difficulty tier.
+ * @returns {Array} An array of sequential objects mapped for Tone.js playback.
  */
 function generateRhythmTimeline(levelId) {
   const rules = levelRules[levelId];
   if (!rules) return [];
 
-  // Randomize structural choices from authorized parameters
   const chosenMetre =
     rules.allowedMetres[Math.floor(Math.random() * rules.allowedMetres.length)];
   const barCount =
@@ -279,20 +223,18 @@ function generateRhythmTimeline(levelId) {
   let metreType = "simple";
   let ticksPerBar = 4;
 
-  // Process time signature constraints
   if (chosenMetre === "4/4") ticksPerBar = 4;
   if (chosenMetre === "3/4") ticksPerBar = 3;
   if (chosenMetre === "2/4") ticksPerBar = 2;
   if (chosenMetre === "6/8") {
     metreType = "compound";
-    ticksPerBar = 2; // Handled as 2 dotted quarter note beats per bar
+    ticksPerBar = 2;
   }
 
   const totalTicks = barCount * ticksPerBar;
   const validMotifsForRound =
     metreType === "simple" ? rules.simpleMotifs : rules.compoundMotifs;
 
-  // Commit dynamic blueprint metadata configuration to state
   sessionState.activeConfig = {
     metre: chosenMetre,
     bars: barCount,
@@ -304,11 +246,9 @@ function generateRhythmTimeline(levelId) {
   const timeline = [];
   let currentTicks = 0;
 
-  // Generate sequence within metric boundaries
   while (currentTicks < totalTicks) {
     const remainingTicks = totalTicks - currentTicks;
-
-    // Filter available cards to avoid structural bars overflow
+    // Prevent selecting a long motif (like ta-a) if there's only 1 tick left in the sequence
     const viableIds = validMotifsForRound.filter(
       (id) => MOTIF_LIBRARY[id].ticks <= remainingTicks,
     );
@@ -317,13 +257,12 @@ function generateRhythmTimeline(levelId) {
     const chosenId = viableIds[Math.floor(Math.random() * viableIds.length)];
     const motifData = MOTIF_LIBRARY[chosenId];
 
-    // Compute standard transport timeline values (bar:beat:sixteenths)
+    // Compute standard Tone.js Transport timing (e.g., "1:2:0" = Bar 1, Beat 2)
     const bar = Math.floor(currentTicks / ticksPerBar);
     const beat = currentTicks % ticksPerBar;
-    const timeString = `${bar}:${beat}:0`;
 
     timeline.push({
-      time: timeString,
+      time: `${bar}:${beat}:0`,
       duration: motifData.duration,
       motifId: chosenId,
       pitch: null,
@@ -335,217 +274,16 @@ function generateRhythmTimeline(levelId) {
   return timeline;
 }
 
-// ==========================================
-// 5. UI RENDERING (The View Controller)
-// ==========================================
-
 /**
- * Streak Marker UI Updater
- * Refreshes progress display boxes based on the current validation state history.
- */
-function renderStreakTracker() {
-  DOM.streakTracker.innerHTML = "";
-  for (let i = 0; i < 3; i++) {
-    const dot = document.createElement("div");
-    dot.className = "streak-dot";
-    if (i < sessionState.streak) {
-      dot.classList.add("is-success");
-    }
-    DOM.streakTracker.appendChild(dot);
-  }
-}
-
-/**
- * Level Initialization Controller
- * Resets memory, clears templates, sets layouts, and starts a fresh gameplay loop.
- * * @param {number} levelId - The level selection index target.
- */
-function startLevel(levelId) {
-  sessionState.currentLevel = levelId;
-  sessionState.playCount = 0;
-  sessionState.currentState = "IDLE";
-  sessionState.selectedSlotIndex = null;
-
-  // Generate targets and configure structural constraints
-  sessionState.targetTimeline = generateRhythmTimeline(levelId);
-  const config = sessionState.activeConfig;
-
-  // Build clean tracking state arrays matching computed structural widths
-  sessionState.userSubmission = Array(config.bars * config.ticksPerBar).fill(
-    null,
-  );
-  sessionState.slotStates = Array(config.bars * config.ticksPerBar).fill(
-    "idle",
-  );
-
-  // Re-enable interactive elements
-  DOM.submitBtn.classList.remove("is-locked");
-  DOM.skipBtn.classList.remove("is-locked");
-  DOM.replayBtn.classList.remove("is-locked");
-
-  // Synchronize layout information fields
-  DOM.levelBadge.innerText = `Level ${levelId}`;
-  DOM.metreDisplay.innerText = `Metre: ${config.metre}`;
-  DOM.barsDisplay.innerText = `Bars: ${config.bars}`;
-  DOM.playsRemaining.innerText = `Plays remaining: ${sessionState.maxPlays} / ${sessionState.maxPlays}`;
-
-  renderStreakTracker();
-
-  DOM.workspace.innerHTML = "";
-  DOM.motifSelector.innerHTML = "";
-
-  // Render valid entry card choices into the selection lane tray
-  config.allowedMotifs.forEach((motifId) => {
-    const motifData = MOTIF_LIBRARY[motifId];
-    const btn = document.createElement("button");
-    btn.className = "motif-pad";
-
-    btn.innerHTML = motifData.svg
-      ? `<div class="svg-container">${motifData.svg}</div> ${motifData.label}`
-      : `<span class="music-font">${motifData.symbol}</span> ${motifData.label}`;
-
-    // Desktop Input Handlers (HTML5 Drag-and-Drop)
-    btn.setAttribute("draggable", "true");
-    btn.addEventListener("dragstart", (e) => {
-      if (sessionState.currentState === "PLAYING") {
-        e.preventDefault();
-        return;
-      }
-      e.dataTransfer.setData("text/plain", motifId);
-    });
-
-    // Mobile/Fallback Click Handler
-    btn.addEventListener("click", () => {
-      if (sessionState.currentState === "PLAYING") return;
-
-      let targetIndex = sessionState.selectedSlotIndex;
-      // Fallback: If no target focus ring is selected, find the first open spot
-      if (
-        targetIndex === null ||
-        sessionState.userSubmission[targetIndex] !== null
-      ) {
-        targetIndex = sessionState.userSubmission.indexOf(null);
-      }
-
-      if (targetIndex !== -1) {
-        insertMotifAt(targetIndex, motifId);
-      }
-    });
-
-    DOM.motifSelector.appendChild(btn);
-  });
-
-  renderWorkspace();
-  console.log(
-    `[Engine] Level ${levelId} Initialised. Streak: ${sessionState.streak}/3`,
-  );
-}
-
-/**
- * Workspace Display Synchronization Engine
- * Rebuilds the musical bars, staves, placeholders, and entries to match the tracking states.
- */
-function renderWorkspace() {
-  DOM.workspace.innerHTML = "";
-  const config = sessionState.activeConfig;
-
-  // Build structural measures/bars matching calculated level parameters
-  const bars = [];
-  for (let i = 0; i < config.bars; i++) {
-    const barDiv = document.createElement("div");
-    barDiv.className = "workspace-bar";
-    bars.push(barDiv);
-    DOM.workspace.appendChild(barDiv);
-  }
-
-  // Iterate over state positions and place cards in their structural bars
-  sessionState.userSubmission.forEach((token, index) => {
-    const currentBarIndex = Math.floor(index / config.ticksPerBar);
-
-    if (currentBarIndex < bars.length) {
-      const card = document.createElement("div");
-
-      // Inject past validation feedback memory colors
-      if (sessionState.slotStates[index] === "success") {
-        card.classList.add("is-success");
-      } else if (sessionState.slotStates[index] === "error") {
-        card.classList.add("is-error");
-      }
-
-      // Drag-and-Drop Layout Track Hooks
-      card.addEventListener("dragover", (e) => {
-        if (sessionState.currentState === "PLAYING") return;
-        e.preventDefault();
-      });
-
-      card.addEventListener("drop", (e) => {
-        if (sessionState.currentState === "PLAYING") return;
-        e.preventDefault();
-        const motifId = e.dataTransfer.getData("text/plain");
-        insertMotifAt(index, motifId);
-      });
-
-      // Template Pattern A: Spot is an empty slot placeholder
-      if (token === null) {
-        card.className += " workspace-card is-placeholder";
-        card.innerHTML = `<div class="svg-container">•</div>`;
-        card.title = "Tap to highlight target, or drag note here";
-
-        if (index === sessionState.selectedSlotIndex) {
-          card.classList.add("is-targeted"); // Highlight focus ring
-        }
-
-        card.addEventListener("click", () => {
-          if (sessionState.currentState === "PLAYING") return;
-          sessionState.selectedSlotIndex = index;
-          renderWorkspace(); // Redraw view to activate focus ring highlights
-        });
-      }
-      // Template Pattern B: Spot is an extension spacer tied to a multi-beat value (e.g., ta-a)
-      else if (token.endsWith("_ext")) {
-        const rootId = token.replace("_ext", "");
-        card.className += " workspace-card is-extension";
-        card.innerHTML = `<div class="svg-container" style="font-size: 1.5rem; color: var(--color-text-muted); font-weight:800;">—</div>`;
-        card.title = "Click to clear this structural note";
-
-        card.addEventListener("click", () => {
-          if (sessionState.currentState === "PLAYING") return;
-          clearMultiBeatNote(index, rootId);
-        });
-      }
-      // Template Pattern C: Spot holds a standard root card element
-      else {
-        const motifData = MOTIF_LIBRARY[token];
-        card.className += " workspace-card";
-        card.innerHTML =
-          motifData && motifData.svg
-            ? `<div class="svg-container">${motifData.svg}</div>`
-            : `<div class="svg-container">${token}</div>`;
-        card.title = "Click to clear this note";
-
-        card.addEventListener("click", () => {
-          if (sessionState.currentState === "PLAYING") return;
-          clearMultiBeatNote(index, token);
-        });
-      }
-
-      bars[currentBarIndex].appendChild(card);
-    }
-  });
-}
-
-/**
- * Structural Token Placement Intermediary
- * Resolves space boundaries and maps tokens and extensions into the data state array.
- * * @param {number} index - The target placement position array index.
- * @param {string} motifId - The selected asset token dictionary key.
+ * Placement Logic: Inserts an active block into the workspace array.
+ * * @param {number} index - The target slot index.
+ * @param {string} motifId - The identifier of the chosen motif.
  */
 function insertMotifAt(index, motifId) {
   const duration = MOTIF_LIBRARY[motifId].ticks || 1;
 
-  // Verify placement fits within the remaining space of the current bar
   if (index + duration <= sessionState.userSubmission.length) {
-    // Clear out any existing notes in the targeted slot range
+    // 1. Clear out any existing notes in the incoming sequence path
     for (let i = 0; i < duration; i++) {
       const existingToken = sessionState.userSubmission[index + i];
       if (existingToken) {
@@ -554,11 +292,11 @@ function insertMotifAt(index, motifId) {
       }
     }
 
-    // Insert new parent card and reset past validation tracking
+    // 2. Drop the parent root item in the target slot
     sessionState.userSubmission[index] = motifId;
     sessionState.slotStates[index] = "idle";
 
-    // Populate remaining slots with structural extension tags if card spans multiple beats
+    // 3. If the item takes up multiple spaces (e.g., Minim), write spacer strings into array
     for (let i = 1; i < duration; i++) {
       sessionState.userSubmission[index + i] = `${motifId}_ext`;
       sessionState.slotStates[index + i] = "idle";
@@ -572,16 +310,13 @@ function insertMotifAt(index, motifId) {
 }
 
 /**
- * Structural Note Removal Engine
- * Identifies root nodes from extension offsets, clearing card arrays cleanly.
- * * @param {number} index - The click event position target index.
- * @param {string} motifId - The targeted node type to erase.
+ * Removal Logic: Finds the root of a placed object and sweeps it from the array cleanly.
  */
 function clearMultiBeatNote(index, motifId) {
   const duration = MOTIF_LIBRARY[motifId].ticks || 1;
   let startIndex = index;
 
-  // If user clicked an extension track spot, walk backward to find the root node index
+  // Walk backwards to find the root node if the user tapped on an extension spacer
   if (sessionState.userSubmission[index] === `${motifId}_ext`) {
     while (
       startIndex > 0 &&
@@ -591,11 +326,9 @@ function clearMultiBeatNote(index, motifId) {
     }
   }
 
-  // Clear root position
   sessionState.userSubmission[startIndex] = null;
   sessionState.slotStates[startIndex] = "idle";
 
-  // Clear matching extensions
   for (let i = 1; i < duration; i++) {
     if (sessionState.userSubmission[startIndex + i] === `${motifId}_ext`) {
       sessionState.userSubmission[startIndex + i] = null;
@@ -606,57 +339,50 @@ function clearMultiBeatNote(index, motifId) {
   renderWorkspace();
 }
 
-// ==========================================
-// 7. EVALUATION LOGIC & POP-UP INJECTOR
-// ==========================================
-
 /**
- * Input Sequence Validation Controller
- * Audits answers against the target timeline, handles feedback animations,
- * manages streaks, and checks available remaining attempts.
+ * Verification Engine
+ * Compares user sequence against the algorithmic sequence, triggers CSS feedback,
+ * and manages the progression/remedial loops.
  */
 function evaluateSubmission() {
   if (sessionState.currentState === "PLAYING") return;
 
+  // Lock UI immediately to prevent double-clicks
+  sessionState.currentState = "PLAYING";
+  if (DOM.submitBtn) DOM.submitBtn.classList.add("is-locked");
+  if (DOM.skipBtn) DOM.skipBtn.classList.add("is-locked");
+  if (DOM.replayBtn) DOM.replayBtn.classList.add("is-locked");
+
   const config = sessionState.activeConfig;
 
-  // Validation Check: Reject submissions with empty layout spots
+  // Early Return: Block submission if there are empty holes in the board
   if (sessionState.userSubmission.includes(null)) {
     const bars = DOM.workspace.querySelectorAll(".workspace-bar");
-
     bars.forEach((bar) => {
-      // Clear previous instances to allow animation re-triggers
       bar.classList.remove("is-shaking");
-
-      // FORCED REFLOW TRICK: Forces layout pipeline calculation immediately.
-      // Breaks browser style batching optimizations so the shake animation runs reliably on every click.
-      void bar.offsetWidth;
-
+      void bar.offsetWidth; // TRICK: Force a browser reflow to reset CSS animation states
       bar.classList.add("is-shaking");
     });
 
-    // Flash empty slots with a warning color scheme
     const missingSlots = DOM.workspace.querySelectorAll(
       ".workspace-card.is-placeholder",
     );
     missingSlots.forEach((card) => card.classList.add("is-empty-panic"));
 
-    // Safe 500ms cleaning buffer prevents tearing down styles mid-animation pass
     setTimeout(() => {
       bars.forEach((bar) => bar.classList.remove("is-shaking"));
       missingSlots.forEach((card) => card.classList.remove("is-empty-panic"));
     }, 500);
 
+    // Release locks early since verification was aborted
+    sessionState.currentState = "IDLE";
+    if (DOM.submitBtn) DOM.submitBtn.classList.remove("is-locked");
+    if (DOM.skipBtn) DOM.skipBtn.classList.remove("is-locked");
+    if (DOM.replayBtn) DOM.replayBtn.classList.remove("is-locked");
     return;
   }
 
-  // Lock user inputs during the verification phase
-  sessionState.currentState = "PLAYING";
-  DOM.submitBtn.classList.add("is-locked");
-  DOM.skipBtn.classList.add("is-locked");
-  DOM.replayBtn.classList.add("is-locked");
-
-  // Flatten target timeline entries to enable direct index comparisons
+  // Flatten the algorithm's answer into an array layout identical to the user's board
   const flatTarget = [];
   sessionState.targetTimeline.forEach((event) => {
     const duration = MOTIF_LIBRARY[event.motifId].ticks || 1;
@@ -668,11 +394,9 @@ function evaluateSubmission() {
 
   let isCorrect = true;
 
-  // Compare arrays and map validation outcomes to each position slot
+  // Map success/error states based on array index comparison
   sessionState.userSubmission.forEach((token, index) => {
-    const targetToken = flatTarget[index];
-
-    if (token === targetToken) {
+    if (token === flatTarget[index]) {
       sessionState.slotStates[index] = "success";
     } else {
       sessionState.slotStates[index] = "error";
@@ -682,29 +406,24 @@ function evaluateSubmission() {
 
   renderWorkspace();
 
-  // Branch A: Sequence matches perfectly
   if (isCorrect) {
     sessionState.streak++;
     renderStreakTracker();
 
     setTimeout(() => {
       if (sessionState.streak >= 3) {
-        // Milestone reached: Reset streak and open the promotion modal
         sessionState.streak = 0;
-        const nextLevel = sessionState.currentLevel + 1;
-        triggerCelebrationModal(nextLevel);
+        triggerCelebrationModal(sessionState.currentLevel + 1);
       } else {
-        startLevel(sessionState.currentLevel);
+        startLevel(sessionState.currentLevel); // Load next round
       }
     }, 1000);
-  }
-  // Branch B: Sequence has an error
-  else {
-    sessionState.streak = 0; // Reset progress streak
+  } else {
+    sessionState.streak = 0; // Wipe streak
     renderStreakTracker();
 
-    // Out of plays: Run the automatic blue correction sequence
     if (sessionState.playCount >= sessionState.maxPlays) {
+      // Out of plays: Show the correction sequence automatically
       setTimeout(() => {
         sessionState.userSubmission = [...flatTarget];
         sessionState.slotStates = Array(flatTarget.length).fill("idle");
@@ -713,35 +432,211 @@ function evaluateSubmission() {
         const correctedCards =
           DOM.workspace.querySelectorAll(".workspace-card");
         correctedCards.forEach((card) => {
-          card.style.borderColor = "#3b82f6";
+          card.style.borderColor = "#3b82f6"; // Remedial Blue override
           card.style.backgroundColor = "#eff6ff";
         });
 
-        setTimeout(() => {
-          startLevel(sessionState.currentLevel);
-        }, 4000);
+        setTimeout(() => startLevel(sessionState.currentLevel), 4000);
       }, 1500);
-    }
-    // Attempts remaining: Unlock interface controls for adjustments
-    else {
+    } else {
+      // Plays remaining: Unlock UI for correction
       setTimeout(() => {
         sessionState.currentState = "IDLE";
-        DOM.submitBtn.classList.remove("is-locked");
-        DOM.skipBtn.classList.remove("is-locked");
-
+        if (DOM.submitBtn) DOM.submitBtn.classList.remove("is-locked");
+        if (DOM.skipBtn) DOM.skipBtn.classList.remove("is-locked");
         if (sessionState.playCount < sessionState.maxPlays) {
-          DOM.replayBtn.classList.remove("is-locked");
+          if (DOM.replayBtn) DOM.replayBtn.classList.remove("is-locked");
         }
       }, 2000);
     }
   }
 }
 
+// ============================================================================
+// 4. UI RENDERERS (The View Updates)
+// ============================================================================
+
 /**
- * Victory Promotion Screen Modal Injector
- * Builds, animates, and handles level transition prompts.
- * * @param {number} targetLevelId - Next progression target level index.
+ * Bootstraps a new round. Generates data, clears previous UI elements, and renders the board.
+ * * @param {number} levelId - Target level integer.
  */
+function startLevel(levelId) {
+  sessionState.currentLevel = levelId;
+  sessionState.playCount = 0;
+  sessionState.currentState = "IDLE";
+  sessionState.selectedSlotIndex = null;
+
+  // Defensive safety un-locks
+  if (DOM.submitBtn) DOM.submitBtn.classList.remove("is-locked");
+  if (DOM.skipBtn) DOM.skipBtn.classList.remove("is-locked");
+  if (DOM.replayBtn) DOM.replayBtn.classList.remove("is-locked");
+
+  sessionState.targetTimeline = generateRhythmTimeline(levelId);
+  const config = sessionState.activeConfig;
+
+  // Reset arrays to empty nulls matching the level's total ticks
+  sessionState.userSubmission = Array(config.bars * config.ticksPerBar).fill(
+    null,
+  );
+  sessionState.slotStates = Array(config.bars * config.ticksPerBar).fill(
+    "idle",
+  );
+
+  if (DOM.levelBadge) DOM.levelBadge.innerText = `Level ${levelId}`;
+  if (DOM.metreDisplay) DOM.metreDisplay.innerText = `Metre: ${config.metre}`;
+  if (DOM.barsDisplay) DOM.barsDisplay.innerText = `Bars: ${config.bars}`;
+  if (DOM.playsRemaining)
+    DOM.playsRemaining.innerText = `Plays remaining: ${sessionState.maxPlays} / ${sessionState.maxPlays}`;
+
+  renderStreakTracker();
+
+  if (DOM.workspace) DOM.workspace.innerHTML = "";
+  if (DOM.motifSelector) DOM.motifSelector.innerHTML = "";
+
+  // Paint the interactive motif selection buttons at the bottom of the screen
+  config.allowedMotifs.forEach((motifId) => {
+    const motifData = MOTIF_LIBRARY[motifId];
+    const btn = document.createElement("button");
+    btn.className = "motif-pad";
+
+    btn.innerHTML = motifData.svg
+      ? `<div class="svg-container">${motifData.svg}</div> ${motifData.label}`
+      : `<span class="music-font">${motifData.symbol}</span> ${motifData.label}`;
+
+    // Desktop Drag Engine hooks
+    btn.setAttribute("draggable", "true");
+    btn.addEventListener("dragstart", (e) => {
+      if (sessionState.currentState === "PLAYING") return e.preventDefault();
+      e.dataTransfer.setData("text/plain", motifId);
+    });
+
+    // Mobile / Click Engine hooks
+    btn.addEventListener("click", () => {
+      if (sessionState.currentState === "PLAYING") return;
+      let targetIndex = sessionState.selectedSlotIndex;
+      // Fallback: If user hasn't explicitly highlighted a slot ring, find the first empty spot
+      if (
+        targetIndex === null ||
+        sessionState.userSubmission[targetIndex] !== null
+      ) {
+        targetIndex = sessionState.userSubmission.indexOf(null);
+      }
+      if (targetIndex !== -1) insertMotifAt(targetIndex, motifId);
+    });
+
+    if (DOM.motifSelector) DOM.motifSelector.appendChild(btn);
+  });
+
+  renderWorkspace();
+  console.log(
+    `[Engine] Level ${levelId} Initialised. Streak: ${sessionState.streak}/3`,
+  );
+}
+
+/**
+ * Reconstructs the visual staves and inputs based purely on the active arrays.
+ */
+function renderWorkspace() {
+  if (!DOM.workspace) return;
+  DOM.workspace.innerHTML = "";
+  const config = sessionState.activeConfig;
+
+  // 1. Build Physical Bar wrappers
+  const bars = [];
+  for (let i = 0; i < config.bars; i++) {
+    const barDiv = document.createElement("div");
+    barDiv.className = "workspace-bar";
+    bars.push(barDiv);
+    DOM.workspace.appendChild(barDiv);
+  }
+
+  // 2. Iterate through data and append structural DOM cards to bars
+  sessionState.userSubmission.forEach((token, index) => {
+    const currentBarIndex = Math.floor(index / config.ticksPerBar);
+
+    if (currentBarIndex < bars.length) {
+      const card = document.createElement("div");
+
+      // Apply validation feedback styles safely
+      if (sessionState.slotStates[index] === "success")
+        card.classList.add("is-success");
+      else if (sessionState.slotStates[index] === "error")
+        card.classList.add("is-error");
+
+      // Drag/Drop Listeners
+      card.addEventListener("dragover", (e) => {
+        if (sessionState.currentState === "PLAYING") return;
+        e.preventDefault();
+      });
+
+      card.addEventListener("drop", (e) => {
+        if (sessionState.currentState === "PLAYING") return;
+        e.preventDefault();
+        const motifId = e.dataTransfer.getData("text/plain");
+        insertMotifAt(index, motifId);
+      });
+
+      // Layout Condition A: Empty Hole
+      if (token === null) {
+        card.className += " workspace-card is-placeholder";
+        card.innerHTML = `<div class="svg-container">•</div>`;
+        card.title = "Tap to highlight target, or drag note here";
+
+        if (index === sessionState.selectedSlotIndex)
+          card.classList.add("is-targeted");
+
+        card.addEventListener("click", () => {
+          if (sessionState.currentState === "PLAYING") return;
+          sessionState.selectedSlotIndex = index;
+          renderWorkspace();
+        });
+      }
+      // Layout Condition B: Extension Spacer (e.g. half of a 2-beat note)
+      else if (token.endsWith("_ext")) {
+        const rootId = token.replace("_ext", "");
+        card.className += " workspace-card is-extension";
+        card.innerHTML = `<div class="svg-container" style="font-size: 1.5rem; color: var(--color-text-muted); font-weight:800;">—</div>`;
+
+        card.addEventListener("click", () => {
+          if (sessionState.currentState === "PLAYING") return;
+          clearMultiBeatNote(index, rootId);
+        });
+      }
+      // Layout Condition C: Placed Musical Note
+      else {
+        const motifData = MOTIF_LIBRARY[token];
+        card.className += " workspace-card";
+        card.innerHTML =
+          motifData && motifData.svg
+            ? `<div class="svg-container">${motifData.svg}</div>`
+            : `<div class="svg-container">${token}</div>`;
+
+        card.addEventListener("click", () => {
+          if (sessionState.currentState === "PLAYING") return;
+          clearMultiBeatNote(index, token);
+        });
+      }
+
+      bars[currentBarIndex].appendChild(card);
+    }
+  });
+}
+
+function renderStreakTracker() {
+  if (!DOM.streakTracker) return;
+  DOM.streakTracker.innerHTML = "";
+  for (let i = 0; i < 3; i++) {
+    const dot = document.createElement("div");
+    dot.className = "streak-dot";
+    if (i < sessionState.streak) dot.classList.add("is-success");
+    DOM.streakTracker.appendChild(dot);
+  }
+}
+
+// ============================================================================
+// 5. SUCCESS CELEBRATION MODALS
+// ============================================================================
+
 function triggerCelebrationModal(targetLevelId) {
   const overlay = document.createElement("div");
   overlay.className = "celebration-overlay";
@@ -753,7 +648,6 @@ function triggerCelebrationModal(targetLevelId) {
   let subText = `Sensational ear tracking.<br>Ready to unlock Level ${targetLevelId}?`;
   let actionText = "Onwards! →";
 
-  // Game completion configuration check
   if (targetLevelId > 3) {
     titleText = "Grand Masterpiece! 🏆";
     subText =
@@ -782,26 +676,97 @@ function triggerCelebrationModal(targetLevelId) {
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 
-  // NATIVE WORKAROUND: Force an immediate layout height reflow check.
-  // Forces mobile engines to register scale(0.7) before running the scale(1) transition.
+  // Force reflow before adding active class ensures the CSS transform scale animates cleanly
   void overlay.offsetHeight;
-
   overlay.classList.add("is-active");
   fireMasteryConfetti();
 }
 
-// ==========================================
-// 7b. ONBOARDING TOUR PROCEDURAL CONTROLLERS
-// ==========================================
+function fireMasteryConfetti() {
+  const colors = [
+    "#3b82f6",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#ec4899",
+    "#8b5cf6",
+  ];
+  const particleCount = 160;
+
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement("div");
+    particle.className = "confetti-particle";
+    particle.style.backgroundColor =
+      colors[Math.floor(Math.random() * colors.length)];
+    particle.style.left = "50vw";
+    particle.style.top = "50vh";
+
+    const size = Math.floor(Math.random() * 10) + 6;
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+    particle.style.animationDelay = `${Math.random() * 1.5}s`;
+
+    const xDrift = (Math.random() - 0.5) * 1000;
+    const yDrop = Math.random() * 500 + 250;
+    const rotation = Math.random() * 1080 - 540;
+
+    particle.style.setProperty("--x-drift", `${xDrift}px`);
+    particle.style.setProperty("--y-drop", `${yDrop}px`);
+    particle.style.setProperty("--rotation", `${rotation}deg`);
+
+    document.body.appendChild(particle);
+    setTimeout(() => particle.remove(), 5500); // Cleanup memory
+  }
+}
+
+// ============================================================================
+// 6. ONBOARDING TOUR WIZARD (The Fluid Mobile Anchor Logic)
+// ============================================================================
+
+let tourCurrentStepIndex = 0;
+let activeTourSteps = [];
+
+function compileTourSequence() {
+  const isMobileViewport = window.innerWidth < 1024;
+  return [
+    {
+      elementId: isMobileViewport ? "btn-toggle-sidebar" : "ui-sidebar",
+      text: isMobileViewport
+        ? "Welcome! Tap this hamburger menu button at any time to open up your Kodály reference table."
+        : "Welcome to Solfaic! This is your permanent curriculum matrix guide. Reference your syllables and notation rules here.",
+      mobilePosition: "bottom", // Dictates CSS safe-area override intents
+    },
+    {
+      elementId: "btn-replay",
+      text: "Step 1: Hit this primary action button to listen to your target sound wave.",
+      mobilePosition: "bottom",
+    },
+    {
+      elementId: "ui-workspace",
+      text: "Step 2: This is your dictation staff. Your rhythm cards will assemble across these active beat boxes.",
+      mobilePosition: "bottom",
+    },
+    {
+      elementId: "ui-motif-selector",
+      text: "Step 3: Choose your musical building block components here.",
+      mobilePosition: "top",
+    },
+    {
+      elementId: "btn-submit",
+      text: "Step 4: Once completely populated, smash this button to evaluate your precision.",
+      mobilePosition: "top",
+    },
+  ];
+}
+
 function startGuidedTour() {
   document.getElementById("ui-tour-prompt").classList.add("is-hidden");
-
-  const tooltipContainer = document.getElementById("ui-tour-tooltip");
-  tooltipContainer.classList.remove("is-hidden");
+  document.getElementById("ui-tour-tooltip").classList.remove("is-hidden");
 
   activeTourSteps = compileTourSequence();
   tourCurrentStepIndex = 0;
 
+  // Add global progression interceptors
   window.addEventListener("click", handleGlobalTourProgression);
   window.addEventListener("keydown", handleGlobalTourKeydown);
 
@@ -809,6 +774,7 @@ function startGuidedTour() {
 }
 
 function executeTourStepPass() {
+  // 1. Clear highlight rings from previous cycle
   document.querySelectorAll(".tour-highlight-active").forEach((el) => {
     el.classList.remove("tour-highlight-active");
   });
@@ -817,79 +783,76 @@ function executeTourStepPass() {
   const tooltipBox = document.getElementById("ui-tour-tooltip");
   const textBox = document.getElementById("ui-tour-text");
 
+  // 2. Escape condition: Tour is complete
   if (tourCurrentStepIndex >= activeTourSteps.length) {
     tooltipBox.classList.add("is-hidden");
     tourOverlayElement.classList.add("is-hidden");
-
     window.removeEventListener("click", handleGlobalTourProgression);
     window.removeEventListener("keydown", handleGlobalTourKeydown);
-
     localStorage.setItem("solfaic_onboarded_matrix", "true");
     triggerTourCompletionModal();
     return;
   }
 
-  // Drop opacity to 0 instantly to hide position-swapping jumps from view
+  // 3. Complete DOM Hygiene - Wipes stale pixel values to let native CSS take over
   tooltipBox.removeAttribute("style");
   tooltipBox.style.opacity = "0";
 
   const currentStep = activeTourSteps[tourCurrentStepIndex];
   const targetElement = document.getElementById(currentStep.elementId);
-
   textBox.innerHTML = currentStep.text;
 
   if (targetElement) {
+    // Scroll element into view so mobile users can reach the bottom UI components
     targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
 
+    // Wait for the scrolling physics to settle before snapping the tooltip into place
     setTimeout(() => {
       targetElement.classList.add("tour-highlight-active");
 
       const targetRect = targetElement.getBoundingClientRect();
-      const tooltipWidth = 320;
+      const tooltipWidth = window.innerWidth < 1024 ? 280 : 320;
 
+      // Ensure helper classes are scrubbed before reassignment
       tooltipBox.classList.remove("is-mobile-top", "is-mobile-bottom");
-
       tooltipBox.style.display = "block";
       const tooltipHeight = tooltipBox.offsetHeight;
 
-      const isMobile = window.innerWidth < 1024;
+      let computedLeft = 0;
+      let computedTop = 0;
 
-      if (isMobile) {
-        if (currentStep.mobilePosition === "top") {
+      if (window.innerWidth < 1024) {
+        // MOBILE OVERRIDES: Bypass mathematical loops and trust explicitly assigned CSS tracking bounds
+        if (currentStep.mobilePosition === "top")
           tooltipBox.classList.add("is-mobile-top");
-        } else {
-          tooltipBox.classList.add("is-mobile-bottom");
-        }
+        else tooltipBox.classList.add("is-mobile-bottom");
       } else {
-        let computedLeft = 0;
-        let computedTop = 0;
-
+        // DESKTOP OVERRIDES: Live mathematical layouts mapping to the active grid
         if (currentStep.elementId === "ui-sidebar") {
           computedLeft = targetRect.right + 24;
           computedTop = targetRect.top + window.scrollY + 120;
         } else {
           computedLeft =
             targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
+          // Bounds prevention
           computedLeft = Math.max(
             10,
             Math.min(computedLeft, window.innerWidth - tooltipWidth - 10),
           );
-          computedTop = targetRect.bottom + window.scrollY + 16;
+          computedTop =
+            targetRect.top + window.scrollY + targetRect.height + 16;
 
-          if (targetRect.bottom + tooltipHeight + 40 > window.innerHeight) {
+          if (targetRect.bottom + tooltipHeight + 30 > window.innerHeight) {
             computedTop = targetRect.top + window.scrollY - tooltipHeight - 16;
           }
         }
-
         tooltipBox.style.left = `${computedLeft}px`;
         tooltipBox.style.top = `${computedTop}px`;
       }
 
       tourOverlayElement.style.alignItems = "flex-start";
       tourOverlayElement.style.justifyContent = "flex-start";
-
-      // Hardware-accelerated fade-in once alignment coordinates match perfectly
-      tooltipBox.style.opacity = "1";
+      tooltipBox.style.opacity = "1"; // Fade into view gracefully
     }, 320);
   } else {
     tourOverlayElement.style.alignItems = "center";
@@ -899,9 +862,24 @@ function executeTourStepPass() {
   }
 }
 
+function handleGlobalTourProgression() {
+  tourCurrentStepIndex++;
+  executeTourStepPass();
+}
+
+function handleGlobalTourKeydown(e) {
+  // Intercepting Space/Enter allows quick, game-like traversal of the UI instruction cards
+  if (e.code === "Space" || e.code === "Enter") {
+    e.preventDefault();
+    tourCurrentStepIndex++;
+    executeTourStepPass();
+  }
+}
+
 function terminateTourImmediately() {
   document.getElementById("ui-tour").classList.add("is-hidden");
-  document.getElementById("ui-tour-tooltip").classList.add("is-hidden");
+  if (document.getElementById("ui-tour-tooltip"))
+    document.getElementById("ui-tour-tooltip").classList.add("is-hidden");
   localStorage.setItem("solfaic_onboarded_matrix", "true");
 }
 
@@ -923,9 +901,7 @@ function triggerTourCompletionModal() {
 
   btn.addEventListener("click", () => {
     overlay.classList.remove("is-active");
-    setTimeout(() => {
-      overlay.remove();
-    }, 300);
+    setTimeout(() => overlay.remove(), 300);
   });
 
   modal.appendChild(btn);
@@ -936,47 +912,30 @@ function triggerTourCompletionModal() {
   overlay.classList.add("is-active");
 }
 
-function handleGlobalTourProgression() {
-  tourCurrentStepIndex++;
-  executeTourStepPass();
-}
+// ============================================================================
+// 7. TONE.JS AUDIO ENGINE
+// ============================================================================
 
-function handleGlobalTourKeydown(e) {
-  if (e.code === "Space" || e.code === "Enter") {
-    e.preventDefault();
-    tourCurrentStepIndex++;
-    executeTourStepPass();
-  }
-}
-
-// ==========================================
-// 8. AUDIO ENGINE (Tone.js Integration)
-// ==========================================
-
-/**
- * Audio Synthesis Tracking Object
- * Manages Tone.js polyphonic synthesis structures and metronome timeline scheduling.
- */
 const AudioEngine = {
   synth: null,
   chime: null,
   isInitialized: false,
 
   /**
-   * Sound Architecture Initializer
-   * Wakes up underlying oscillators on user gesture interactions to satisfy browser security specs.
+   * Wakes up underlying oscillators on user gesture interactions to satisfy
+   * strict browser AudioContext security specifications.
    */
   async init() {
     if (this.isInitialized) return;
     await Tone.start();
 
-    // Configure main sequence rhythm generator synth wave outputs
+    // The primary polyphonic synthesizer for musical notes
     this.synth = new Tone.Synth({
-      oscillator: { type: "triangle" }, // Warm triangle wave focus profile
+      oscillator: { type: "triangle" },
       envelope: { attack: 0.02, decay: 0.1, sustain: 0.6, release: 0.1 },
     }).toDestination();
 
-    // Configure structural high-register metronome counting sound wave outputs
+    // The high-frequency countdown/metronome marker
     this.chime = new Tone.Synth({
       oscillator: { type: "triangle" },
       envelope: { attack: 0.01, decay: 0.5 },
@@ -986,10 +945,6 @@ const AudioEngine = {
     this.isInitialized = true;
   },
 
-  /**
-   * Sequence Timeline Playback Engine
-   * Schedules audio execution arrays, handles count-in indicators, and coordinates pulses.
-   */
   async playSequence() {
     if (sessionState.currentState === "PLAYING") return;
     if (sessionState.playCount >= sessionState.maxPlays) {
@@ -1001,10 +956,10 @@ const AudioEngine = {
     sessionState.currentState = "PLAYING";
     sessionState.playCount++;
 
-    DOM.replayBtn.classList.add("is-locked");
-    DOM.playsRemaining.innerText = `Plays remaining: ${sessionState.maxPlays - sessionState.playCount} / ${sessionState.maxPlays}`;
+    if (DOM.replayBtn) DOM.replayBtn.classList.add("is-locked");
+    if (DOM.playsRemaining)
+      DOM.playsRemaining.innerText = `Plays remaining: ${sessionState.maxPlays - sessionState.playCount} / ${sessionState.maxPlays}`;
 
-    // Clear transport engines to ensure clean playback starts
     Tone.Transport.cancel();
     Tone.Transport.stop();
 
@@ -1012,9 +967,8 @@ const AudioEngine = {
     Tone.Transport.timeSignature = [parseInt(num), parseInt(den)];
 
     const playableEvents = [];
-    let currentTime = Tone.Time("1m").toSeconds(); // Allocate exactly 1 bar space buffer for count-ins
+    let currentTime = Tone.Time("1m").toSeconds(); // Offset sequence playback to allow 1 bar of count-in space
 
-    // Parse timelines and build flat audio event scheduling tracks
     sessionState.targetTimeline.forEach((event) => {
       const motifData = MOTIF_LIBRARY[event.motifId];
       let subTime = currentTime;
@@ -1030,31 +984,29 @@ const AudioEngine = {
       currentTime += Tone.Time(motifData.duration).toSeconds();
     });
 
-    // Build the Tone.Part array scheduling track mapper
     const part = new Tone.Part((time, event) => {
       const noteToPlay = event.pitch ? event.pitch : "G3";
-
-      // CRITICAL LOGIC: Convert duration mappings to seconds and trim bounds to 82%.
-      // Injects a standard articulation separation gap so notes don't bleed together.
+      // Shrink sounding duration slightly (0.82) to emulate articulation gaps between notes
       const soundingDuration = Tone.Time(event.duration).toSeconds() * 0.82;
       this.synth.triggerAttackRelease(noteToPlay, soundingDuration, time);
     }, playableEvents);
-
     part.start(0);
 
-    // Build visual counting backdrop overlay panel elements
+    // Visual Countdown Mask Generation
     const modal = document.createElement("div");
     modal.style.cssText =
       "position:absolute; inset:0; background:rgba(255,255,255,0.85); backdrop-filter: blur(4px); z-index:100; display:flex; justify-content:center; align-items:center; font-size:6rem; font-weight:900; border-radius: 12px;";
-    DOM.workspace.style.position = "relative";
-    DOM.workspace.appendChild(modal);
+    if (DOM.workspace) {
+      DOM.workspace.style.position = "relative";
+      DOM.workspace.appendChild(modal);
+    }
 
     const ticks = sessionState.activeConfig.ticksPerBar;
     const beatSpacing = sessionState.activeConfig.metre.includes("8")
       ? Tone.Time("4n.").toSeconds()
       : Tone.Time("4n").toSeconds();
 
-    // Schedule 1-bar count-in audio signals and text updates
+    // Schedule Metronome audio counts & visual numeral syncs
     for (let i = 0; i < ticks; i++) {
       Tone.Transport.schedule((time) => {
         this.chime.triggerAttackRelease("C6", "16n", time);
@@ -1064,12 +1016,12 @@ const AudioEngine = {
       }, i * beatSpacing);
     }
 
-    // Clear counting backdrop modal panel when sequence starts playing
+    // Erase masking modal exactly when bar 1 is complete
     Tone.Transport.schedule((time) => {
       Tone.Draw.schedule(() => modal.remove(), time);
     }, Tone.Time("1m").toSeconds());
 
-    // Schedule real-time rhythmic heartbeat pulses for the workspace bars
+    // Schedule Heartbeat Animations for active staves
     const totalBars = sessionState.activeConfig.bars;
     for (let bar = 0; bar < totalBars; bar++) {
       for (let beat = 0; beat < ticks; beat++) {
@@ -1082,114 +1034,77 @@ const AudioEngine = {
             const barElements = document.querySelectorAll(".workspace-bar");
             if (barElements[bar]) {
               barElements[bar].classList.add("is-metronome-pulse");
-              setTimeout(() => {
-                barElements[bar].classList.remove("is-metronome-pulse");
-              }, 300);
+              setTimeout(
+                () => barElements[bar].classList.remove("is-metronome-pulse"),
+                300,
+              );
             }
           }, time);
         }, timeOffset);
       }
     }
 
-    // Initialize playback loops
-    const stopTimeInSeconds = Tone.Time(`${totalBars + 1}m`).toSeconds();
     Tone.Transport.start();
 
-    // Schedule auto-stop boundaries to clear locks safely
+    // Auto-teardown routine safely un-locks UI states following transport duration limits
+    const stopTimeInSeconds = Tone.Time(`${totalBars + 1}m`).toSeconds();
     setTimeout(
       () => {
         Tone.Transport.stop();
         sessionState.currentState = "IDLE";
-        if (sessionState.playCount < sessionState.maxPlays)
+        if (sessionState.playCount < sessionState.maxPlays && DOM.replayBtn) {
           DOM.replayBtn.classList.remove("is-locked");
+        }
       },
       stopTimeInSeconds * 1000 + 500,
     );
   },
 };
 
-/**
- * Mastery Confetti Generation Controller
- * Creates a staggered particle storm across the viewport using CSS transition properties.
- */
-function fireMasteryConfetti() {
-  const colors = [
-    "#3b82f6",
-    "#10b981",
-    "#f59e0b",
-    "#ef4444",
-    "#ec4899",
-    "#8b5cf6",
-  ];
-  const particleCount = 160;
+// ============================================================================
+// 8. BOOTSTRAP PIPELINE (DOM Content Loaded)
+// ============================================================================
 
-  for (let i = 0; i < particleCount; i++) {
-    const particle = document.createElement("div");
-    particle.className = "confetti-particle";
-    particle.style.backgroundColor =
-      colors[Math.floor(Math.random() * colors.length)];
-    particle.style.left = "50vw";
-    particle.style.top = "50vh";
-
-    // Randomize structural depth scale factors
-    const size = Math.floor(Math.random() * 10) + 6;
-    particle.style.width = `${size}px`;
-    particle.style.height = `${size}px`;
-
-    // Stagger particle release delays up to 1.5s for a sustained tumbling effect
-    const delay = Math.random() * 1.5;
-    particle.style.animationDelay = `${delay}s`;
-
-    // Compute individualized vector drift distances and flight metrics
-    const xDrift = (Math.random() - 0.5) * 1000;
-    const yDrop = Math.random() * 500 + 250;
-    const rotation = Math.random() * 1080 - 540;
-
-    // Map metrics to token variables accessible by CSS transition sheets
-    particle.style.setProperty("--x-drift", `${xDrift}px`);
-    particle.style.setProperty("--y-drop", `${yDrop}px`);
-    particle.style.setProperty("--rotation", `${rotation}deg`);
-
-    document.body.appendChild(particle);
-
-    // Clear elements safely after they exit visual view borders
-    setTimeout(() => particle.remove(), 5500);
-  }
-}
-
-// ==========================================
-// BOOT UP THE APP
-// ==========================================
 window.addEventListener("DOMContentLoaded", () => {
-  DOM.submitBtn.addEventListener("click", evaluateSubmission);
-  DOM.skipBtn.addEventListener("click", () =>
-    startLevel(sessionState.currentLevel),
-  );
-  DOM.replayBtn.addEventListener("click", () => AudioEngine.playSequence());
-
+  // --- MOBILE SIDEBAR CONTROLS ---
   const sidebarElement = document.getElementById("ui-sidebar");
   const toggleBtn = document.getElementById("btn-toggle-sidebar");
   const closeBtn = document.getElementById("btn-close-sidebar");
 
-  if (toggleBtn && sidebarElement) {
-    toggleBtn.addEventListener("click", () =>
-      sidebarElement.classList.add("is-open"),
-    );
-  }
-  if (closeBtn && sidebarElement) {
-    closeBtn.addEventListener("click", () =>
-      sidebarElement.classList.remove("is-open"),
-    );
+  function openMobileSidebar() {
+    if (sidebarElement) sidebarElement.classList.add("is-open");
   }
 
-  // --- NEW: ONBOARDING TOUR WIZARD ROUTINE LISTENERS ---
+  function closeMobileSidebar() {
+    if (sidebarElement) sidebarElement.classList.remove("is-open");
+  }
+
+  if (toggleBtn) toggleBtn.addEventListener("click", openMobileSidebar);
+  if (closeBtn) closeBtn.addEventListener("click", closeMobileSidebar);
+
+  // --- ACCESSIBLE TOUR TRIGGER ---
+  const helpTourBtn = document.getElementById("btn-trigger-onboarding");
   const tourOverlay = document.getElementById("ui-tour");
   const tourBtnYes = document.getElementById("btn-tour-yes");
   const tourBtnNo = document.getElementById("btn-tour-no");
 
+  if (helpTourBtn) {
+    helpTourBtn.addEventListener("click", () => {
+      if (tourOverlay) {
+        tourOverlay.classList.remove("is-hidden");
+        if (document.getElementById("ui-tour-prompt"))
+          document
+            .getElementById("ui-tour-prompt")
+            .classList.remove("is-hidden");
+        if (document.getElementById("ui-tour-tooltip"))
+          document.getElementById("ui-tour-tooltip").classList.add("is-hidden");
+      }
+    });
+  }
+
   if (tourBtnYes) {
     tourBtnYes.addEventListener("click", (e) => {
-      e.stopPropagation(); // Prevents choice-click from bubbling up to the window instantly and skipping step 1
+      e.stopPropagation(); // Required to prevent bubbled window clicks from instantly skipping Step 1
       startGuidedTour();
     });
   }
@@ -1201,14 +1116,17 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Verification Check: Wake overlay matrix up if storage key string is missing
-  const isAlreadyOnboarded = localStorage.getItem("solfaic_onboarded_matrix");
-  if (!isAlreadyOnboarded && tourOverlay) {
-    tourOverlay.classList.remove("is-hidden");
-  }
+  // --- APPLICATION CORE EVENTS ---
+  if (DOM.submitBtn)
+    DOM.submitBtn.addEventListener("click", evaluateSubmission);
+  if (DOM.skipBtn)
+    DOM.skipBtn.addEventListener("click", () =>
+      startLevel(sessionState.currentLevel),
+    );
+  if (DOM.replayBtn)
+    DOM.replayBtn.addEventListener("click", () => AudioEngine.playSequence());
 
-  // Launch Level 1 entry point on boot
+  // Initiate active gameplay seamlessly
   startLevel(1);
+  console.log("Solfaic! App Initialised. 🚀");
 });
-
-console.log("Solfaic! App Initialised.");

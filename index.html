@@ -10,7 +10,6 @@
     />
     <link rel="stylesheet" href="assets/style.css" />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
@@ -259,20 +258,30 @@
         <header class="global-header">
           <div class="header-brand">
             <button
-              class="hamburger-btn"
               id="btn-toggle-sidebar"
-              aria-label="Menu"
+              class="hamburger-btn"
+              aria-label="Open reference menu"
             >
               ☰
             </button>
-            <h1 class="logo">SOLFAIC!</h1>
+            <h1 class="logo">Solfaic</h1>
+
+            <button
+              id="btn-trigger-onboarding"
+              class="btn-escape"
+              style="background-color: var(--color-primary); color: #ffffff"
+              aria-label="Start interactive workspace tutorial"
+            >
+              Help Tour ?
+            </button>
           </div>
-          <button id="btn-skip" class="btn-escape">Skip / New Rhythm</button>
+
+          <button class="btn-escape">Exit App</button>
         </header>
 
         <main class="workspace l-stack">
           <section class="status-bar">
-            <button class="ghost-btn">← Levels</button>
+            <button id="btn-skip" class="ghost-btn">← Levels</button>
             <div id="ui-level-badge" class="level-badge"></div>
             <div id="ui-streak-tracker" class="streak-tracker"></div>
           </section>
