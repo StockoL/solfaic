@@ -871,12 +871,11 @@ main,
   width: 320px;
   max-width: 90vw;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-  z-index: 5200; /* Sits naturally above highlighted targets */
+  z-index: 5200;
+  /* FIX: Removed 'top' and 'left' transitions. The box will now teleport instantly while invisible instead of flying across the screen. */
   transition:
     opacity 0.2s ease,
-    transform 0.2s ease,
-    top 0.3s ease,
-    left 0.3s ease;
+    transform 0.2s ease;
 }
 
 .tour-text-content {

@@ -774,19 +774,25 @@ function startGuidedTour() {
 }
 
 function executeTourStepPass() {
-  // 1. Clear highlight rings from previous cycle
-  document.querySelectorAll(".tour-highlight-active").forEach((el) => {
-    el.classList.remove("tour-highlight-active");
-  });
-
   const tourOverlayElement = document.getElementById("ui-tour");
   const tooltipBox = document.getElementById("ui-tour-tooltip");
   const textBox = document.getElementById("ui-tour-text");
 
-  // 2. Escape condition: Tour is complete
+  // 1. Immediately drop opacity to 0 so it fades out BEFORE moving
+  if (tooltipBox) tooltipBox.style.opacity = "0";
+
+  // Clear previous highlight rings
+  document.querySelectorAll(".tour-highlight-active").forEach((el) => {
+    el.classList.remove("tour-highlight-active");
+  });
+
+  // Escape condition: Tour is complete
   if (tourCurrentStepIndex >= activeTourSteps.length) {
-    tooltipBox.classList.add("is-hidden");
-    tourOverlayElement.classList.add("is-hidden");
+    setTimeout(() => {
+      tooltipBox.classList.add("is-hidden");
+      tourOverlayElement.classList.add("is-hidden");
+    }, 200);
+
     window.removeEventListener("click", handleGlobalTourProgression);
     window.removeEventListener("keydown", handleGlobalTourKeydown);
     localStorage.setItem("solfaic_onboarded_matrix", "true");
@@ -794,26 +800,23 @@ function executeTourStepPass() {
     return;
   }
 
-  // 3. Complete DOM Hygiene - Wipes stale pixel values to let native CSS take over
-  tooltipBox.removeAttribute("style");
-  tooltipBox.style.opacity = "0";
-
   const currentStep = activeTourSteps[tourCurrentStepIndex];
   const targetElement = document.getElementById(currentStep.elementId);
-  textBox.innerHTML = currentStep.text;
 
   if (targetElement) {
-    // Scroll element into view so mobile users can reach the bottom UI components
+    // Scroll element into view safely while tooltip is invisible
     targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
 
-    // Wait for the scrolling physics to settle before snapping the tooltip into place
+    // Wait for the scrolling physics to settle AND the fade-out to finish
     setTimeout(() => {
       targetElement.classList.add("tour-highlight-active");
+
+      // FIX: Inject the new text NOW, while the box is invisible!
+      textBox.innerHTML = currentStep.text;
 
       const targetRect = targetElement.getBoundingClientRect();
       const tooltipWidth = window.innerWidth < 1024 ? 280 : 320;
 
-      // Ensure helper classes are scrubbed before reassignment
       tooltipBox.classList.remove("is-mobile-top", "is-mobile-bottom");
       tooltipBox.style.display = "block";
       const tooltipHeight = tooltipBox.offsetHeight;
@@ -822,19 +825,21 @@ function executeTourStepPass() {
       let computedTop = 0;
 
       if (window.innerWidth < 1024) {
-        // MOBILE OVERRIDES: Bypass mathematical loops and trust explicitly assigned CSS tracking bounds
+        // MOBILE OVERRIDES
         if (currentStep.mobilePosition === "top")
           tooltipBox.classList.add("is-mobile-top");
         else tooltipBox.classList.add("is-mobile-bottom");
+
+        tooltipBox.style.left = "50%";
+        tooltipBox.style.top = "auto";
       } else {
-        // DESKTOP OVERRIDES: Live mathematical layouts mapping to the active grid
+        // DESKTOP OVERRIDES
         if (currentStep.elementId === "ui-sidebar") {
           computedLeft = targetRect.right + 24;
           computedTop = targetRect.top + window.scrollY + 120;
         } else {
           computedLeft =
             targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
-          // Bounds prevention
           computedLeft = Math.max(
             10,
             Math.min(computedLeft, window.innerWidth - tooltipWidth - 10),
@@ -846,19 +851,32 @@ function executeTourStepPass() {
             computedTop = targetRect.top + window.scrollY - tooltipHeight - 16;
           }
         }
+
+        // Teleport to precise coordinates
         tooltipBox.style.left = `${computedLeft}px`;
         tooltipBox.style.top = `${computedTop}px`;
       }
 
       tourOverlayElement.style.alignItems = "flex-start";
       tourOverlayElement.style.justifyContent = "flex-start";
-      tooltipBox.style.opacity = "1"; // Fade into view gracefully
+
+      // Force browser reflow
+      void tooltipBox.offsetWidth;
+
+      // Fade back in with the new text safely loaded
+      tooltipBox.style.opacity = "1";
     }, 320);
   } else {
-    tourOverlayElement.style.alignItems = "center";
-    tourOverlayElement.style.justifyContent = "center";
-    tooltipBox.style.position = "static";
-    tooltipBox.style.opacity = "1";
+    // Fallback if target element doesn't exist
+    setTimeout(() => {
+      textBox.innerHTML = currentStep.text; // Safe fallback injection
+      tourOverlayElement.style.alignItems = "center";
+      tourOverlayElement.style.justifyContent = "center";
+      tooltipBox.style.position = "static";
+
+      void tooltipBox.offsetWidth;
+      tooltipBox.style.opacity = "1";
+    }, 200);
   }
 }
 
