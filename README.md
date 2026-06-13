@@ -418,39 +418,64 @@ To clean up technical debt, the global stylesheet was audited to eliminate redun
 
 ---
 
-## Interactive Guided Onboarding Tour Wizard
+## Interactive Guided Onboarding Tour Wizard (v2.0 Architecture)
 
-To reduce the cognitive barrier to entry for new users studying solfège dictation, an isolated, zero-dependency Guided Tour Engine was engineered. This system wraps the workspace canvas inside an ambient dimming mask, systematically spotlighting key components alongside context-aware informational tooltips.
+To reduce the cognitive barrier to entry for new users studying solfège dictation, an isolated, zero-dependency Guided Tour Engine was engineered. Following a comprehensive UX and Accessibility (a11y) audit, the system was recently refactored from a forced-interruption modal into a voluntary, persistent tool that smoothly spotlights key components without breaking the viewport flow.
 
-[User Session Load] -> Checks localStorage
+[User Clicks 'Help Tour ?' Button]
 |
-+--> Flag Found ----> Launch App Standard IDLE Mode
++--> Engine Clears Previous States
 |
-+--> Flag Missing --> Trigger Interactive Tour Overlay Mask
++--> Flushes Stale DOM Layout Rules
+|
++--> Triggers Interactive Tour Overlay Mask & Steps
 
-### 1. Adaptive Viewport Step Mapping
+### 1. Accessibility (a11y) First & Opt-In Architecture
 
-The onboarding engine initialises an evaluation array that automatically recalculates step targets based on the user's active device architecture:
+Early iterations of the app utilied a localStorage check to force the onboarding curtain on first load. This was deprecated to meet strict accessibility standards:
 
-- **Desktop Viewports ($\ge 1024\text{px}$):** Focus pass step one highlights the persistent, widescreen **Kodály Reference Matrix Table** panel anchored on the left flank of the grid shell.
-- **Mobile Viewports ($< 1023\text{px}$):** Focus pass step one shifts dynamically to target the **Hamburger Menu Trigger Button (`☰`)**, alerting mobile touch users where their curriculum guide lives.
+Reduced Cognitive Friction: Forcing focus-trapping modals immediately upon page load is disruptive to screen readers and user agency.
 
-### 2. Bounding Box Layout Mathematics (`getBoundingClientRect()`)
+Persistent Header Trigger: The tour is now mapped to a high-contrast, permanent action button in the global header. Users retain total control over their learning environment and can re-trigger the walkthrough at any time.
 
-To guarantee that the informational tooltip box aligns accurately next to the highlighted element across varying monitor resolutions, the engine queries the layout thread in real time:
+### 2. The Fluid Viewport Lock (Resolving the Post-Scroll Paradox)
 
-- **The Maths:** The script extracts element coordinate parameters via `getBoundingClientRect()`, calculating absolute positioning vectors relative to scroll progress (`window.scrollY`).
-- **The Sidebar Override:** A specialised positional branch intercepts the persistent desktop sidebar step. Because it spans the full viewport height (`100vh`), standard vertical placement would result in a negative offset pushing the card into the browser's native address bar. The override anchors the tooltip precisely **24px to the right** of the sidebar rail instead.
-- **Overflow Protection Fallback:** For standard items, if a target element sits too close to the bottom viewport edge, the engine automatically flips the tooltip vertically, floating it safely **above** the element.
+Previously, the engine relied on scrollIntoView({ behavior: "smooth" }) to bring targets into view on mobile devices before calculating tooltip coordinates. This created a severe asynchronous race condition (The Post-Scroll Paradox): smooth scrolling would shift the screen while JavaScript calculated the getBoundingClientRect(), causing tooltips to clip into the browser's dynamic URL bars or fly off-screen entirely.
 
-### 3. Non-Destructive Foreground Spotlight Masking
+To solve this, the application layout was completely overhauled:
 
-- **The Layering Strategy:** The master dimming curtain (`.tour-overlay`) introduces a dark masking backdrop (`rgba(15, 23, 42, 0.75)`) utilising CSS backdrop blurs to isolate the interface.
-- **The Spotlight:** When a component is targeted, the utility class `.tour-highlight-active` bumps its relative state and injects an isolated `z-index: 5100` alongside an aggressive white-and-blue drop-shadow blend. This rips the native element forward through the curtain mask without altering the static DOM tree or breaking its container layout parameters. Primary action button colors (like the deep-blue submit button) are fully preserved.
+- Flex-Compression Engine: The master grid shell was refactored to utilise a rigid 100dvh (Dynamic Viewport Height) lock coupled with overflow: hidden.
 
-### 4. Client-Side Persistence & Custom Modal Departure
+- Fluid Component Squish: By relying on min-height: 0, clamp() mathematics, and justify-content: space-between, all musical staves, action buttons, and curriculum tables dynamically compress or expand to fit perfectly within the glass of any device (from a tiny iPhone SE to a wide Zenbook Fold).
 
-- **State Preservation:** To ensure returning users are never interrupted, completing or skipping the tour saves a defensive boolean key (`solfaic_onboarded_matrix: true`) inside the client's browser **`localStorage`**.
-- **Premium Confirmation Drawer:** Passing the final stop of the tour bypasses generic browser alert scripts. It triggers a custom, transition-scaled completion modal sheet, utilising our unified design system guidelines (previously engineering celebration modal) to welcome the student into the active dictation workspace.
+- Coordinate Stability: Because vertical scrolling was eradicated, DOM elements never move asynchronously. Tooltip coordinate math is now completely stable and predictable on all screen sizes.
+
+### 3. Adaptive Positional Routing
+
+With the viewport locked, the engine handles component targeting via an explicit layout map injected straight into the configuration array:
+
+- Desktop Viewports ($\ge 1024\text{px}$): The script extracts absolute positional vectors relative to the target's bounding box. Special routing intercepts the persistent Kodály sidebar (which spans 100vh), anchoring the tooltip precisely 24px to the right of the rail to prevent top-clipping.
+- Mobile Viewports ($< 1023\text{px}$): Live JS maths is intentionally bypassed. Instead, the engine reads explicit step intents (mobilePosition: "top" | "bottom") and applies strict CSS safe-area tracking parameters (env(safe-area-inset-bottom)), ensuring tooltips permanently dodge mobile OS navigation bars.
+- DOM Hygiene: To prevent desktop absolute positioning pixels from leaking into mobile viewports during window resizing, the engine runs tooltipBox.removeAttribute("style") on every step transition.
+
+### 4. Non-Destructive Foreground Spotlight Masking
+
+- The Layering Strategy: The master dimming curtain (.tour-overlay) introduces a dark masking backdrop (rgba(15, 23, 42, 0.75)) utilizing CSS backdrop blurs to isolate the interface.
+
+- The Spotlight: When a component is targeted, the utility class .tour-highlight-active bumps its relative state and injects an isolated z-index: 5100 alongside an aggressive white-and-blue drop-shadow blend. This rips the native element forward through the curtain mask without altering the static DOM tree or breaking its newly established fluid flex parameters.
+
+- The Kodály Matrix Protection: The curriculum table was reinforced with table-layout: fixed and fluid interior padding, ensuring that when the spotlight mask highlights it on narrow screens, the syllables and SVG icons cannot be crushed or wrap erratically.
 
 ---
+
+## 📜 Architecture Evolution & Development Log
+
+### v2.0: The Accessibility & Fluid Viewport Refactor (Current)
+
+- **The Problem:** The V1 onboarding modal forced an immediate interruption on load (poor accessibility), and the layout relied on Javascript scroll-tracking that failed unpredictably on mobile browsers due to asynchronous rendering (The Post-Scroll Paradox).
+- **The Solution:** Moved the tour to a persistent, user-triggered 'Help' button. Completely rebuilt the application shell using a fluid `100dvh` flex-compression model to eliminate vertical scrolling. Tooltip coordinates are now mapped statically, resulting in a locked, native-app feel across all screen sizes.
+
+### v1.0: The Dynamic Coordinate Prototype
+
+- **The Concept:** A zero-dependency engine that automatically scrolled to target UI components and calculated tooltip coordinates on the fly using `getBoundingClientRect()`.
+- **The Execution:** Relied heavily on absolute positioning and a foreground spotlight mask (`z-index` elevation) to draw focus. State was preserved via `localStorage` to prevent repeating the tour on subsequent loads.
