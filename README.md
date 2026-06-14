@@ -340,3 +340,50 @@ To ensure a clean, maintainable, and scalable codebase, this application was bui
 
 - **The Problem:** During onboarding step transitions, the tooltip exhibited a "Top-Left Flying Flicker" and a "Flash of Future Content" (FOUC). CSS transitions on spatial coordinates (`top`/`left`) conflicted with JavaScript's instantaneous DOM text mutations and coordinate recalculations.
 - **The Solution:** Decoupled spatial properties from CSS transitions, restricting CSS animations strictly to `opacity` and `transform`. Refactored the JS execution block to leverage delayed DOM injection (`setTimeout`), ensuring text mutations occur _after_ the element drops to `opacity: 0`. Finally, forced a synchronous browser reflow (`void element.offsetWidth`) before fading back in to guarantee flicker-free rendering.
+
+---
+
+## Phase 7: The Phrase Engine Refactor (Algorithmic Pedagogy)
+
+The most significant architectural upgrade to the application was the complete rewrite of the rhythm generation pipeline. The initial prototype utilised a "Bucket Generation" system, which simply selected random motifs until the mathematical duration of the bar was filled. While mathematically sound for `Tone.js` parsing, it produced sterile, unmusical sequences that lacked standard phrasing, leading to an unreasonably high cognitive load for dictation students.
+
+To transition the app from a random generator to a pedagogical teaching tool, the core logic was refactored into a **Structural Phrase Engine**, built upon three distinct pillars:
+
+### 1. The Form Router & Memory Cache (Macro-Structure)
+
+To emulate natural musical syntax, the engine now processes sequences through a Data-Driven Form Router.
+
+- **The Concept:** Instead of generating 4 or 8 arbitrary bars, the engine reads from `FORM_TEMPLATES` containing classical structures (e.g., A-B-A-C Period, AABA Pop Form).
+- **The Execution:** As the engine loops through the form array, it checks a temporary `phraseCache` object. If it encounters a new letter ('A'), it generates a discrete mathematical bar and caches it. When it encounters that letter again, it bypasses the generator entirely and clones the array from memory.
+- **Pedagogical Value:** This provides the student with "Antecedent and Consequent" phrasing. Hearing a bar repeat gives the student a dopamine hit of recognition, significantly lowering the cognitive load and allowing them to focus deeply on the contrasting 'B' and 'C' sections.
+
+### 2. The Markov Syntax Dictionary (Micro-Structure)
+
+To fix the "unmusical" nature of the internal bars, flat `Math.random()` selection was replaced with a **Weighted Lottery Algorithm** governed by a Markov Syntax matrix.
+
+- **The Concept:** In spoken language, grammar dictates that certain words follow others. In Kodály methodology, rhythms operate on "Tension and Release" (e.g., four rapid semiquavers deeply want to resolve to a stable crotchet).
+- **The Execution:** The `SYNTAX_DICTIONARY` maps every motif to a set of probabilities for the subsequent beat. When placing a block, the engine checks the `previousMotif`, looks up the grammar rules, and runs a weighted draw.
+- **Pedagogical Value:** A `titika` now has a 70% chance of landing safely on a `ta` (release). This guarantees the engine generates highly idiomatic, natural-sounding patterns that the human ear can easily chunk together, rather than random noise.
+
+### 3. The Cadence Interceptor (Musical Resolution)
+
+The final challenge was ensuring that generated phrases musically resolve, without accidentally generating mathematically impossible bars that would crash the Tone.js transport.
+
+- **The Concept:** A 4-bar phrase should act as a complete musical thought, ending in a Perfect or Imperfect Cadence (rhythmically, typically a Crotchet or Minim), rather than a frantic subdivision.
+- **The Execution:** When the Form Router detects the absolute final bar of a sequence, it passes a `forceCadence` flag into the bar generator. The generator utilises a mathematical intersection filter: it cross-references the remaining space in the bar with a curated `CADENCE_MOTIFS` array. If a stable motif perfectly fits the remaining mathematical ticks, it hijacks the weighted lottery and forces the resolution.
+
+### Data Architecture (DRY Principles)
+
+To support this logic without bloating the codebase, the configuration arrays (`MOTIF_POOLS` and `FORM_TEMPLATES`) were completely abstracted from the main `levelRules` progression matrix. The engine dynamically stitches these rules together utilising ES6 Spread Syntax (`...`), ensuring the app remains highly scalable and DRY as new levels are introduced.
+
+### Quality Assurance & Bounds Testing
+
+Extensive developer testing was required to ensure the Cadence Interceptor and Form Router did not create mathematical memory leaks. The Tone.js framework is strictly typed regarding time, so any compound motifs leaking into a simple metre grid would cause an immediate crash.
+
+![QA Fig 1](docs\screenshots\qa_intersection_filter_fig1.png)
+
+> **Fig 1:** Console output confirming the intersection filter successfully protected a 6/8 compound grid, producing mathematically perfect 2-beat sequences.
+
+![QA Fig 2](docs\screenshots\qa_cache_execution_and_cadence_interceptor_fig2.png)
+
+> **Fig 2:** Console output of an 8-bar Sentence Form generation. Note the successful memory cache execution (Indexes 6-8 perfectly mirroring Indexes 0-2) and the successful Cadence Interceptor triggering at the final sequence beat (Index 22).

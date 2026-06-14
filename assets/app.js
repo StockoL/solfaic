@@ -506,6 +506,10 @@ function generateRhythmTimeline(levelId) {
     });
   });
 
+  // Testing
+  console.log("Active Blueprint:", sessionState.activeConfig);
+  console.table(timeline);
+
   return timeline;
 }
 
