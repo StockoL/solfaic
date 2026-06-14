@@ -132,35 +132,85 @@ const MOTIF_LIBRARY = {
 };
 
 /**
- * Progression Matrix
- * Determines which mathematical signatures and blocks are allowed at each difficulty tier.
+ * ----------------------------------------------------------------------------
+ * DATA DICTIONARIES: POOLS & TEMPLATES
+ * Defining these externally keeps the main progression matrix DRY and scalable.
+ * ----------------------------------------------------------------------------
+ */
+
+const MOTIF_POOLS = {
+  coreSimple: ["ta", "titi", "taRest"],
+  advSimple: ["tikatika", "tikati", "titika", "taa"],
+  coreCompound: ["tai", "tititi", "tati", "taiRest"],
+};
+
+const FORM_TEMPLATES = {
+  bars2: [
+    ["A", "B"], // 2-bar through-composed snippet
+    ["A", "A"], // 2-bar repeated snippet
+  ],
+  bars4: [
+    ["A", "B", "A", "C"], // Classic 4-bar Period
+    ["A", "A", "B", "A"], // Pop form
+    ["A", "B", "A", "B"], // 4-bar AB form
+    ["A", "B", "C", "D"], // 4-bar through-composed form
+    ["A", "B", "C", "C"], // 4-bar rounded form
+    ["A", "B", "B", "A"], // 4-bar palindrome form
+  ],
+  bars8: [
+    // 1. Parallel Period: The most standard classical form.
+    // The second half is an exact copy of the first, except for the final resolving cadence.
+    ["A", "B", "C", "D", "A", "B", "C", "E"],
+
+    // 2. Double Period (Rondo-lite): High repetition, incredibly friendly for dictation students.
+    ["A", "B", "A", "C", "A", "B", "A", "D"],
+
+    // 3. Sentence Form: "Presentation" (A-B repeated), followed by a developmental "Continuation".
+    ["A", "B", "A", "B", "C", "D", "E", "F"],
+
+    // 4. AABA "Pop/Jazz" Form: 2 bars per section. Builds great expectation for the return of A.
+    ["A", "B", "A", "B", "C", "D", "A", "B"],
+
+    // 5. Contrasting Period: The second half introduces new material but has internal repetition.
+    ["A", "B", "C", "D", "E", "F", "E", "G"],
+
+    // 6. Rounded Form: A developmental middle section that safely returns to the opening idea.
+    ["A", "A", "B", "C", "D", "E", "A", "A"],
+  ],
+};
+
+/**
+ * ----------------------------------------------------------------------------
+ * PROGRESSION MATRIX (levelRules)
+ * Uses ES6 Spread Operators (...) to cumulatively inherit arrays from previous levels.
+ * ----------------------------------------------------------------------------
  */
 const levelRules = {
   1: {
     allowedMetres: ["2/4", "3/4", "4/4"],
     barOptions: [2],
-    simpleMotifs: ["ta", "titi", "taRest"],
+    simpleMotifs: [...MOTIF_POOLS.coreSimple],
     compoundMotifs: [],
+    allowedForms: [...FORM_TEMPLATES.bars2],
+    enforceCadence: false,
   },
   2: {
     allowedMetres: ["2/4", "3/4", "4/4", "6/8"],
-    barOptions: [2, 4],
-    simpleMotifs: ["ta", "titi", "taRest"],
-    compoundMotifs: ["tai", "tititi", "tati", "taiRest"],
+    barOptions: [4],
+    simpleMotifs: [...MOTIF_POOLS.coreSimple],
+    compoundMotifs: [...MOTIF_POOLS.coreCompound],
+    allowedForms: [...FORM_TEMPLATES.bars4],
+    enforceCadence: true,
   },
   3: {
     allowedMetres: ["2/4", "3/4", "4/4", "6/8"],
-    barOptions: [2, 4],
-    simpleMotifs: [
-      "ta",
-      "titi",
-      "taRest",
-      "tikatika",
-      "tikati",
-      "titika",
-      "taa",
-    ],
-    compoundMotifs: ["tai", "tititi", "tati", "taiRest"],
+    barOptions: [4, 8],
+    // Level 3 inherits core simple motifs AND adds advanced ones:
+    simpleMotifs: [...MOTIF_POOLS.coreSimple, ...MOTIF_POOLS.advSimple],
+    compoundMotifs: [...MOTIF_POOLS.coreCompound],
+    // Level 3 inherits 4-bar forms AND adds 8-bar forms:
+    allowedForms: [...FORM_TEMPLATES.bars4, ...FORM_TEMPLATES.bars8],
+    enforceCadence: true,
   },
 };
 
