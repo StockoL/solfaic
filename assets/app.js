@@ -348,8 +348,36 @@ const DOM = {
 // ============================================================================
 
 /**
- * Algorithmic Rhythm Generator
- * Builds a mathematically valid musical sequence based on the active level rules.
+ * Helper: Generates a single mathematically perfect bar of motifs.
+ * This is isolated so it can be cached and repeated by the Form Router later.
+ */
+function generateBarSequence(allowedMotifs, ticksPerBar) {
+  const barMotifs = [];
+  let currentTicks = 0;
+
+  while (currentTicks < ticksPerBar) {
+    const remainingTicks = ticksPerBar - currentTicks;
+
+    // Filter out motifs that are too long to fit in the remaining space of this bar
+    const viableIds = allowedMotifs.filter(
+      (id) => MOTIF_LIBRARY[id].ticks <= remainingTicks,
+    );
+
+    if (viableIds.length === 0) break; // Defensive fallback
+
+    // Currently purely random (Markov Syntax weighting will replace this in Ticket 7)
+    const chosenId = viableIds[Math.floor(Math.random() * viableIds.length)];
+
+    barMotifs.push(chosenId);
+    currentTicks += MOTIF_LIBRARY[chosenId].ticks;
+  }
+
+  return barMotifs;
+}
+
+/**
+ * Algorithmic Rhythm Generator (Refactored Bar-by-Bar Assembly)
+ * Builds a valid musical sequence based on level rules and structural templates.
  * * @param {number} levelId - The target difficulty tier.
  * @returns {Array} An array of sequential objects mapped for Tone.js playback.
  */
@@ -357,6 +385,7 @@ function generateRhythmTimeline(levelId) {
   const rules = levelRules[levelId];
   if (!rules) return [];
 
+  // 1. Establish the blueprint for the round
   const chosenMetre =
     rules.allowedMetres[Math.floor(Math.random() * rules.allowedMetres.length)];
   const barCount =
@@ -370,48 +399,48 @@ function generateRhythmTimeline(levelId) {
   if (chosenMetre === "2/4") ticksPerBar = 2;
   if (chosenMetre === "6/8") {
     metreType = "compound";
-    ticksPerBar = 2;
+    ticksPerBar = 2; // Compound is grouped into 2 macro-beats
   }
-
-  const totalTicks = barCount * ticksPerBar;
-  const validMotifsForRound =
-    metreType === "simple" ? rules.simpleMotifs : rules.compoundMotifs;
 
   sessionState.activeConfig = {
     metre: chosenMetre,
     bars: barCount,
-    totalTicks: totalTicks,
+    totalTicks: barCount * ticksPerBar,
     ticksPerBar: ticksPerBar,
-    allowedMotifs: validMotifsForRound,
+    allowedMotifs:
+      metreType === "simple" ? rules.simpleMotifs : rules.compoundMotifs,
   };
 
-  const timeline = [];
-  let currentTicks = 0;
-
-  while (currentTicks < totalTicks) {
-    const remainingTicks = totalTicks - currentTicks;
-    // Prevent selecting a long motif (like ta-a) if there's only 1 tick left in the sequence
-    const viableIds = validMotifsForRound.filter(
-      (id) => MOTIF_LIBRARY[id].ticks <= remainingTicks,
+  // 2. Generation Phase (Build the raw arrays)
+  const rawBarArrays = [];
+  for (let i = 0; i < barCount; i++) {
+    // Right now this just builds X random bars. In the next ticket, the Form Router takes over this loop!
+    const freshBar = generateBarSequence(
+      sessionState.activeConfig.allowedMotifs,
+      ticksPerBar,
     );
-    if (viableIds.length === 0) break;
-
-    const chosenId = viableIds[Math.floor(Math.random() * viableIds.length)];
-    const motifData = MOTIF_LIBRARY[chosenId];
-
-    // Compute standard Tone.js Transport timing (e.g., "1:2:0" = Bar 1, Beat 2)
-    const bar = Math.floor(currentTicks / ticksPerBar);
-    const beat = currentTicks % ticksPerBar;
-
-    timeline.push({
-      time: `${bar}:${beat}:0`,
-      duration: motifData.duration,
-      motifId: chosenId,
-      pitch: null,
-    });
-
-    currentTicks += motifData.ticks;
+    rawBarArrays.push(freshBar);
   }
+
+  // 3. Assembly Phase (Map to Tone.js Time)
+  const timeline = [];
+
+  rawBarArrays.forEach((barMotifs, barIndex) => {
+    let beatInBar = 0; // Tracks spatial position within the current specific bar
+
+    barMotifs.forEach((motifId) => {
+      const motifData = MOTIF_LIBRARY[motifId];
+
+      timeline.push({
+        time: `${barIndex}:${beatInBar}:0`,
+        duration: motifData.duration,
+        motifId: motifId,
+        pitch: null,
+      });
+
+      beatInBar += motifData.ticks;
+    });
+  });
 
   return timeline;
 }
