@@ -380,10 +380,10 @@ To support this logic without bloating the codebase, the configuration arrays (`
 
 Extensive developer testing was required to ensure the Cadence Interceptor and Form Router did not create mathematical memory leaks. The Tone.js framework is strictly typed regarding time, so any compound motifs leaking into a simple metre grid would cause an immediate crash.
 
-![QA Fig 1](docs\screenshots\qa_intersection_filter_fig1.png)
+![QA Fig 1](docs/screenshots/qa_intersection_filter_fig1.png)
 
 > **Fig 1:** Console output confirming the intersection filter successfully protected a 6/8 compound grid, producing mathematically perfect 2-beat sequences.
 
-![QA Fig 2](docs\screenshots\qa_cache_execution_and_cadence_interceptor_fig2.png)
+![QA Fig 2](docs/screenshots/qa_cache_execution_and_cadence_interceptor_fig2.png)
 
 > **Fig 2:** Console output of an 8-bar Sentence Form generation. Note the successful memory cache execution (Indexes 6-8 perfectly mirroring Indexes 0-2) and the successful Cadence Interceptor triggering at the final sequence beat (Index 22).
