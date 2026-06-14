@@ -359,9 +359,11 @@ const CADENCE_MOTIFS = ["ta", "taa", "taRest", "tai", "taiRest"];
  * @param {number} ticksPerBar - Total spatial cost of the bar.
  * @param {boolean} forceCadence - Interceptor flag to force a stable resolution.
  */
+
 function generateBarSequence(allowedMotifs, ticksPerBar, forceCadence = false) {
   const barMotifs = [];
   let currentTicks = 0;
+  let previousMotif = null; // Memory to track what we just placed
 
   while (currentTicks < ticksPerBar) {
     const remainingTicks = ticksPerBar - currentTicks;
@@ -370,19 +372,13 @@ function generateBarSequence(allowedMotifs, ticksPerBar, forceCadence = false) {
       (id) => MOTIF_LIBRARY[id].ticks <= remainingTicks,
     );
 
-    // ========================================================================
-    // 🚨 THE CADENCE INTERCEPTOR
-    // If this bar must resolve, and the remaining space perfectly fits a
-    // stable cadence motif, hijack the randomiser and force the resolution
-    // ========================================================================
+    // 1. THE CADENCE INTERCEPTOR
     if (forceCadence) {
       const exactFitCadence = viableIds.filter(
         (id) =>
           CADENCE_MOTIFS.includes(id) &&
           MOTIF_LIBRARY[id].ticks === remainingTicks,
       );
-
-      // If we found a perfect stable ending, overwrite the viable options
       if (exactFitCadence.length > 0) {
         viableIds = exactFitCadence;
       }
@@ -390,11 +386,47 @@ function generateBarSequence(allowedMotifs, ticksPerBar, forceCadence = false) {
 
     if (viableIds.length === 0) break; // Defensive fallback
 
-    // Currently purely random (Markov Syntax weighting will replace this next)
-    const chosenId = viableIds[Math.floor(Math.random() * viableIds.length)];
+    let chosenId;
+
+    // 2. THE MARKOV SYNTAX ENGINE
+    // If we have a previous motif, check the dictionary for grammar rules
+    if (previousMotif && SYNTAX_DICTIONARY[previousMotif]) {
+      const transitionWeights = SYNTAX_DICTIONARY[previousMotif];
+      const validWeights = {};
+      let totalWeight = 0;
+
+      // Only consider weights for motifs that mathematically fit in the remaining space
+      viableIds.forEach((id) => {
+        if (transitionWeights[id]) {
+          validWeights[id] = transitionWeights[id];
+          totalWeight += transitionWeights[id];
+        }
+      });
+
+      // If we found valid grammar rules, run the Weighted Lottery
+      if (totalWeight > 0) {
+        let randomDraw = Math.random() * totalWeight;
+        for (const id in validWeights) {
+          randomDraw -= validWeights[id];
+          if (randomDraw <= 0) {
+            chosenId = id;
+            break;
+          }
+        }
+      }
+    }
+
+    // 3. THE FALLBACK
+    // If it's the first beat of the bar, or no grammar rules applied, pick randomly
+    if (!chosenId) {
+      chosenId = viableIds[Math.floor(Math.random() * viableIds.length)];
+    }
 
     barMotifs.push(chosenId);
     currentTicks += MOTIF_LIBRARY[chosenId].ticks;
+
+    // Save this choice to influence the next loop!
+    previousMotif = chosenId;
   }
 
   return barMotifs;
