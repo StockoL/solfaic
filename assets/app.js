@@ -388,8 +388,11 @@ function generateRhythmTimeline(levelId) {
   // 1. Establish the blueprint for the round
   const chosenMetre =
     rules.allowedMetres[Math.floor(Math.random() * rules.allowedMetres.length)];
-  const barCount =
-    rules.barOptions[Math.floor(Math.random() * rules.barOptions.length)];
+
+  // FORM ROUTER: Pick the template first, and derive the total bar count from its length!
+  const chosenForm =
+    rules.allowedForms[Math.floor(Math.random() * rules.allowedForms.length)];
+  const barCount = chosenForm.length;
 
   let metreType = "simple";
   let ticksPerBar = 4;
@@ -399,34 +402,41 @@ function generateRhythmTimeline(levelId) {
   if (chosenMetre === "2/4") ticksPerBar = 2;
   if (chosenMetre === "6/8") {
     metreType = "compound";
-    ticksPerBar = 2; // Compound is grouped into 2 macro-beats
+    ticksPerBar = 2;
   }
 
   sessionState.activeConfig = {
     metre: chosenMetre,
     bars: barCount,
+    form: chosenForm, // Caching the structure (e.g., ["A", "B", "A", "C"]) for debugging
     totalTicks: barCount * ticksPerBar,
     ticksPerBar: ticksPerBar,
     allowedMotifs:
       metreType === "simple" ? rules.simpleMotifs : rules.compoundMotifs,
   };
 
-  // 2. Generation Phase (Build the raw arrays)
+  // 2. Generation Phase (The Form Router & Cache Memory)
   const rawBarArrays = [];
-  for (let i = 0; i < barCount; i++) {
-    // Right now this just builds X random bars. In the next ticket, the Form Router takes over this loop!
-    const freshBar = generateBarSequence(
-      sessionState.activeConfig.allowedMotifs,
-      ticksPerBar,
-    );
-    rawBarArrays.push(freshBar);
-  }
+  const phraseCache = {}; // Stores unique generated bars based on their structural letter
+
+  chosenForm.forEach((formLetter) => {
+    // If we haven't generated a bar for this letter yet, build one and memorize it
+    if (!phraseCache[formLetter]) {
+      phraseCache[formLetter] = generateBarSequence(
+        sessionState.activeConfig.allowedMotifs,
+        ticksPerBar,
+      );
+    }
+
+    // Push a distinct copy of the memorized bar into the final timeline assembly
+    rawBarArrays.push([...phraseCache[formLetter]]);
+  });
 
   // 3. Assembly Phase (Map to Tone.js Time)
   const timeline = [];
 
   rawBarArrays.forEach((barMotifs, barIndex) => {
-    let beatInBar = 0; // Tracks spatial position within the current specific bar
+    let beatInBar = 0;
 
     barMotifs.forEach((motifId) => {
       const motifData = MOTIF_LIBRARY[motifId];
