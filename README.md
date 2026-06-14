@@ -66,11 +66,11 @@ _Focus: Pedagogy, motif-based learning, and consistency._
 
 ### Initial Wireframes
 
-![Initial Desktop Concept](./docs\wireframes/solfaic-wireframe-level-view-desktop.png)
+![Initial Desktop Concept](./docs/wireframes/solfaic-wireframe-level-view-desktop.png)
 
-![Initial Mobile Concept](./docs\wireframes/solfaic-wireframe-level-view-mobile.png)
+![Initial Mobile Concept](./docs/wireframes/solfaic-wireframe-level-view-mobile.png)
 
-![Performance Workspace](./docs\wireframes/solfaic-wireframe-performance-view-mobile.png)
+![Performance Workspace](./docs/wireframes/solfaic-wireframe-performance-view-mobile.png)
 
 ### I. Strategy
 
