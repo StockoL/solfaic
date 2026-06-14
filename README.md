@@ -1,6 +1,6 @@
 # Solfaic - Solfège Ear Trainer
 
-**[🔴 LIVE APPLICATION: Click here to view the deployed site](https://stockol.github.io/solfaic/)**
+**[🔴 LIVE APPLICATION: Click here to view the deployed site on GitHub Pages](https://stockol.github.io/solfaic/)**
 
 Solfaic is an interactive web application designed to isolate and build rhythmic dictation and metric internalisation through a pedagogical progressive "ladder". It adheres to a core tenet of music theory education that a foundation in structural rhythm processing must be developed before pitch in the understanding of melody.
 
@@ -107,7 +107,10 @@ _Focus: Pedagogy, motif-based learning, and consistency._
 Educational software requires engagement. To fight cognitive fatigue, we injected subtle moments of interaction "whimsy":
 
 - **Custom Spring-Loaded Success Overlays:** Deprecated disruptive browser alerts in favor of an elegant, canvas-wide custom HTML5 victory modal utilising custom spring-physics curves.
-- **Staggered Cinematic Confetti Downpour:** Initiates a highly dense, 160-particle colorful confetti storm with 3D-depth and randomised start delays up to 1.5 seconds.
+- **Staggered Cinematic Confetti Downpour:** Initiates a highly dense, 160-particle colourful confetti storm with 3D-depth and randomised start delays up to 1.5 seconds.
+
+![Confetti Downpour](docs/screenshots/confetti_celebration_screenshot.png)
+
 - **Tactile Frustration Microgestures (Error Handling):** Attempting to submit an incomplete exercise causes the entire canvas row to execute an aggressive **horizontal frustration shake** (`is-shaking`), while empty slots flash with a **crimson halo pulse** (`is-empty-panic`).
 - **Touch-First Sensation Mapping:** Hover definitions are suppressed entirely on mobile to eliminate sticky layout scaling freezes. Touch inputs focus exclusively on the high-fidelity `:active` state, delivering a crisp, immediate touch-down spring compression feel (`scale(0.96)`) the precise millisecond a finger makes contact.
 
@@ -150,6 +153,8 @@ Maps how the browser UI, Central Engine, and Web Audio API share execution data 
 
 The application's viewport matrix was refactored to optimise widescreen real estate, introducing a dual-column layout strategy.
 
+![Screenshot of Desktop Dashboard](docs/screenshots/desktop_dashboard_screenshot.png)
+
 **1. Asymmetric Fluid Grid Shell**
 On displays wider than `1024px`, the layout fractures into an asymmetrical grid system (`grid-template-columns: 400px 1fr`). Placing the curriculum reference panel on the left ensures the user's eye scans educational rules before executing interactions.
 
@@ -164,8 +169,10 @@ Refactored static bulleted lists into a high-density semantic data table:
 | `ta-a`      | `[SVG]`  | 2 Beat Minim (Sustained Tone)         |
 | `tika-tika` | `[SVG]`  | 1 Beat Four Semiquavers (Quad Sounds) |
 
-**3. The 85vw Off-Canvas Mobile Drawer Optimization**
+**3. The 85vw Off-Canvas Mobile Drawer Optimisation**
 Expanded the mobile drawer slide-out width from a rigid `280px` up to a fluid **`85vw`** constraint (capped at `420px`). Combined with a localised mobile typography pass, the complex musical tables render with absolute geometric spacing on any iOS or Android glass surface without crunching adjacent columns.
+
+![Mobile Drawer](docs/screenshots/mobile_drawer.png)
 
 ### Persistent Slot-State Memory & Surgical Error Workflow
 
@@ -173,10 +180,14 @@ Wiping a student's entire input ledger after a single incorrect rhythm element i
 
 - **The Solution:** Implemented a persistent state tracking matrix (`slotStates`). Individual cards now retain their targeted validation memory (`success` or `error`) independently. When a student attempts a corrective pass, clicking an error card clears _only that specific beat_, leaving correct blocks perfectly preserved as an interactive roadmap.
 
+![Error Card Fix](docs/screenshots/error_workflow_screenshot.png)
+
 ### Unified Dual-Input Interaction Engine
 
 - **Desktop Environments:** Full HTML5 native **Drag-and-Drop** implementation allows students to grab selector pads and drop them onto the ledger.
 - **Mobile Environments:** A targeted **Touchscreen Focus Ring Modifier**. Tapping an empty placeholder highlights that coordinate with an active blue focus ring, allowing subsequent pad selections to snap instantly into the targeted slot.
+
+![Focus Ring Modifier](docs/screenshots/focus_ring_modifier_screenshot.png)
 
 ### Articulated Audio Synthesis Engine
 
@@ -364,6 +375,8 @@ To fix the "unmusical" nature of the internal bars, flat `Math.random()` selecti
 - **The Concept:** In spoken language, grammar dictates that certain words follow others. In Kodály methodology, rhythms operate on "Tension and Release" (e.g., four rapid semiquavers deeply want to resolve to a stable crotchet).
 - **The Execution:** The `SYNTAX_DICTIONARY` maps every motif to a set of probabilities for the subsequent beat. When placing a block, the engine checks the `previousMotif`, looks up the grammar rules, and runs a weighted draw.
 - **Pedagogical Value:** A `titika` now has a 70% chance of landing safely on a `ta` (release). This guarantees the engine generates highly idiomatic, natural-sounding patterns that the human ear can easily chunk together, rather than random noise.
+
+![Markov Syntax Dictionary](docs/screenshots/syntax_dictionary_screenshot.png)
 
 ### 3. The Cadence Interceptor (Musical Resolution)
 
