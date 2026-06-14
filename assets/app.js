@@ -181,6 +181,95 @@ const FORM_TEMPLATES = {
 
 /**
  * ----------------------------------------------------------------------------
+ * MARKOV SYNTAX DICTIONARY (Grammar & Phrasing)
+ * Defines the probability of which motif should follow the current motif.
+ * Higher numbers represent a stronger musical pull (idiomatic resolution).
+ * ----------------------------------------------------------------------------
+ */
+const SYNTAX_DICTIONARY = {
+  // ==========================================
+  // SIMPLE METRE MOTIFS (2/4, 3/4, 4/4)
+  // ==========================================
+
+  ta: {
+    ta: 40, // Crotchets comfortably repeat
+    titi: 30, // Smooth transition into quavers
+    tikatika: 15, // Sudden burst of energy
+    taa: 10, // Settle into a minim
+    taRest: 5, // Take a quick breath
+  },
+
+  titi: {
+    ta: 50, // Quavers heavily want to land on a solid downbeat
+    titi: 30, // Continuous running quavers
+    tikati: 10, // Move into a syncopated feel
+    titika: 10, // Move into a forward-leaning syncopation
+  },
+
+  taRest: {
+    ta: 60, // Always step out of a rest with a strong, confident attack
+    titi: 30, // Or a running attack
+    tikatika: 10, // Surprise burst out of the silence
+  },
+
+  taa: {
+    ta: 40, // Minims are a full reset. Step out cleanly.
+    titi: 40, // Regain lost momentum immediately
+    tikatika: 10,
+    taRest: 10,
+  },
+
+  // --- Advanced Simple Subdivisions (High Tension) ---
+
+  tikatika: {
+    ta: 70, // 4 semiquavers ALMOST ALWAYS resolve to a stable crotchet
+    titi: 20, // Rarely, they resolve to running quavers
+    taa: 10, // Huge release into a minim
+  },
+
+  tikati: {
+    ta: 60, // The trailing quaver lands nicely onto a crotchet
+    titi: 30,
+    tikatika: 10,
+  },
+
+  titika: {
+    ta: 70, // The two trailing semiquavers act as a pickup, pushing heavily into the next beat
+    titi: 20,
+    taa: 10,
+  },
+
+  // ==========================================
+  // COMPOUND METRE MOTIFS (6/8)
+  // ==========================================
+
+  tai: {
+    tai: 40, // Dotted crotchets comfortably repeat
+    tititi: 40, // Flow naturally into running quavers
+    tati: 15, // Move into a lilting long-short
+    taiRest: 5,
+  },
+
+  tititi: {
+    tai: 50, // Running quavers want to land on a solid beat
+    tati: 30, // Shift into a lilt
+    tititi: 20, // Continuous running
+  },
+
+  tati: {
+    tititi: 50, // The short quaver acts as a springboard into running notes
+    tai: 40, // Or resolves safely
+    tati: 10, // Skipping/galloping feel
+  },
+
+  taiRest: {
+    tai: 60, // Step out of the rest with a solid beat
+    tititi: 40, // Or a running beat
+  },
+};
+
+/**
+ * ----------------------------------------------------------------------------
  * PROGRESSION MATRIX (levelRules)
  * Uses ES6 Spread Operators (...) to cumulatively inherit arrays from previous levels.
  * ----------------------------------------------------------------------------
