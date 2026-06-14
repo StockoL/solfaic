@@ -348,24 +348,49 @@ const DOM = {
 // ============================================================================
 
 /**
- * Helper: Generates a single mathematically perfect bar of motifs.
- * This is isolated so it can be cached and repeated by the Form Router later.
+ * Pedagogical Cadence Pool
+ * These are the structurally stable blocks used to musically resolve phrases.
  */
-function generateBarSequence(allowedMotifs, ticksPerBar) {
+const CADENCE_MOTIFS = ["ta", "taa", "taRest", "tai", "taiRest"];
+
+/**
+ * Helper: Generates a single mathematically perfect bar of motifs.
+ * @param {Array} allowedMotifs - Pool of valid motifs for the level.
+ * @param {number} ticksPerBar - Total spatial cost of the bar.
+ * @param {boolean} forceCadence - Interceptor flag to force a stable resolution.
+ */
+function generateBarSequence(allowedMotifs, ticksPerBar, forceCadence = false) {
   const barMotifs = [];
   let currentTicks = 0;
 
   while (currentTicks < ticksPerBar) {
     const remainingTicks = ticksPerBar - currentTicks;
 
-    // Filter out motifs that are too long to fit in the remaining space of this bar
-    const viableIds = allowedMotifs.filter(
+    let viableIds = allowedMotifs.filter(
       (id) => MOTIF_LIBRARY[id].ticks <= remainingTicks,
     );
 
+    // ========================================================================
+    // 🚨 THE CADENCE INTERCEPTOR
+    // If this bar must resolve, and the remaining space perfectly fits a
+    // stable cadence motif, hijack the randomiser and force the resolution
+    // ========================================================================
+    if (forceCadence) {
+      const exactFitCadence = viableIds.filter(
+        (id) =>
+          CADENCE_MOTIFS.includes(id) &&
+          MOTIF_LIBRARY[id].ticks === remainingTicks,
+      );
+
+      // If we found a perfect stable ending, overwrite the viable options
+      if (exactFitCadence.length > 0) {
+        viableIds = exactFitCadence;
+      }
+    }
+
     if (viableIds.length === 0) break; // Defensive fallback
 
-    // Currently purely random (Markov Syntax weighting will replace this in Ticket 7)
+    // Currently purely random (Markov Syntax weighting will replace this next)
     const chosenId = viableIds[Math.floor(Math.random() * viableIds.length)];
 
     barMotifs.push(chosenId);
@@ -377,19 +402,13 @@ function generateBarSequence(allowedMotifs, ticksPerBar) {
 
 /**
  * Algorithmic Rhythm Generator (Refactored Bar-by-Bar Assembly)
- * Builds a valid musical sequence based on level rules and structural templates.
- * * @param {number} levelId - The target difficulty tier.
- * @returns {Array} An array of sequential objects mapped for Tone.js playback.
  */
 function generateRhythmTimeline(levelId) {
   const rules = levelRules[levelId];
   if (!rules) return [];
 
-  // 1. Establish the blueprint for the round
   const chosenMetre =
     rules.allowedMetres[Math.floor(Math.random() * rules.allowedMetres.length)];
-
-  // FORM ROUTER: Pick the template first, and derive the total bar count from its length!
   const chosenForm =
     rules.allowedForms[Math.floor(Math.random() * rules.allowedForms.length)];
   const barCount = chosenForm.length;
@@ -408,7 +427,7 @@ function generateRhythmTimeline(levelId) {
   sessionState.activeConfig = {
     metre: chosenMetre,
     bars: barCount,
-    form: chosenForm, // Caching the structure (e.g., ["A", "B", "A", "C"]) for debugging
+    form: chosenForm,
     totalTicks: barCount * ticksPerBar,
     ticksPerBar: ticksPerBar,
     allowedMotifs:
@@ -417,37 +436,40 @@ function generateRhythmTimeline(levelId) {
 
   // 2. Generation Phase (The Form Router & Cache Memory)
   const rawBarArrays = [];
-  const phraseCache = {}; // Stores unique generated bars based on their structural letter
+  const phraseCache = {};
 
-  chosenForm.forEach((formLetter) => {
-    // If we haven't generated a bar for this letter yet, build one and memorize it
-    if (!phraseCache[formLetter]) {
-      phraseCache[formLetter] = generateBarSequence(
+  chosenForm.forEach((formLetter, index) => {
+    // Check if this is the absolute final bar of the sequence
+    const isFinalBar = index === chosenForm.length - 1;
+    const needsCadence = rules.enforceCadence && isFinalBar;
+
+    // Create a unique memory key (e.g., 'A_cadence') so we don't accidentally
+    // overwrite the original 'A' bar with our modified ending.
+    const cacheKey = needsCadence ? `${formLetter}_cadence` : formLetter;
+
+    if (!phraseCache[cacheKey]) {
+      phraseCache[cacheKey] = generateBarSequence(
         sessionState.activeConfig.allowedMotifs,
         ticksPerBar,
+        needsCadence,
       );
     }
 
-    // Push a distinct copy of the memorized bar into the final timeline assembly
-    rawBarArrays.push([...phraseCache[formLetter]]);
+    rawBarArrays.push([...phraseCache[cacheKey]]);
   });
 
   // 3. Assembly Phase (Map to Tone.js Time)
   const timeline = [];
-
   rawBarArrays.forEach((barMotifs, barIndex) => {
     let beatInBar = 0;
-
     barMotifs.forEach((motifId) => {
       const motifData = MOTIF_LIBRARY[motifId];
-
       timeline.push({
         time: `${barIndex}:${beatInBar}:0`,
         duration: motifData.duration,
         motifId: motifId,
         pitch: null,
       });
-
       beatInBar += motifData.ticks;
     });
   });
