@@ -400,3 +400,25 @@ Extensive developer testing was required to ensure the Cadence Interceptor and F
 ![QA Fig 2](docs/screenshots/qa_cache_execution_and_cadence_interceptor_fig2.png)
 
 > **Fig 2:** Console output of an 8-bar Sentence Form generation. Note the successful memory cache execution (Indexes 6-8 perfectly mirroring Indexes 0-2) and the successful Cadence Interceptor triggering at the final sequence beat (Index 22).
+
+---
+
+## Phase 8: The Responsive "Sponge" Architecture (UI/UX)
+
+Translating rigid musical syntax (2, 4, and 8-bar phrases) into a fluid web interface presented a significant layout challenge. Standard responsive techniques often resulted in "syntactical breaking" (e.g., a 4-bar phrase wrapping awkwardly into 3 bars on the top row and 1 bar on the bottom) or "vertical blowouts" where tall screens stretched musical notation cards into distorted, unreadable rectangles.
+
+![Workspace Wrapping Issue](docs/screenshots/sponge_breaking_screenshot.png)
+
+![Vertical Blowout](docs/screenshots/sponge_vertical_blowout_screenshot.png)
+
+To guarantee a pristine user experience on every device — from an iPhone SE to a 4K Desktop monitor—the workspace was rebuilt using a highly constrained, custom CSS architecture:
+
+- **The Viewport Sponge Constraint:** To prevent the user from ever having to scroll to find the "Submit" button, the primary workspace was given `flex: 1 1 0` with a strict `min-height: 0`. This allows the workspace to act as a "sponge," dynamically measuring the exact space between the top controls and bottom controls, and squishing the musical grid to fit perfectly within the viewport.
+- **Proportional Grid Clamping:** To prevent cards from elongating into skyscrapers on tall devices (like iPads), dangerous `aspect-ratio` rules were removed. Instead, the CSS Grid utilises `grid-auto-rows: clamp(55px, 10vh, 100px)`. This enforces a strict physical ceiling: the cards will grow to a mathematically proportional size and then stop, floating elegantly in the vertical center of the available space.
+- **Syntactical Auto-Grids & Quantity Queries:** The grid strictly enforces musical phrasing. On mobile, it utilises a 2-column layout (perfectly stacking 2, 4, and 8-bar phrases). On desktop, it enforces a 4-column sheet-music layout. To solve the issue of a 2-bar Level 1 phrase sitting awkwardly on the left edge of a 4-column desktop grid, an advanced CSS **Quantity Query** (`.workspace-bar:first-child:nth-last-child(2)`) was deployed. This algorithmically detects if exactly two bars exist in the DOM and automatically pushes the first bar into the second column, resulting in mathematically perfect centering.
+
+![Before Quantity Query](docs/screenshots/sponge_issue_screenshot.png)
+
+![After Quantity Query](docs/screenshots/sponge_fix_screenshot.png)
+
+---
