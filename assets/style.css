@@ -395,45 +395,75 @@ main,
    5. WORKSPACE GRID ENVIRONMENT (The Interactive Arena)
    ========================================================================== */
 #ui-workspace {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1.5rem;
-  min-height: 116px;
-  height: auto;
-  padding: 1rem 0;
-  will-change: transform;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+
+  /* CRITICAL FIX: The rows are now strictly clamped. 
+     They will NEVER grow taller than 85px, preserving perfect card proportions */
+  grid-auto-rows: clamp(55px, 10vh, 85px);
+
+  /* Packs the rigidly sized rows in the vertical dead-center of the sponge */
+  align-content: center;
+
+  gap: clamp(4px, 1.5vh, 12px);
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+
+  height: 100%;
+  min-height: 0;
+  padding: 8px;
 }
 
 .workspace-bar {
   display: flex;
-  flex-wrap: nowrap;
   align-items: center;
-  gap: 0.5rem;
-  height: 80px;
-  min-width: 160px;
-  padding: 0.5rem;
+  justify-content: space-evenly;
+  gap: clamp(2px, 0.5vw, 6px);
+
+  width: 100%;
+  height: 100%; /* SQUISH PHYSICS: Fill the grid row exactly */
+  min-height: 0; /* CRITICAL: Allows the bar to be crushed infinitely */
+  min-width: 0;
+  box-sizing: border-box;
+  padding: clamp(2px, 1vh, 8px);
+
   background: var(--color-surface);
   border: 2px dashed #cbd5e1;
   border-radius: 8px;
-  overflow: visible !important;
-  transition: background-color 0.1s ease;
 }
 
 .workspace-card {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  flex: 1; /* Share horizontal space perfectly */
+  height: 100%; /* SQUISH PHYSICS: Fill the bar exactly */
+  min-height: 0; /* CRITICAL: Allows the card to be crushed infinitely */
+  min-width: 0;
+
   background: var(--color-surface);
   color: var(--color-text);
   border: 2px solid var(--color-border);
   border-radius: 6px;
-  height: 100%;
-  min-width: 54px;
-  padding: 0 8px;
-  flex: 0 0 auto;
+  padding: 0;
   cursor: pointer;
-  transition: all 0.2s ease;
+  overflow: hidden; /* Protects against SVGs blowing out the box */
+}
+
+/* Ensure SVGs shrink perfectly within the crushed cards */
+.workspace-card .svg-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.workspace-card svg {
+  width: 65%;
+  height: 65%;
+  display: block;
 }
 
 .workspace-card .music-font {
@@ -773,13 +803,11 @@ main,
   font-family: monospace;
   background-color: var(--color-primary);
   color: var(--color-surface);
-  padding: 4px 6px; /* Added slightly more vertical padding for wrapped lines */
+  padding: 4px 6px;
   border-radius: 4px;
   font-size: clamp(0.7rem, 1vw, 0.85rem);
   line-height: 1.2;
-  text-align: center; /* Keeps stacked syllables visually balanced */
-
-  /* FIX: Removes letter-tearing and restores natural hyphen/space wrapping */
+  text-align: center;
   word-break: normal;
   overflow-wrap: break-word;
 }
@@ -872,7 +900,6 @@ main,
   max-width: 90vw;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
   z-index: 5200;
-  /* FIX: Removed 'top' and 'left' transitions. The box will now teleport instantly while invisible instead of flying across the screen. */
   transition:
     opacity 0.2s ease,
     transform 0.2s ease;
@@ -928,14 +955,12 @@ main,
 
 /* ==========================================================================
    12. MASTER RESPONSIVE MEDIA QUERIES
-   (Cascades last to ensure layout overrides ALWAYS win without needing !important)
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
    A. MOBILE VIEWPORTS ONLY (Up to 1023px Display Bounds)
    -------------------------------------------------------------------------- */
 @media (max-width: 1023px) {
-  /* Absolute Viewport Lock: Zero scrolling permitted under any circumstance */
   html,
   body {
     height: 100vh;
@@ -981,11 +1006,15 @@ main,
   }
 
   .input-display-panel {
-    flex: 1 1 auto;
+    flex: 1 1 0; /* Absolute flex: calculate remaining space and lock to it */
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 0;
+    min-height: 0; /* CRITICAL: Permits vertical compression */
+
+    /* NO MORE SCROLLING! We force everything to fit inside the viewport */
+    overflow: hidden;
+    padding: clamp(4px, 1vh, 12px);
   }
 
   .motif-selector-pane {
@@ -995,24 +1024,12 @@ main,
     min-height: 0;
   }
 
-  #ui-workspace {
-    gap: clamp(4px, 1vh, 1rem);
-    padding: 0;
-    justify-content: center;
-    min-height: auto;
-  }
-
   .workspace-bar {
-    height: clamp(40px, 8vh, 85px);
-    padding: clamp(2px, 0.5vh, 6px);
+    padding: clamp(4px, 1vh, 8px);
+    gap: clamp(4px, 1vw, 8px);
   }
 
-  .workspace-card {
-    min-width: clamp(36px, 7vw, 65px);
-  }
-  .workspace-card .svg-container {
-    height: clamp(20px, 4vh, 38px);
-  }
+  /* .workspace-card logic has been moved completely to global Section 5! */
 
   #ui-motif-selector {
     grid-template-columns: repeat(auto-fit, minmax(min(80px, 30%), 1fr));
@@ -1128,7 +1145,6 @@ main,
    C. PREMIUM DESKTOP VIEWPORTS ONLY (1024px wide and above)
    -------------------------------------------------------------------------- */
 @media (min-width: 1024px) {
-  /* 1. Expand the Absolute Viewport Lock to Desktop */
   html,
   body {
     height: 100vh;
@@ -1138,7 +1154,6 @@ main,
     margin: 0;
   }
 
-  /* 2. Fluid Sidebar width prevents it from eating Nest Hub horizontal space */
   .app-grid-shell {
     height: 100dvh;
     display: grid;
@@ -1154,7 +1169,6 @@ main,
     padding-right: 0;
   }
 
-  /* 3. The Desktop Flex Crush Architecture */
   .application-canvas {
     height: 100%;
     padding-top: var(--space-md);
@@ -1171,7 +1185,7 @@ main,
     justify-content: space-between;
     gap: clamp(0.5rem, 2vh, 1.5rem);
     margin: 0;
-    min-height: 0; /* CRITICAL: Permits vertical compression */
+    min-height: 0;
   }
 
   .workspace.l-stack > * + * {
@@ -1183,7 +1197,7 @@ main,
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 0; /* Allows central staves to act as a sponge */
+    min-height: 0;
   }
 
   .motif-selector-pane {
@@ -1193,11 +1207,16 @@ main,
     min-height: 0;
   }
 
-  /* 4. Fluid Stave & Component Bounds for short landscape displays */
   #ui-workspace {
-    justify-content: center;
+    /* Enforces the 1x4 or 2x4 sheet-music layout */
+    grid-template-columns: repeat(4, 1fr);
+
+    /* Desktop gets a slightly taller maximum height (100px) */
+    grid-auto-rows: clamp(70px, 12vh, 100px);
+
     gap: clamp(0.5rem, 2vh, 2rem);
-    min-height: auto;
+    justify-content: center;
+    align-content: center;
   }
 
   #ui-motif-selector {
