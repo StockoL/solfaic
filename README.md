@@ -432,6 +432,25 @@ To guarantee a pristine user experience on every device — from an iPhone SE to
 
 ---
 
+## [2026-06-16] UI Architecture: Custom Dropdown & Event Propagation
+
+**Context:**
+The application required a level selection control. However, native HTML `<select>` elements cannot be styled consistently across browsers. Using a native element would break our "Perceptual Patterns"—the specific shapes, colours, and interactive states that define the brand's aesthetic. We required a bespoke dropdown that matched the whimsical, tactile interface of the wider application.
+
+**Decision:**
+We built a custom UI dropdown (`DOM.levelBtn` and `DOM.levelMenu`) driven by JavaScript. To manage the open/closed state efficiently without tightly coupling our code or writing repetitive DOM queries, we leaned into standard DOM event propagation mechanics.
+
+**Implementation:**
+
+1. **State Management:** We used the `aria-expanded` attribute on the trigger button to manage state. This ensures the component is accessible to screen readers while doubling as a CSS hook for our animations.
+2. **Event Bubbling & Interception:** When the user clicks the trigger button, we invoke `e.stopPropagation()`. This deliberately stops the click event from bubbling up the DOM tree.
+3. **Global Cleanup:** We placed a single event listener on the `document` object. If the user clicks anywhere else on the screen, this listener catches the event and closes the dropdown. Because of our `stopPropagation()` rule, clicking the trigger button bypasses this global cleanup, preventing the menu from instantly closing itself.
+
+**Outcome:**
+The resulting dropdown is completely DRY and modular. By relying on native event bubbling behaviour rather than complex state-tracking variables, the logic remains clean, performant, and perfectly adheres to the overarching visual design system.
+
+---
+
 ## [2026-06-16] UI Architecture: The "Inner Track" Scroll Pattern
 
 **Context:**
