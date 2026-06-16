@@ -801,14 +801,23 @@ function renderWorkspace() {
   DOM.workspace.innerHTML = "";
   const config = sessionState.activeConfig;
 
+  // NEW: Create the inner scrolling track to hold the dashed border
+  const scrollTrack = document.createElement("div");
+  scrollTrack.className = "workspace-scroll-track";
+
   // 1. Build Physical Bar wrappers
   const bars = [];
   for (let i = 0; i < config.bars; i++) {
     const barDiv = document.createElement("div");
     barDiv.className = "workspace-bar";
     bars.push(barDiv);
-    DOM.workspace.appendChild(barDiv);
+
+    // CHANGED: Append the bar to the scroll track, NOT the workspace
+    scrollTrack.appendChild(barDiv);
   }
+
+  // NEW: Append the fully loaded track into the workspace window
+  DOM.workspace.appendChild(scrollTrack);
 
   // 2. Iterate through data and append structural DOM cards to bars
   sessionState.userSubmission.forEach((token, index) => {
