@@ -340,7 +340,13 @@ const DOM = {
   submitBtn: document.getElementById("btn-submit"),
   metreDisplay: document.getElementById("ui-metre-display"),
   barsDisplay: document.getElementById("ui-bars-display"),
-  skipBtn: document.getElementById("btn-skip"),
+  // REMOVED: skipBtn handle
+  // INJECTED: Interactive Change Interceptor Node
+  levelSelect: document.getElementById("control-level-select"),
+  // DROPDOWN LEVEL SELECTOR: Allows the user to jump to any level
+  levelBtn: document.getElementById("btn-level-dropdown"),
+  levelMenu: document.getElementById("menu-level-dropdown"),
+  levelItems: document.querySelectorAll(".dropdown-item"),
 };
 
 // ============================================================================
@@ -728,6 +734,19 @@ function startLevel(levelId) {
   if (DOM.barsDisplay) DOM.barsDisplay.innerText = `Bars: ${config.bars}`;
   if (DOM.playsRemaining)
     DOM.playsRemaining.innerText = `Plays remaining: ${sessionState.maxPlays} / ${sessionState.maxPlays}`;
+  // STATE MANAGEMENT ADJUSTMENT: Sync Custom Dropdown Text
+  if (DOM.levelBtn && DOM.levelItems) {
+    // Update Button Text with the SVG arrow attached
+    DOM.levelBtn.innerHTML = `Level ${levelId} <svg class="dropdown-icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>`;
+
+    // Update the blue highlight in the menu list
+    DOM.levelItems.forEach((item) => {
+      item.classList.remove("is-active");
+      if (parseInt(item.getAttribute("data-value"), 10) === levelId) {
+        item.classList.add("is-active");
+      }
+    });
+  }
 
   renderStreakTracker();
 
@@ -1387,17 +1406,47 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- APPLICATION CORE EVENTS ---
-  if (DOM.submitBtn)
-    DOM.submitBtn.addEventListener("click", evaluateSubmission);
-  if (DOM.skipBtn)
-    DOM.skipBtn.addEventListener("click", () =>
-      startLevel(sessionState.currentLevel),
-    );
-  if (DOM.replayBtn)
-    DOM.replayBtn.addEventListener("click", () => AudioEngine.playSequence());
+  // NEW CONTROLLER ROUTING: Custom Dropdown UI
+  if (DOM.levelBtn && DOM.levelMenu) {
+    // 1. Toggle Menu Open/Close
+    DOM.levelBtn.addEventListener("click", (e) => {
+      e.stopPropagation(); // Prevents the click from bubbling to the document
+      const isOpen = DOM.levelMenu.classList.contains("is-open");
+      DOM.levelMenu.classList.toggle("is-open");
+      DOM.levelBtn.setAttribute("aria-expanded", !isOpen);
+    });
 
-  // Initiate active gameplay seamlessly
+    // 2. Close Menu if clicking anywhere else on the screen
+    document.addEventListener("click", (e) => {
+      if (
+        !DOM.levelBtn.contains(e.target) &&
+        !DOM.levelMenu.contains(e.target)
+      ) {
+        DOM.levelMenu.classList.remove("is-open");
+        DOM.levelBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    // 3. Handle a Level Selection
+    DOM.levelItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        const selectedLevel = parseInt(item.getAttribute("data-value"), 10);
+
+        // Close the menu
+        DOM.levelMenu.classList.remove("is-open");
+        DOM.levelBtn.setAttribute("aria-expanded", "false");
+
+        // Engine Safeties
+        if (typeof Tone !== "undefined" && Tone.Transport) {
+          Tone.Transport.cancel();
+          Tone.Transport.stop();
+        }
+        sessionState.streak = 0;
+        startLevel(selectedLevel);
+      });
+    });
+  }
   startLevel(1);
+
   console.log("Solfaic! App Initialised. 🚀");
 });

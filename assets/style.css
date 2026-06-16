@@ -391,6 +391,101 @@ main,
   background: var(--color-primary-hover);
 }
 
+.custom-level-selector {
+  position: relative;
+  display: inline-block;
+}
+
+/* The Trigger Button */
+.level-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--color-primary, #3b82f6);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: clamp(0.8rem, 1.5vh, 0.95rem);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.level-dropdown-btn:hover {
+  background-color: var(--color-primary-hover, #2563eb);
+}
+
+/* The Arrow Icon */
+.dropdown-icon {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.3s ease;
+}
+
+.level-dropdown-btn[aria-expanded="true"] .dropdown-icon {
+  transform: rotate(180deg); /* Flips the arrow when open! */
+}
+
+/* The Floating Menu */
+.level-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0; /* Aligns menu to the right edge of the button */
+  background-color: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 8px;
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 8px;
+  margin: 0;
+  width: 220px;
+  z-index: 1000;
+
+  /* Animation setup: hidden by default */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0.2s;
+}
+
+.level-dropdown-menu.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Menu Items */
+.dropdown-item {
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text, #0f172a);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background-color: var(--color-bg, #f8fafc);
+}
+
+.dropdown-item.is-active {
+  background-color: #eff6ff;
+  color: var(--color-primary, #3b82f6);
+}
+
 /* ==========================================================================
    5. WORKSPACE GRID ENVIRONMENT (The Interactive Arena)
    ========================================================================== */
