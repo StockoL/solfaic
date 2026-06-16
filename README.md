@@ -432,6 +432,25 @@ To guarantee a pristine user experience on every device — from an iPhone SE to
 
 ---
 
+## [2026-06-16] UI Architecture: The "Inner Track" Scroll Pattern
+
+**Context:**
+During mobile testing, the main application workspace (`#ui-workspace`) failed to dynamically expand its visual boundaries (the dashed border) when populated with multiple `.workspace-bar` elements. The content would correctly scroll after implementing the logic, but the border remained fixed to the viewport height, causing the cards to visually "bleed" out of the container.
+
+**Decision:**
+Rather than relying on hacky JavaScript height calculations or fixed CSS dimensions, we implemented the "Inner Track" architectural pattern, adhering to the composition principles outlined in _Every Layout_ (Bell & Pickering).
+
+**Implementation:**
+We separated the responsibilities of the workspace container into two distinct layout primitives:
+
+1. **The Viewport (`#ui-workspace`):** Stripped of all grid and border styling. Its sole responsibility is to act as the mask and manage the scroll behaviour (`overflow-y: auto`).
+2. **The Track (`.workspace-scroll-track`):** A new DOM node injected via `app.js`. This acts as the grid container and holds the visual styling (background, padding, dashed border).
+
+**Outcome:**
+Because the track sits _inside_ the scrolling viewport, the browser's natural layout algorithms allow it to grow as tall as its internal content demands. The dashed border now safely encapsulates all child elements, regardless of how many bars are dynamically rendered into the DOM, ensuring a squish-proof, robust UI across all viewports.
+
+---
+
 ## Testing & Quality Assurance Portfolio
 
 This section outlines the holistic verification suite executed to guarantee the engineering integrity, mathematical precision, and cross-platform accessibility of Solfaic.
