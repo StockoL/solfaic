@@ -339,15 +339,17 @@ main,
   align-items: center;
   font-size: 0.9rem;
   font-weight: 600;
+  padding: var(--space-sm) 0;
 }
 
-.status-bar .ghost-btn {
-  justify-self: start;
-}
+/* 1. Explicitly force the items into their correct structural columns */
 .status-bar .level-badge {
+  grid-column: 2; /* Always sit perfectly in the centre column */
   justify-self: center;
 }
+
 .status-bar .streak-tracker {
+  grid-column: 3; /* Always sit perfectly in the far-right column */
   justify-self: end;
 }
 
@@ -359,14 +361,22 @@ main,
 
 .streak-tracker {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
 .streak-dot {
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   background: var(--color-border);
-  border-radius: 2px;
+  border-radius: 4px;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
+}
+
+.streak-dot.is-success {
+  background-color: var(--color-success) !important;
+  transform: scale(1.1);
 }
 
 .btn-primary-audio {
