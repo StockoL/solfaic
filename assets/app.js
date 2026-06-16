@@ -1455,6 +1455,15 @@ window.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
+  // RESTORED: Core Application Event Listeners
+  if (DOM.submitBtn) {
+    DOM.submitBtn.addEventListener("click", evaluateSubmission);
+  }
+  if (DOM.replayBtn) {
+    DOM.replayBtn.addEventListener("click", () => AudioEngine.playSequence());
+  }
+
+  // Initiate active gameplay seamlessly
   startLevel(1);
 
   console.log("Solfaic! App Initialised. 🚀");
