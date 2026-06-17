@@ -10,15 +10,15 @@ The underlying software architecture is intentionally decoupled and extensible, 
 
 ## 📋 Table of Contents
 
-1. [📖 Project Purpose & User Stories](#1-project-purpose--user-stories)
+1. [📖 Project Purpose & User Stories](#1-project-purpose-user-stories)
 2. [🔬 Strategic Research](#2-strategic-research)
 3. [🖼️ UX Design Strategy (The 5 Planes)](#3-ux-design-strategy-the-5-planes)
-4. [🗺️ System Architecture & Logic Maps](#4-system-architecture--logic-maps)
-5. [✨ Core Features & UI Overhauls](#5-core-features--ui-overhauls)
+4. [🗺️ System Architecture & Logic Maps](#4-system-architecture-logic-maps)
+5. [✨ Core Features & UI Overhauls](#5-core-features-ui-overhauls)
 6. [🌐 Deployment Guide](#6-deployment-guide)
-7. [🤝 Credits & Acknowledgements](#7-credits--acknowledgements)
-8. [🏗️ Development Log & Engineering Phases](#8-development-log--engineering-phases)
-9. [🧪 Testing & Quality Assurance Portfolio](#9-testing--quality-assurance-portfolio)
+7. [🤝 Credits & Acknowledgements](#7-credits-acknowledgements)
+8. [🏗️ Development Log & Engineering Phases](#8-development-log-engineering-phases)
+9. [🧪 Testing & Quality Assurance Portfolio](#9-testing-quality-assurance-portfolio)
 
 ---
 
