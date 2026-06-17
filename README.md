@@ -10,19 +10,19 @@ The underlying software architecture is intentionally decoupled and extensible, 
 
 ## 📋 Table of Contents
 
-1. [📖 Project Purpose & User Stories](#1-project-purpose-user-stories)
-2. [🔬 Strategic Research](#2-strategic-research)
-3. [🖼️ UX Design Strategy (The 5 Planes)](#3-ux-design-strategy-the-5-planes)
-4. [🗺️ System Architecture & Logic Maps](#4-system-architecture-logic-maps)
-5. [✨ Core Features & UI Overhauls](#5-core-features-ui-overhauls)
-6. [🌐 Deployment Guide](#6-deployment-guide)
-7. [🤝 Credits & Acknowledgements](#7-credits-acknowledgements)
-8. [🏗️ Development Log & Engineering Phases](#8-development-log-engineering-phases)
-9. [🧪 Testing & Quality Assurance Portfolio](#9-testing-quality-assurance-portfolio)
+1. [📖 Project Purpose & User Stories](#purpose)
+2. [🔬 Strategic Research](#research)
+3. [🖼️ UX Design Strategy (The 5 Planes)](#ux-strategy)
+4. [🗺️ System Architecture & Logic Maps](#architecture)
+5. [✨ Core Features & UI Overhauls](#features)
+6. [🌐 Deployment Guide](#deployment)
+7. [🤝 Credits & Acknowledgements](#credits)
+8. [🏗️ Development Log & Engineering Phases](#dev-log)
+9. [🧪 Testing & Quality Assurance Portfolio](#testing)
 
 ---
 
-## 1. 📖 Project Purpose & User Stories
+## 1. <a name="purpose"></a> 📖 Project Purpose & User Stories
 
 ### 1. The Examination/Audition Candidate
 
@@ -44,9 +44,9 @@ _Focus: Pedagogy, motif-based learning, and consistency._
 - **User Story:** As a teacher recommending a practice tool, I want the app to function cleanly on small mobile browsers so that students can execute training sessions efficiently on the go.
   - _Acceptance Criterion:_ The layout utilises **Intrinsic Web Design** principles (The Switcher and The Stack) to ensure all interactive elements remain accessible and well-spaced on small viewports without vertical overflow.
 
----
+## <p align="right">(<a href="#top">Back to top</a>)</p>
 
-## 2. 🔬 Strategic Research
+## 2. <a name="research"></a>🔬 Strategic Research
 
 ### 1. Teoria (The Desktop Maestro)
 
@@ -60,9 +60,9 @@ _Focus: Pedagogy, motif-based learning, and consistency._
 - **The Flat Note (What fails):** Entirely reactive architecture; it lacks any system for scheduled timing grids, automated timeline sequence loops, or objective entry validation.
 - **Innovation:** Solfaic isolates the interactive audio pad mechanism of a drum machine but steps it up into a Scheduled Timeline Matrix, feeding static loops into deterministic evaluation processors.
 
----
+## <p align="right">(<a href="#top">Back to top</a>)</p>
 
-## 3. 🖼️ UX Design Strategy (The 5 Planes)
+## 3. <a name="ux-strategy"></a> 🖼️ UX Design Strategy (The 5 Planes)
 
 ### Initial Wireframes
 
@@ -112,9 +112,9 @@ Educational software requires engagement. To fight cognitive fatigue, we injecte
 - **Tactile Frustration Microgestures (Error Handling):** Attempting to submit an incomplete exercise causes the entire canvas row to execute an aggressive **horizontal frustration shake** (`is-shaking`), while empty slots flash with a **crimson halo pulse** (`is-empty-panic`).
 - **Touch-First Sensation Mapping:** Hover definitions are suppressed entirely on mobile to eliminate sticky layout scaling freezes. Touch inputs focus exclusively on the high-fidelity `:active` state, delivering a crisp, immediate touch-down spring compression feel (`scale(0.96)`) the precise millisecond a finger makes contact.
 
----
+## <p align="right">(<a href="#top">Back to top</a>)</p>
 
-## 4. 🗺️ System Architecture & Logic Maps
+## 4. <a name="architecture"></a> 🗺️ System Architecture & Logic Maps
 
 To guarantee clean maintainability and extensible software updates, Solfiac isolates its core processes across distinct modules: Data Generation, State Control, and a Decoupled Playback Wrapper.
 
@@ -143,9 +143,9 @@ Maps how the browser UI, Central Engine, and Web Audio API share execution data 
 
 ![Proposed Sequence Map](./docs/architecturemaps/verification-sequence.png)
 
----
+## <p align="right">(<a href="#top">Back to top</a>)</p>
 
-## 5. ✨ Core Features & UI Overhauls
+## 5. <a name="features"></a> ✨ Core Features & UI Overhauls
 
 ### The Desktop Dashboard & Curriculum Matrix Sprint
 
@@ -192,9 +192,9 @@ Wiping a student's entire input ledger after a single incorrect rhythm element i
 - **Acoustic Delineation:** Shifted to a warm, resonant triangle wave oscillator (`Synth`) voiced at a crisp, mid-range register (`G3`).
 - **The Articulation Gap:** Solved the problem of consecutive identical notes blending into a muddy tone by scaling durations to **82% of their structural metric space**, creating crisp acoustic separation between attacks.
 
----
+## <p align="right">(<a href="#top">Back to top</a>)</p>
 
-## 6. 🌐 Deployment Guide
+## 6. <a name="deployment"></a> 🌐 Deployment Guide
 
 This project was developed using Git version control and is hosted on GitHub. It has been deployed as a live web application using **GitHub Pages**.
 
@@ -217,9 +217,9 @@ To run this project locally on your own machine:
 2. Open your terminal and run: `git clone https://github.com/StockoL/solfaic.git`
 3. Launch `index.html` via an extension like VSCode's Live Server to satisfy mandatory Web Audio security permissions.
 
----
+## <p align="right">(<a href="#top">Back to top</a>)</p>
 
-## 7. 🤝 Credits & Acknowledgements
+## 7. <a name="credits"></a> 🤝 Credits & Acknowledgements
 
 - **Tone.js (v14):** External framework used to script the transport sequence engine scheduler.
 - **Josh Comeau ("Whimsical Animations" Course):** Directly inspired our digital spring physics, tactile card weight scaling, and staggered particle loops.
@@ -238,9 +238,9 @@ Artificial Intelligence (LLMs) was utilised strictly as a "Pair Programmer" and 
 - **Inline SVG:** Vector notation arrays embedded directly for seamless styling cascade.
 - **Git & GitHub:** Atomic source control and cloud distribution.
 
----
+## <p align="right">(<a href="#top">Back to top</a>)</p>
 
-## 8. 🏗️ Development Log & Engineering Phases
+## 8. <a name="dev-log"></a> 🏗️ Development Log & Engineering Phases
 
 To ensure a clean, maintainable, and scalable codebase, this application was built using atomic commits following the Model-View-Controller (MVC) design pattern.
 
@@ -331,9 +331,9 @@ Addressed vertical notation blowouts by shifting layout grids to strict auto-row
 **Implementation:** Positioned an outer flex wrapper (`min-height: 100dvh`) to lock absolute screen centering, and configured internal padding bounds using fixed text clamps (`clamp(1.5rem, 6vw, 3.5rem)`).  
 **Outcome:** Fallback paths securely catch missing URLs and route traffic smoothly back to active tasks without breaking system styling continuity.
 
----
+## <p align="right">(<a href="#top">Back to top</a>)</p>
 
-## 9. 🧪 Testing & Quality Assurance Portfolio
+## 9. <a name="testing"></a> 🧪 Testing & Quality Assurance Portfolio
 
 This section outlines the holistic verification suite executed to guarantee the engineering integrity, mathematical precision, and cross-platform accessibility of Solfaic.
 
@@ -413,3 +413,5 @@ The inner mathematical states of the generative algorithms were verified using C
 ### 9. Known Issues
 
 - **Tone.js Cold-Start Lag:** On older mobile processors, the very first note triggered after initialisation can occasionally experience a ~50ms audio latency spike as the browser compiles the Web Audio API oscillator nodes. Subsequent playbacks run entirely in real-time.
+
+<p align="right">(<a href="#top">Back to top</a>)</p>
