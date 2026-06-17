@@ -470,6 +470,25 @@ Because the track sits _inside_ the scrolling viewport, the browser's natural la
 
 ---
 
+## [2026-06-17] UI Architecture: Custom 404 Error Routing & Viewport Scaling
+
+**Context:**
+The application required a fallback routing page for invalid URLs. A standard 404 page would break the immersive user experience and potentially cause student drop-off. Furthermore, during development, placing the error container inside a rigid pixel-based `max-width` box with complex nested CSS math (`calc` inside `clamp`) caused scaling imbalances and silent parser failures on mid-tier tablet viewports.
+
+**Decision:**
+We engineered a custom, semantic 404 page (`404.html`) utilising the application's native CSS design tokens. To resolve the tablet scaling and CSS parser failures, we stripped away brittle mathematical calculations in favor of universally supported, bulletproof layout constraints.
+
+**Implementation:**
+We decoupled the layout into two parts:
+
+1. **The Wrapper (`.error-page-wrapper`):** A flex-centered container utilizing `min-height: 100dvh` to guarantee absolute vertical centering across all mobile and desktop browsers.
+2. **The Container (`.error-container`):** Refactored to use standard percentage scaling (`width: 90%; max-width: 520px;`) and fluid internal padding (`clamp(1.5rem, 6vw, 3.5rem)`).
+
+**Outcome:**
+The fallback page now securely routes users back to the active dictation workspace while perfectly mirroring the application's brand aesthetics. The container elegantly stretches to command a healthy 520px footprint on tablet screens while maintaining safe, squish-proof boundaries on narrow mobile viewports.
+
+---
+
 ## Testing & Quality Assurance Portfolio
 
 This section outlines the holistic verification suite executed to guarantee the engineering integrity, mathematical precision, and cross-platform accessibility of Solfaic.
