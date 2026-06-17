@@ -8,21 +8,21 @@ The underlying software architecture is intentionally decoupled and extensible, 
 
 ---
 
-## Table of Contents
+## 📋 Table of Contents
 
-1. [Project Purpose & User Stories](#1-project-purpose--user-stories)
-2. [Strategic Research](#2-strategic-research)
-3. [UX Design Strategy (The 5 Planes)](#3-ux-design-strategy-the-5-planes)
-4. [System Architecture & Logic Maps](#4-system-architecture--logic-maps)
-5. [Core Features & UI Overhauls](#5-core-features--ui-overhauls)
-6. [Testing & The Mobile Chronicles (Bug Tracking)](#6-testing--the-mobile-chronicles-bug-tracking)
-7. [Deployment Guide](#7-deployment-guide)
-8. [Credits & Acknowledgements](#8-credits--acknowledgements)
-9. [Development Log & Engineering Phases](#9-development-log--engineering-phases)
+1. [📖 Project Purpose & User Stories](#1-project-purpose--user-stories)
+2. [🔬 Strategic Research](#2-strategic-research)
+3. [🖼️ UX Design Strategy (The 5 Planes)](#3-ux-design-strategy-the-5-planes)
+4. [🗺️ System Architecture & Logic Maps](#4-system-architecture--logic-maps)
+5. [✨ Core Features & UI Overhauls](#5-core-features--ui-overhauls)
+6. [🌐 Deployment Guide](#6-deployment-guide)
+7. [🤝 Credits & Acknowledgements](#7-credits--acknowledgements)
+8. [🏗️ Development Log & Engineering Phases](#8-development-log--engineering-phases)
+9. [🧪 Testing & Quality Assurance Portfolio](#9-testing--quality-assurance-portfolio)
 
 ---
 
-## 1. Project Purpose & User Stories
+## 1. 📖 Project Purpose & User Stories
 
 ### 1. The Examination/Audition Candidate
 
@@ -46,7 +46,7 @@ _Focus: Pedagogy, motif-based learning, and consistency._
 
 ---
 
-## 2. Strategic Research
+## 2. 🔬 Strategic Research
 
 ### 1. Teoria (The Desktop Maestro)
 
@@ -62,14 +62,12 @@ _Focus: Pedagogy, motif-based learning, and consistency._
 
 ---
 
-## 3. UX Design Strategy (The 5 Planes)
+## 3. 🖼️ UX Design Strategy (The 5 Planes)
 
 ### Initial Wireframes
 
 ![Initial Desktop Concept](./docs/wireframes/solfaic-wireframe-level-view-desktop.png)
-
 ![Initial Mobile Concept](./docs/wireframes/solfaic-wireframe-level-view-mobile.png)
-
 ![Performance Workspace](./docs/wireframes/solfaic-wireframe-performance-view-mobile.png)
 
 ### I. Strategy
@@ -116,7 +114,7 @@ Educational software requires engagement. To fight cognitive fatigue, we injecte
 
 ---
 
-## 4. System Architecture & Logic Maps
+## 4. 🗺️ System Architecture & Logic Maps
 
 To guarantee clean maintainability and extensible software updates, Solfiac isolates its core processes across distinct modules: Data Generation, State Control, and a Decoupled Playback Wrapper.
 
@@ -147,7 +145,7 @@ Maps how the browser UI, Central Engine, and Web Audio API share execution data 
 
 ---
 
-## 5. Core Features & UI Overhauls
+## 5. ✨ Core Features & UI Overhauls
 
 ### The Desktop Dashboard & Curriculum Matrix Sprint
 
@@ -196,46 +194,7 @@ Wiping a student's entire input ledger after a single incorrect rhythm element i
 
 ---
 
-## 6. Testing & The Mobile Chronicles (Bug Tracking)
-
-### Manual & Automated Testing
-
-- **[PLACEHOLDER: Document manual testing methodology here]**
-
-- Lighthouse Scores:
-
-### The Mobile Chronicles (Cross-Browser Bug Hunt)
-
-Deploying a highly interactive canvas to modern mobile touchscreens exposed aggressive, device-specific optimisations.
-
-**1. The iOS WebKit SVG Flexbox Collapse**
-
-- **The Pain:** Rhythmic motif cards expanded horizontally, spilling off the right-hand edge of mobile screens.
-- **The Diagnostic/Architecture:** iOS Safari ignores aspect calculations for SVGs containing dynamic `width="100%"` configurations in flexible rows. We hardened grid track items with a strict structural reset override (`min-width: 0`) and forced internal vector children to observe strict relative proportions (`height: 100%; width: auto; max-width: 100%;`).
-
-**2. The Native iOS Interactive Tint Override**
-
-- **The Pain:** Buttons discarded style guide variables and rendered in an aggressive native blue hyperlink colour.
-- **The Diagnostic/Architecture:** Mobile Safari intercepts `<button>` tags to save data. Injected a deep-level appearance strip command (`-webkit-appearance: none; appearance: none;`) across the interaction deck and hard-locked typography variables with `!important`.
-
-**3. The 'Content-Visibility' Animation Strike**
-
-- **The Pain:** Custom spring animations froze solid.
-- **The Diagnostic/Architecture:** The `content-visibility: auto` utility segregated elements into isolated layout contexts, causing the browser to stop tracking dynamic transforms mid-flight. Completely removed visibility containment properties (`contain: none;`) to restore 60FPS execution runways.
-
-**4. The Simultaneous Layer Promotion Trap**
-
-- **The Pain:** The tactile horizontal frustration shake microgesture vanished entirely on clicks.
-- **The Diagnostic/Architecture:** Adding `will-change: transform` inside the active animation class caused a GPU layer creation delay (1-frame paint freeze), bypassing the animation lifecycle. Moved the hardware allocation instruction up to the base workspace element style permanently.
-
-**5. Style Batching Optimisation & The Forced Reflow Solution**
-
-- **The Pain:** JavaScript successfully added/removed the `.is-shaking` class, but visual elements remained totally rigid.
-- **The Diagnostic/Architecture:** Modern layout threads batch redundant work to save battery. Adding a class and scheduling a `setTimeout` to strip it 500ms later caused the browser to skip painting the intermediate frames entirely. We injected an explicit layout calculation interrupt (**`void bar.offsetWidth;`**) to break the batching mechanism and force an immediate frame refresh.
-
----
-
-## 7. Deployment Guide
+## 6. 🌐 Deployment Guide
 
 This project was developed using Git version control and is hosted on GitHub. It has been deployed as a live web application using **GitHub Pages**.
 
@@ -243,58 +202,45 @@ This project was developed using Git version control and is hosted on GitHub. It
 
 To deploy the site to GitHub Pages, the following steps were executed:
 
-1. **Repository Access:** Navigate to the project's repository on GitHub.
-2. **Settings:** Click on the **Settings** tab located in the repository's main navigation bar.
-3. **Pages Configuration:** In the left-hand sidebar, scroll down to the "Code and automation" section and click on **Pages**.
-4. **Source Selection:** Under the "Build and deployment" section, ensure the "Source" dropdown is set to **Deploy from a branch**.
-5. **Branch Targeting:** Under the "Branch" section, click the primary dropdown and select the **`main`** branch. Ensure the folder dropdown next to it is set to **`/ (root)`**.
-6. **Save & Build:** Click the **Save** button. This triggers a GitHub Actions workflow that builds and deploys the site.
-7. **Live Link:** After a few minutes, a notification appears at the top of the Pages settings stating, _"Your site is live at [[URL](https://stockol.github.io/solfaic/)]"_. This link was then added to the top of this README document.
+1. **Repository Access:** Click on the **Settings** tab located in the repository's main navigation bar.
+2. **Pages Configuration:** In the left-hand sidebar, click on **Pages**.
+3. **Source Selection:** Ensure the "Source" dropdown is set to **Deploy from a branch**.
+4. **Branch Targeting:** Select the **`main`** branch, and ensure the folder dropdown is set to **`/ (root)`**.
+5. **Save & Build:** Click the **Save** button to trigger the automated GitHub Actions build workflow.
+6. **Live Link:** After a few minutes, the link appears at the top of the settings page: _"Your site is live at [[URL](https://stockol.github.io/solfaic/)]"_.
 
 ### Local Deployment (Cloning)
 
 To run this project locally on your own machine:
 
-1. Navigate to the GitHub repository.
-2. Click the green **`<> Code`** button.
-3. Copy the HTTPS URL provided.
-4. Open your local terminal/IDE and run: `git clone [https://github.com/StockoL/solfaic.git]`
-5. Open the cloned directory and launch `index.html` in your browser (or use an extension like VSCode's Live Server for hot-reloading).
+1. Navigate to the GitHub repository and click the green **`<> Code`** button to copy the HTTPS URL.
+2. Open your terminal and run: `git clone https://github.com/StockoL/solfaic.git`
+3. Launch `index.html` via an extension like VSCode's Live Server to satisfy mandatory Web Audio security permissions.
 
 ---
 
-## 8. Credits & Acknowledgements
+## 7. 🤝 Credits & Acknowledgements
 
-- **Tone.js (v14):** External library used to power the Web Audio API synthesis pipeline.
-- **Josh Comeau ("Whimsical Animations" Course):** A massive portion of this release's visual delight is directly inspired by Josh's design philosophy. His teachings on digital weight, spring physics, and intentional micro-interactions provided the groundwork for our tactile card scaling, staggered confetti particle engine, and non-transactional visual payoffs.
-- **Every Layout:** Principles of "Intrinsic Web Design" (The Stack, The Switcher) heavily informed the CSS architecture.
+- **Tone.js (v14):** External framework used to script the transport sequence engine scheduler.
+- **Josh Comeau ("Whimsical Animations" Course):** Directly inspired our digital spring physics, tactile card weight scaling, and staggered particle loops.
+- **Every Layout:** Principles of "Intrinsic Web Design" heavily informed the fluid page mechanics.
 
 ### AI Pair Programming & Academic Integrity
 
-In alignment with modern software engineering practices and course academic integrity guidelines, Artificial Intelligence (LLMs) was utilised strictly as a "Pair Programmer" and technical sounding board throughout the development lifecycle, rather than an automated generation tool.
-
-The core pedagogical logic, Kodály curriculum mapping, system architecture, and UX design decisions were entirely human-engineered. AI tooling was leveraged specifically as an accelerator for the following tasks:
-
-- **Cross-Browser Debugging:** Diagnosing obscure, device-specific rendering engines (e.g., identifying the root cause of the iOS WebKit SVG Flexbox collapse and diagnosing the CSS transition race conditions causing tooltips to flicker).
-- **Architecture Consultation:** Discussing the mathematical tradeoffs between static media queries versus the modern fluid `clamp()` viewport flex-compression model used in the final build.
-- **Code Review & Linting:** Acting as a strict linter to suggest cleaner, more performant ES6 syntax during the refactoring phases (e.g., ensuring DOM elements were safely cached and defensive programming checks were in place).
-- **Documentation Structuring:** Assisting in formatting the development logs and technical specs into a professional, open-source standard layout.
-
-Every line of code suggested by AI was critically reviewed, tested, and manually integrated by the developer to ensure absolute comprehension and complete ownership of the final application architecture.
+Artificial Intelligence (LLMs) was utilised strictly as a "Pair Programmer" and strict linter throughout the development lifecycle to accelerate cross-browser debugging, reflow profiling, and formatting, ensuring absolute human ownership and comprehension of the overarching engine code.
 
 ### Technologies Used
 
-- **HTML5:** Semantic structural markup providing an accessible foundation.
-- **CSS3:** Custom properties (variables), Flexbox, CSS Grid, and modern dynamic viewport units (`dvh`) to engineer a responsive, intrinsic layout without relying on heavy external frameworks like Bootstrap.
-- **JavaScript (ES6+):** Vanilla JavaScript powering the Model-View-Controller (MVC) architecture, custom state machine, event delegation, and DOM rendering pipelines.
-- **Tone.js (v14):** A Web Audio API framework utilised for high-fidelity triangle wave synthesis, precise metric timing, and transport sequence scheduling.
-- **Inline SVG:** Scalable Vector Graphics embedded directly into the DOM for pixel-perfect, infinitely scalable musical notation that inherits CSS colour states.
-- **Git & GitHub:** Utilised for atomic version control, feature branching, and live cloud deployment via GitHub Pages.
-- **W3C & JSHint:** Strict code validation tools used during the final polish phase to ensure 100% compliant HTML/CSS and error-free JavaScript execution.
+- **HTML5:** Semantic accessible markup layout layer.
+- **CSS3:** Custom properties, CSS Grid, and dynamic viewports (`dvh`) for zero-framework responsiveness.
+- **JavaScript (ES6+):** Model-View-Controller framework patterns and state machine handlers.
+- **Tone.js (v14):** Web Audio API oscillator synthesis scheduler.
+- **Inline SVG:** Vector notation arrays embedded directly for seamless styling cascade.
+- **Git & GitHub:** Atomic source control and cloud distribution.
 
 ---
 
-## 9. Development Log & Engineering Phases
+## 8. 🏗️ Development Log & Engineering Phases
 
 To ensure a clean, maintainable, and scalable codebase, this application was built using atomic commits following the Model-View-Controller (MVC) design pattern.
 
@@ -302,232 +248,119 @@ To ensure a clean, maintainable, and scalable codebase, this application was bui
 
 - `feat(ui): scaffold raw semantic HTML skeleton for rhythm workspace`
 - `style: establish design tokens and Every Layout intrinsic primitives`
-- `style: apply visual hierarchy and component styling to workspace elements`
-- `style(typography): integrate Inter for UI and Noto Music for cross-platform notation rendering`
 
-**Challenge & Resolution:** Initially used a flexbox "Switcher" primitive for motif pads, which forced buttons into a single un-usable vertical column on mobile. Upgraded the layout to a true CSS Grid with the RAM pattern (`repeat(auto-fit, minmax(min(140px, 100%), 1fr))`), guaranteeing neat 2x2 grids on mobile.
+**Challenge & Resolution:** Initially used a flexbox "Switcher" primitive for motif pads, which forced buttons into a single column on mobile. Upgraded to a true CSS Grid using a fluid RAM track (`repeat(auto-fit, minmax(min(140px, 100%), 1fr))`), guaranteeing neat responsive layouts.
 
 ### Phase 2: The Data Brain (Model & State)
 
 - `chore(architecture): map JS module stubs and establish musical domain library`
 - `feat(core): initialise data models, global state machine, and DOM cache`
 
-**Challenge & Resolution:** Needed an algorithmic way to generate randomised rhythms, but scheduling in milliseconds would break audio if tempo changed. Future-proofed the generator by hard-calculating Tone.js compatible `Bars:Beats:Sixteenths` timestamps (e.g., `0:2:0`). Used JSDoc (`/** @param ... */`) to establish data contracts.
+**Challenge & Resolution:** Scheduling sound elements directly in milliseconds breaks synchronization if tempo values change mid-flight. Future-proofed the scheduler tracking logs by encoding all events using native Tone.js `Bars:Beats:Sixteenths` time matrix strings (e.g., `0:2:0`).
 
 ### Phase 3: The View Controller (Wiring the Logic)
 
 - `feat(engine): implement algorithmic rhythm sequence generator`
 - `feat(view): implement dynamic DOM rendering cycle for level initialisation`
-- `feat(interaction): implement state-aware event handlers for motif selection`
 
-**Challenge & Resolution:** Dropping all controller logic into the file at once risks triggering `undefined` errors. Left the `window.addEventListener("DOMContentLoaded")` block empty until the very last commit to safely build and verify logic in a modular fashion.
+**Challenge & Resolution:** Initializing downstream modules simultaneously caused `undefined` runtime reference errors. Kept the primary listener empty until later phases to safely isolate structural component testing scopes.
 
 ### Phase 4: The Evaluation Engine & Pedagogical Refinement
 
 - `feat(data): implement British Kodaly Academy curriculum mapping for MVP levels 1-3`
-- `feat(evaluation): implement granular beat-by-beat validation engine and state routing`
 - `refactor(ui): migrate from unicode text characters to inline SVG library`
 
-**Challenge & Resolution:** The "Unicode Typography Wall." I initially used the `Noto Music` font to render notes. Because different symbols belong to different Unicode blocks, they had wildly different bounding boxes, breaking alignment. Abandoned text-based font rendering for an inline SVG architecture, mirroring industry standards (Soundtrap/Flat.io) and guaranteeing pixel-perfect alignment.
+**Challenge & Resolution:** The "Unicode Typography Wall." Rendering notes using static font blocks resulted in unpredictable font bounding boxes, breaking staff layout lines. Shifted layout to explicit embedded inline SVG strings, ensuring pixel-perfect scaling.
 
 ### Phase 5: The Audio Engine
 
 - `feat(audio): integrate Tone.js scheduling engine for accurate target array playback`
 - `fix(audio): implement subdivision parsing array to render accurate dictation rhythms`
-- `feat(audio): implement visual and auditory count-in modal synchronised with Tone.Transport`
 
-**Challenge & Resolution:** The "Robotic Crotchet" Bug. Initially, Tone.js played a single woodblock hit for every motif block, failing to distinguish subdivisions of a `ti-ti`. Added a `playback` array to the library (e.g., `["8n", "8n"]`) and wrote a smart parser to flatten the sequence into precisely timed micro-events.
-
----
+**Challenge & Resolution:** The "Robotic Crotchet" Bug. Synths played flat single beats, failing to parse subdivisions of a `ti-ti`. Expanded data configs to include explicit `playback` strings (e.g., `["8n", "8n"]`) to dynamically schedule secondary micro-events.
 
 ### Project Scope Realignment & MVP Refactoring
 
 During the synthesis phase of development, the project scope was intentionally realigned from the initially proposed 10-level progression matrix down to a highly optimised 3-level core MVP.
 
-- **Pedagogical Justification:** The initial 10-level proposal combined rhythm and pitch across an exhaustive linear track. Upon isolating the rhythm core, continuing to 10 levels would have required introducing incredibly complex, hyper-advanced academic sub-divisions (e.g., complex tuplets, irregular syncopations, asymmetrical alternating metres). For primary/secondary dictation students, this introduces an unmanageable cognitive load that breaks the core app premise.
-- **UX Alignment:** By compacting the curriculum into just 3 highly dense, progressive tiers (Core Simple, Advanced Simple, and Compound Sub-divisions), the application aligns perfectly with standard Kodály methodologies while preserving a game loop that remains achievable and highly rewarding for the target audience.
-
----
+- **Pedagogical Justification:** The initial 10-level track over-allocated difficulty metrics prematurely. Condensing the timeline core allowed us to perfect standard Kodály cell chunking techniques, limiting cognitive overload for entrance audition candidates.
 
 ### Phase 6: The Onboarding Architecture Evolution (v1.0 to v2.1)
 
-**v2.0: The Accessibility & Fluid Viewport Refactor**
+- **v2.0 Viewport Optimization:** Rebuilt tooltips to map statically across a fluid `100dvh` layout, resolving asynchronous container measurement calculation crashes on iOS browsers.
+- **v2.1 Race Conditions:** Decoupled layout shifts from active style transitions. Forced synchronous browser structural calculations (**`void element.offsetWidth`**) while elements sit at 0 opacity to eliminate flying tooltip rendering flickers.
 
-- **The Problem:** The V1 onboarding modal forced an immediate interruption on load (poor accessibility), and the layout relied on Javascript scroll-tracking that failed unpredictably on mobile browsers due to asynchronous rendering (The Post-Scroll Paradox).
-- **The Solution:** Moved the tour to a persistent, user-triggered 'Help' button. Completely rebuilt the application shell using a fluid `100dvh` flex-compression model (`min-height: 0`, `clamp()`) to eliminate vertical scrolling. Tooltip coordinates are now mapped statically, resulting in a locked, native-app feel across all screen sizes.
+### Phase 7: The Phrase Engine Refactor (Algorithmic Pedagogy)
 
-**v2.1: Resolving Animation Race Conditions & FOUC**
+Refactored the core timeline generator from flat randomized item grouping into a fully balanced, structural composition engine driven by three core mathematical rules:
 
-- **The Problem:** During onboarding step transitions, the tooltip exhibited a "Top-Left Flying Flicker" and a "Flash of Future Content" (FOUC). CSS transitions on spatial coordinates (`top`/`left`) conflicted with JavaScript's instantaneous DOM text mutations and coordinate recalculations.
-- **The Solution:** Decoupled spatial properties from CSS transitions, restricting CSS animations strictly to `opacity` and `transform`. Refactored the JS execution block to leverage delayed DOM injection (`setTimeout`), ensuring text mutations occur _after_ the element drops to `opacity: 0`. Finally, forced a synchronous browser reflow (`void element.offsetWidth`) before fading back in to guarantee flicker-free rendering.
+1. **The Form Router:** Automatically mirrors classical repetition templates (e.g., pop form, parallel period structures) utilizing a temporary memory cache loop to reduce parsing loads.
+2. **The Markov Syntax Dictionary:** Governs consecutive beat relationships using weighted lotteries to emulate genuine musical tension and release grammar blocks.
+3. **The Cadence Interceptor:** Detects final sequence thresholds and enforces strict structural block intersections to guarantee phrases resolve cleanly on stable notes.
 
----
+### Phase 8: The Responsive "Sponge" Architecture (UI/UX)
 
-## Phase 7: The Phrase Engine Refactor (Algorithmic Pedagogy)
+Addressed vertical notation blowouts by shifting layout grids to strict auto-rows (`clamp(55px, 10vh, 100px)`) to create a safe structural ceiling. Deployed dynamic advanced CSS **Quantity Queries** (`.workspace-bar:first-child:nth-last-child(2)`) to automatically center shorter configurations cleanly.
 
-The most significant architectural upgrade to the application was the complete rewrite of the rhythm generation pipeline. The initial prototype utilised a "Bucket Generation" system, which simply selected random motifs until the mathematical duration of the bar was filled. While mathematically sound for `Tone.js` parsing, it produced sterile, unmusical sequences that lacked standard phrasing, leading to an unreasonably high cognitive load for dictation students.
+### Phase 9: The Mobile Chronicles (Cross-Browser Bug Hunt)
 
-To transition the app from a random generator to a pedagogical teaching tool, the core logic was refactored into a **Structural Phrase Engine**, built upon three distinct pillars:
+- **The iOS WebKit SVG Flexbox Collapse:** Fixed Safari scaling overflows by hardcoding target items with structural layout overrides (`min-width: 0`) and clamping graphic children to strict relative proportions (`width: auto; height: 100%;`).
+- **The iOS Interactive Tint Override:** Erased hidden Apple hyperlink button themes by injecting global user-agent overrides (`-webkit-appearance: none; appearance: none;`).
+- **The 'Content-Visibility' Strike:** Restored frame-rate optimization dropouts during spring transforms by completely shutting off visual paint containment properties (`contain: none;`).
+- **The Layer Promotion Trap:** Solved microgesture stuttering by moving GPU memory allocation instructions (`will-change: transform`) up to the permanent element style sheet block.
+- **Style Batching Optimisation:** Intercepted automated runtime batching operations by injecting a structural reflow interrupt hook (`void bar.offsetWidth;`) to guarantee transition physics paint smoothly.
 
-### 1. The Form Router & Memory Cache (Macro-Structure)
+### [2026-06-16] UI Architecture: Custom Dropdown & Event Propagation
 
-To emulate natural musical syntax, the engine now processes sequences through a Data-Driven Form Router.
+**Context:** Native HTML `<select>` elements cannot be styled consistently across browsers. We required a custom UI dropdown that matched our visual patterns without introducing complex code entanglement.  
+**Decision:** Built a bespoke dropdown using event bubbling intercepts.  
+**Implementation:** Leveraged `e.stopPropagation()` on the main event click to bypass a global document event listener tasked with tracking background canvas cleanup. State is held cleanly using native `aria-expanded` attributes.  
+**Outcome:** Dropped overall component footprint, producing an incredibly DRY, modular control module.
 
-- **The Concept:** Instead of generating 4 or 8 arbitrary bars, the engine reads from `FORM_TEMPLATES` containing classical structures (e.g., A-B-A-C Period, AABA Pop Form).
-- **The Execution:** As the engine loops through the form array, it checks a temporary `phraseCache` object. If it encounters a new letter ('A'), it generates a discrete mathematical bar and caches it. When it encounters that letter again, it bypasses the generator entirely and clones the array from memory.
-- **Pedagogical Value:** This provides the student with "Antecedent and Consequent" phrasing. Hearing a bar repeat gives the student a dopamine hit of recognition, significantly lowering the cognitive load and allowing them to focus deeply on the contrasting 'B' and 'C' sections.
+### [2026-06-16] UI Architecture: The "Inner Track" Scroll Pattern
 
-### 2. The Markov Syntax Dictionary (Micro-Structure)
+**Context:** The application workspace (`#ui-workspace`) failed to grow its visual layout boundaries (dashed borders) on long exercises, causing element cards to overflow and bleed visually.  
+**Decision:** Divided container operations into distinct layout primitives inspired by _Every Layout_.  
+**Implementation:** Split layout roles into a Viewport container tasked with masking overflowing scroll limits (`overflow-y: auto`) and an injected inner wrapper (.`workspace-scroll-track`) holding the visual borders.  
+**Outcome:** The track stretches naturally based on children contents, maintaining perfectly responsive borders across all mobile grids.
 
-To fix the "unmusical" nature of the internal bars, flat `Math.random()` selection was replaced with a **Weighted Lottery Algorithm** governed by a Markov Syntax matrix.
+### [2026-06-17] UI Architecture: Custom 404 Error Routing & Viewport Scaling
 
-- **The Concept:** In spoken language, grammar dictates that certain words follow others. In Kodály methodology, rhythms operate on "Tension and Release" (e.g., four rapid semiquavers deeply want to resolve to a stable crotchet).
-- **The Execution:** The `SYNTAX_DICTIONARY` maps every motif to a set of probabilities for the subsequent beat. When placing a block, the engine checks the `previousMotif`, looks up the grammar rules, and runs a weighted draw.
-- **Pedagogical Value:** A `titika` now has a 70% chance of landing safely on a `ta` (release). This guarantees the engine generates highly idiomatic, natural-sounding patterns that the human ear can easily chunk together, rather than random noise.
-
-![Markov Syntax Dictionary](docs/screenshots/syntax_dictionary_screenshot.png)
-
-### 3. The Cadence Interceptor (Musical Resolution)
-
-The final challenge was ensuring that generated phrases musically resolve, without accidentally generating mathematically impossible bars that would crash the Tone.js transport.
-
-- **The Concept:** A 4-bar phrase should act as a complete musical thought, ending in a Perfect or Imperfect Cadence (rhythmically, typically a Crotchet or Minim), rather than a frantic subdivision.
-- **The Execution:** When the Form Router detects the absolute final bar of a sequence, it passes a `forceCadence` flag into the bar generator. The generator utilises a mathematical intersection filter: it cross-references the remaining space in the bar with a curated `CADENCE_MOTIFS` array. If a stable motif perfectly fits the remaining mathematical ticks, it hijacks the weighted lottery and forces the resolution.
-
-### Data Architecture (DRY Principles)
-
-To support this logic without bloating the codebase, the configuration arrays (`MOTIF_POOLS` and `FORM_TEMPLATES`) were completely abstracted from the main `levelRules` progression matrix. The engine dynamically stitches these rules together utilising ES6 Spread Syntax (`...`), ensuring the app remains highly scalable and DRY as new levels are introduced.
-
-### Quality Assurance & Bounds Testing
-
-Extensive developer testing was required to ensure the Cadence Interceptor and Form Router did not create mathematical memory leaks. The Tone.js framework is strictly typed regarding time, so any compound motifs leaking into a simple metre grid would cause an immediate crash.
-
-![QA Fig 1](docs/screenshots/qa_intersection_filter_fig1.png)
-
-> **Fig 1:** Console output confirming the intersection filter successfully protected a 6/8 compound grid, producing mathematically perfect 2-beat sequences.
-
-![QA Fig 2](docs/screenshots/qa_cache_execution_and_cadence_interceptor_fig2.png)
-
-> **Fig 2:** Console output of an 8-bar Sentence Form generation. Note the successful memory cache execution (Indexes 6-8 perfectly mirroring Indexes 0-2) and the successful Cadence Interceptor triggering at the final sequence beat (Index 22).
+**Context:** Out-of-bounds error pages required a customized layout fallback matching internal brand properties. Early mockups using variable-heavy CSS calculations inside nested math parameters crashed mid-tier tablet layout engines.  
+**Decision:** Engineered a clean `404.html` canvas fallback, stripping layout parameters down to bulletproof constraints.  
+**Implementation:** Positioned an outer flex wrapper (`min-height: 100dvh`) to lock absolute screen centering, and configured internal padding bounds using fixed text clamps (`clamp(1.5rem, 6vw, 3.5rem)`).  
+**Outcome:** Fallback paths securely catch missing URLs and route traffic smoothly back to active tasks without breaking system styling continuity.
 
 ---
 
-## Phase 8: The Responsive "Sponge" Architecture (UI/UX)
-
-Translating rigid musical syntax (2, 4, and 8-bar phrases) into a fluid web interface presented a significant layout challenge. Standard responsive techniques often resulted in "syntactical breaking" (e.g., a 4-bar phrase wrapping awkwardly into 3 bars on the top row and 1 bar on the bottom) or "vertical blowouts" where tall screens stretched musical notation cards into distorted, unreadable rectangles.
-
-![Workspace Wrapping Issue](docs/screenshots/sponge_breaking_screenshot.png)
-
-![Vertical Blowout](docs/screenshots/sponge_vertical_blowout_screenshot.png)
-
-To guarantee a pristine user experience on every device — from an iPhone SE to a 4K Desktop monitor—the workspace was rebuilt using a highly constrained, custom CSS architecture:
-
-- **The Viewport Sponge Constraint:** To prevent the user from ever having to scroll to find the "Submit" button, the primary workspace was given `flex: 1 1 0` with a strict `min-height: 0`. This allows the workspace to act as a "sponge," dynamically measuring the exact space between the top controls and bottom controls, and squishing the musical grid to fit perfectly within the viewport.
-- **Proportional Grid Clamping:** To prevent cards from elongating into skyscrapers on tall devices (like iPads), dangerous `aspect-ratio` rules were removed. Instead, the CSS Grid utilises `grid-auto-rows: clamp(55px, 10vh, 100px)`. This enforces a strict physical ceiling: the cards will grow to a mathematically proportional size and then stop, floating elegantly in the vertical center of the available space.
-- **Syntactical Auto-Grids & Quantity Queries:** The grid strictly enforces musical phrasing. On mobile, it utilises a 2-column layout (perfectly stacking 2, 4, and 8-bar phrases). On desktop, it enforces a 4-column sheet-music layout. To solve the issue of a 2-bar Level 1 phrase sitting awkwardly on the left edge of a 4-column desktop grid, an advanced CSS **Quantity Query** (`.workspace-bar:first-child:nth-last-child(2)`) was deployed. This algorithmically detects if exactly two bars exist in the DOM and automatically pushes the first bar into the second column, resulting in mathematically perfect centering.
-
-![Before Quantity Query](docs/screenshots/sponge_issue_screenshot.png)
-
-![After Quantity Query](docs/screenshots/sponge_fix_screenshot.png)
-
----
-
-## [2026-06-16] UI Architecture: Custom Dropdown & Event Propagation
-
-**Context:**
-The application required a level selection control. However, native HTML `<select>` elements cannot be styled consistently across browsers. Using a native element would break our "Perceptual Patterns"—the specific shapes, colours, and interactive states that define the brand's aesthetic. We required a bespoke dropdown that matched the whimsical, tactile interface of the wider application.
-
-**Decision:**
-We built a custom UI dropdown (`DOM.levelBtn` and `DOM.levelMenu`) driven by JavaScript. To manage the open/closed state efficiently without tightly coupling our code or writing repetitive DOM queries, we leaned into standard DOM event propagation mechanics.
-
-**Implementation:**
-
-1. **State Management:** We used the `aria-expanded` attribute on the trigger button to manage state. This ensures the component is accessible to screen readers while doubling as a CSS hook for our animations.
-2. **Event Bubbling & Interception:** When the user clicks the trigger button, we invoke `e.stopPropagation()`. This deliberately stops the click event from bubbling up the DOM tree.
-3. **Global Cleanup:** We placed a single event listener on the `document` object. If the user clicks anywhere else on the screen, this listener catches the event and closes the dropdown. Because of our `stopPropagation()` rule, clicking the trigger button bypasses this global cleanup, preventing the menu from instantly closing itself.
-
-**Outcome:**
-The resulting dropdown is completely DRY and modular. By relying on native event bubbling behaviour rather than complex state-tracking variables, the logic remains clean, performant, and perfectly adheres to the overarching visual design system.
-
----
-
-## [2026-06-16] UI Architecture: The "Inner Track" Scroll Pattern
-
-**Context:**
-During mobile testing, the main application workspace (`#ui-workspace`) failed to dynamically expand its visual boundaries (the dashed border) when populated with multiple `.workspace-bar` elements. The content would correctly scroll after implementing the logic, but the border remained fixed to the viewport height, causing the cards to visually "bleed" out of the container.
-
-**Decision:**
-Rather than relying on hacky JavaScript height calculations or fixed CSS dimensions, we implemented the "Inner Track" architectural pattern, adhering to the composition principles outlined in _Every Layout_ (Bell & Pickering).
-
-**Implementation:**
-We separated the responsibilities of the workspace container into two distinct layout primitives:
-
-1. **The Viewport (`#ui-workspace`):** Stripped of all grid and border styling. Its sole responsibility is to act as the mask and manage the scroll behaviour (`overflow-y: auto`).
-2. **The Track (`.workspace-scroll-track`):** A new DOM node injected via `app.js`. This acts as the grid container and holds the visual styling (background, padding, dashed border).
-
-**Outcome:**
-Because the track sits _inside_ the scrolling viewport, the browser's natural layout algorithms allow it to grow as tall as its internal content demands. The dashed border now safely encapsulates all child elements, regardless of how many bars are dynamically rendered into the DOM, ensuring a squish-proof, robust UI across all viewports.
-
----
-
-## [2026-06-17] UI Architecture: Custom 404 Error Routing & Viewport Scaling
-
-**Context:**
-The application required a fallback routing page for invalid URLs. A standard 404 page would break the immersive user experience and potentially cause student drop-off. Furthermore, during development, placing the error container inside a rigid pixel-based `max-width` box with complex nested CSS math (`calc` inside `clamp`) caused scaling imbalances and silent parser failures on mid-tier tablet viewports.
-
-**Decision:**
-We engineered a custom, semantic 404 page (`404.html`) utilising the application's native CSS design tokens. To resolve the tablet scaling and CSS parser failures, we stripped away brittle mathematical calculations in favor of universally supported, bulletproof layout constraints.
-
-**Implementation:**
-We decoupled the layout into two parts:
-
-1. **The Wrapper (`.error-page-wrapper`):** A flex-centered container utilizing `min-height: 100dvh` to guarantee absolute vertical centering across all mobile and desktop browsers.
-2. **The Container (`.error-container`):** Refactored to use standard percentage scaling (`width: 90%; max-width: 520px;`) and fluid internal padding (`clamp(1.5rem, 6vw, 3.5rem)`).
-
-**Outcome:**
-The fallback page now securely routes users back to the active dictation workspace while perfectly mirroring the application's brand aesthetics. The container elegantly stretches to command a healthy 520px footprint on tablet screens while maintaining safe, squish-proof boundaries on narrow mobile viewports.
-
----
-
-## Testing & Quality Assurance Portfolio
+## 9. 🧪 Testing & Quality Assurance Portfolio
 
 This section outlines the holistic verification suite executed to guarantee the engineering integrity, mathematical precision, and cross-platform accessibility of Solfaic.
 
 ### 1. Manual Testing Matrix (Boundary Explorations)
 
-Instead of arbitrary ad-hoc clicks, manual testing was performed using rigorous boundary input constraints to stress-test the `Tone.js` transport engine state machine.
+Manual testing was performed using rigorous boundary input constraints to stress-test the `Tone.js` transport engine state machine.
 
----
+- **TM-01: Phrase Engine Initialization Pipeline**
+  - _System Target:_ Algorithmic Blueprint Generation Core
+  - _Input / Action:_ Select **Level 1** and trigger the engine initialization routine.
+  - _Expected Result:_ System constructs a mathematically tight 2-bar through-composed timeline array, with timestamps strictly bound from `0:0:0` up to `1:1:0` max.
+  - _Actual Result:_ Active Blueprint object populated exactly matching parameters. Developer tool console outputted a flawless 4-slot timeline mapping layer.
+  - _Status:_ `PASS`
 
-#### TM-01: Phrase Engine Initialization Pipeline
+- **TM-02: Cadence Interceptor Structural Boundary Checks**
+  - _System Target:_ Mathematical Intersection Filter & Lottery Override
+  - _Input / Action:_ Force generation of Level 3 rhythmic cycles (4/4 and 6/8 matrices) to the absolute final terminal bar boundary.
+  - _Expected Result:_ The context router detects the final bar, intercepts standard Markov lottery weight mechanics, and restricts candidate block options to `CADENCE_MOTIFS` (`taa` or `tai`) to elegantly resolve the phrase.
+  - _Actual Result:_ Final timeline array index forced to a stable cadence block; successfully prevented downstream transport parsing/metrical truncation failures.
+  - _Status:_ `PASS`
 
-- **System Target:** Algorithmic Blueprint Generation Core
-- **Input / Action:** Select **Level 1** and trigger the engine initialization routine.
-- **Expected Algorithmic Result:** System constructs a mathematically tight 2-bar through-composed timeline array. Context config must declare `enforceCadence: false`, with timestamps strictly bound from `0:0:0` up to `1:1:0` max.
-- **Actual Visual/Audio Result:** Active Blueprint object populated exactly matching parameters. Developer tool console outputted a flawless 4-slot timeline mapping layer.
-- **Status:** `PASS`
-
----
-
-#### TM-02: Cadence Interceptor Structural Boundary Checks
-
-- **System Target:** Mathematical Intersection Filter & Lottery Override
-- **Input / Action:** Force generation of Level 3 rhythmic cycles (4/4 and 6/8 matrices) to the absolute final terminal bar boundary.
-- **Expected Algorithmic Result:** The context router detects the final bar, intercepts standard Markov lottery weight mechanics, and restricts candidate block options to `CADENCE_MOTIFS` (`taa` or `tai`) to elegantly resolve the phrase.
-- **Actual Visual/Audio Result:** Final timeline array index forced to a stable cadence block; successfully prevented downstream transport parsing/metrical truncation failures.
-- **Status:** `PASS`
-
----
-
-#### TM-03: Sub-division Layout Over-Allocation Guardrails
-
-- **System Target:** Interactive Staff Grid Drop-Zone Event Handlers
-- **Input / Action:** Drag a multi-beat note component (such as a 2-tick `taa` Minim) into a workspace slot containing a remaining capacity of exactly 1 tick.
-- **Expected Algorithmic Result:** Browser interceptor captures the drop event, runs a boundary space evaluation, aborts the raw array memory overwrite sequence, and triggers an absolute warning alert modal.
-- **Actual Visual/Audio Result:** DOM event captured cleanly. Toast alert sequence fired: _"This note is too long to fit in the remaining space of this bar!"_ Underlying array memory remained uncorrupted.
-- **Status:** `PASS`
-
----
+- **TM-03: Sub-division Layout Over-Allocation Guardrails**
+  - _System Target:_ Interactive Staff Grid Drop-Zone Event Handlers
+  - _Input / Action:_ Drag a multi-beat note component (such as a 2-tick `taa` Minim) into a workspace slot containing a remaining capacity of exactly 1 tick.
+  - _Expected Result:_ Browser interceptor captures the drop event, runs a boundary space evaluation, aborts the raw array memory overwrite sequence, and triggers an absolute warning alert modal.
+  - _Actual Result:_ DOM event captured cleanly. Toast alert sequence fired: _"This note is too long to fit in the remaining space of this bar!"_ Underlying array memory remained uncorrupted.
+  - _Status:_ `PASS`
 
 ### 2. User Story Testing (Behavior-Driven Verification)
 
@@ -563,8 +396,8 @@ Cross-origin audio context rendering pipelines were explicitly verified across m
 
 Rather than writing fragile media query breakpoints for every independent screen device width, layout consistency was secured via **Every Layout Primitives**.
 
-- Tested on **iPhone SE (320px width)**: The `minmax(min(220px, 100%), 1fr)` auto-grid gracefully drops to a single vertical scroll stack. Proportional clamps prevent card elongation.
-- Tested on **iPad Air & 4K Widescreen Display**: Columns automatically upscale cleanly to balanced multi-column matrices without breaking sheet-music layout syntax.
+- **Tested on iPhone SE (320px width):** The `minmax(min(220px, 100%), 1fr)` auto-grid gracefully drops to a single vertical scroll stack. Proportional clamps prevent card elongation.
+- **Tested on iPad Air & 4K Widescreen Display:** Columns automatically upscale cleanly to balanced multi-column matrices without breaking sheet-music layout syntax.
 
 ### 7. Automated Unit Testing (Jest/Console Diagnostics)
 
