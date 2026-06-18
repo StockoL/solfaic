@@ -429,6 +429,8 @@ export function renderWorkspace(state) {
 
 2. CSS Property Cascading Heritage: Because vectors are injected directly into the active layout markup flow rather than isolated behind sandboxed HTML <img> elements, they become part of the live DOM tree. Setting the stroke color variable directly to `stroke="currentColor"` forces vector items to dynamically inherit theme changes, instantly adapting when error classes (.is-error) are toggled.
 
+</details>
+
 ### Phase 5: The Audio Engine
 
 - `feat(audio): integrate Tone.js scheduling engine for accurate target array playback`
