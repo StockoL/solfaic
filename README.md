@@ -108,13 +108,13 @@ Educational software requires engagement. To fight cognitive fatigue, we injecte
 - **Staggered Cinematic Confetti Downpour:** Initiates a highly dense, 160-particle colourful confetti storm with 3D-depth and randomised start delays up to 1.5 seconds.
 
 <div align="center">
-  <video src="./docs/assets/animations/confetti_clip.mp4" autoplay loop muted playsinline aria-label="Short looping video demonstration of Solfaic workspace showing a successful notation submission triggering a canvas-wide 3D confetti downpour celebration." width="100%" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></video>
+  <video src="https://github.com/user-attachments/assets/3f3c612b-c818-4248-8b66-53a76ee86f81" autoplay loop muted playsinline aria-label="Short looping video demonstration of Solfaic workspace showing a successful notation submission triggering a canvas-wide 3D confetti downpour celebration." width="100%" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></video>
 </div>
 
 - **Tactile Frustration Microgestures (Error Handling):** Attempting to submit an incomplete exercise causes the entire canvas row to execute an aggressive **horizontal frustration shake** (`is-shaking`), while empty slots flash with a **crimson halo pulse** (`is-empty-panic`).
 
 <div align="center">
-  <video src="./docs/animations/is-shaking-clip.mp4" autoplay loop muted playsinline aria-label="Short looping video demonstration of Solfaic workspace showing the horizonal frustration shake triggered by the user when the workspace is incomplete." width="100%" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></video>
+  <video src="https://github.com/user-attachments/assets/d72de212-d9ad-4964-9fed-0fed0f488611" autoplay loop muted playsinline aria-label="Short looping video demonstration of Solfaic workspace showing the horizonal frustration shake triggered by the user when the workspace is incomplete." width="100%" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></video>
 </div>
 
 - **Touch-First Sensation Mapping:** Hover definitions are suppressed entirely on mobile to eliminate sticky layout scaling freezes. Touch inputs focus exclusively on the high-fidelity `:active` state, delivering a crisp, immediate touch-down spring compression feel (`scale(0.96)`) the precise millisecond a finger makes contact.
