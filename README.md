@@ -4,6 +4,8 @@
 [![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/StockoL/solfaic?color=success)](https://github.com/StockoL/solfaic)
 [![Lighthouse Performance](https://img.shields.io/badge/Lighthouse_Performance-98%25-brightgreen)](https://github.com/StockoL/solfaic)
 [![Lighthouse Accessibility](https://img.shields.io/badge/Lighthouse_Accessibility-100%25-brightgreen)](https://github.com/StockoL/solfaic)
+[![Lighthouse Best Practices](https://img.shields.io/badge/Lighthouse_Performance-100%25-brightgreen)](https://github.com/StockoL/solfaic)
+[![Lighthouse SEO](https://img.shields.io/badge/Lighthouse_Performance-100%25-brightgreen)](https://github.com/StockoL/solfaic)
 
 **[🔴 LIVE APPLICATION: Click here to view the deployed site on GitHub Pages](https://stockol.github.io/solfaic/)**
 
@@ -172,6 +174,7 @@ Maps how the browser UI, Central Engine, and Web Audio API share execution data 
 
 For an overview of the initial conception of the verification sequence, see: docs/architecturemaps/verification-sequence.png.
 
+```text
 [ Viewport Canvas: index.html ] <─── (Synchronous Re-render) ───┐
 │ │
 (DOM Click) │
@@ -202,6 +205,7 @@ For an overview of the initial conception of the verification sequence, see: doc
 │ • Tone.js Transport Engine │ ──► [ AudioContext Hardware Thread ]
 │ • Acoustic Attenuation Factor (82%) │ (Jitter-Free Studio Playback)
 └──────────────────────────────────────┘
+```
 
 ## <p align="right">(<a href="#top">Back to top</a>)</p>
 
@@ -309,17 +313,17 @@ Artificial Intelligence (LLMs) was utilised strictly as a "Pair Programmer" and 
 ### 📂 Repository Structural Layout
 
 ```text
-├── assets/                   # Client-side sound samples and baseline audio media
-│   └── media/                # Core audio synthesis wave samples
+├── assets/                   # Consolidated core application assets
+│   ├── media/                # Core audio synthesis wave samples
+│   ├── app.js                # Production Engine Core (Unified MVC State Module)
+│   └── style.css             # Intrinsic layout primitive tokens & design rules
 ├── docs/                     # Comprehensive engineering portfolio assets
 │   ├── animations/           # High-fidelity looping demonstration videos (MP4)
 │   ├── architecturemaps/     # Structural logic flowcharts and state maps
 │   ├── screenshots/          # Quality assurance & manual testing verification logs
 │   └── wireframes/           # Early UI/UX design concepts (Desktop/Mobile)
 ├── 404.html                  # Bespoke out-of-bounds routing error viewport
-├── app.js                    # Production Engine Core (Unified MVC State Module)
 ├── index.html                # Main application viewport shell
-├── style.css                 # Intrinsic layout primitive tokens & design rules
 └── README.md                 # Technical project case study & documentation
 ```
 
