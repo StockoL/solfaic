@@ -8,7 +8,7 @@ The underlying software architecture is intentionally decoupled and extensible, 
 
 ---
 
-## 📋 Table of Contents
+## <a name="top"></a>📋 Table of Contents
 
 1. [📖 Project Purpose & User Stories](#purpose)
 2. [🔬 Strategic Research](#research)
@@ -107,9 +107,12 @@ Educational software requires engagement. To fight cognitive fatigue, we injecte
 - **Custom Spring-Loaded Success Overlays:** Deprecated disruptive browser alerts in favor of an elegant, canvas-wide custom HTML5 victory modal utilising custom spring-physics curves.
 - **Staggered Cinematic Confetti Downpour:** Initiates a highly dense, 160-particle colourful confetti storm with 3D-depth and randomised start delays up to 1.5 seconds.
 
-![Confetti Downpour](docs/screenshots/confetti_celebration_screenshot.png)
+![Success Modal](docs/animations/confetti-clip.mp4)
 
 - **Tactile Frustration Microgestures (Error Handling):** Attempting to submit an incomplete exercise causes the entire canvas row to execute an aggressive **horizontal frustration shake** (`is-shaking`), while empty slots flash with a **crimson halo pulse** (`is-empty-panic`).
+
+![frustration shake](docs/animations/is-shaking-clip.mp4)
+
 - **Touch-First Sensation Mapping:** Hover definitions are suppressed entirely on mobile to eliminate sticky layout scaling freezes. Touch inputs focus exclusively on the high-fidelity `:active` state, delivering a crisp, immediate touch-down spring compression feel (`scale(0.96)`) the precise millisecond a finger makes contact.
 
 ## <p align="right">(<a href="#top">Back to top</a>)</p>
