@@ -132,7 +132,7 @@ The application operates as a deterministic State Machine, strictly controlling 
 - Defensive Lockout (`playbackState`): Safely prevents the user from registering answers early or breaking the layout flow during audio execution.
 - The Modular Gateway (`loadLevelSettings`): Flushes workspace arrays, pulls configuration rules, and triggers generation modules without mutating global files.
 
-![Proposed Global State Machine](./docs/architecturemaps/state-machine-solfaic.png)
+For the earliest plans for a prototype of the state machine, see: docs/architecturemaps/state-machine-solfaic.png.
 
 ### The Multi-Phase Data Pipeline (The Movable-Do Bridge)
 
@@ -140,7 +140,7 @@ Transforms raw configuration files into a timed sequence map.
 
 - **Decoupled Data Contracts:** The sequence matrix revolves around a unified object schema containing `pitch: null` placeholders. Melodic integration later will require absolutely no structural rewrites.
 
-![Proposed Data Pipeline](./docs/architecturemaps/data-logic-solfaic.png)
+For the initial flowchart plans for the data architecture and logic of the application in its earliest development phase, see: docs/architecturemaps/data-logic-solfaic.png.
 
 ### Asynchronous Timeline Synchronisation (The Sequence Map)
 
@@ -148,7 +148,7 @@ Maps how the browser UI, Central Engine, and Web Audio API share execution data 
 
 - **Callback-Driven Unlocking:** The workspace stays locked until a clean `onComplete` signal clears the native audio runtime scheduling buffer, protecting timing against system discrepancies.
 
-![Proposed Sequence Map](./docs/architecturemaps/verification-sequence.png)
+For an overview of the initial conception of the verification sequence, see: docs/architecturemaps/verification-sequence.png.
 
 ## <p align="right">(<a href="#top">Back to top</a>)</p>
 
