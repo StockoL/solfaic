@@ -713,7 +713,7 @@ Verification of core target audience features mapped back to the primary user re
 
 ### 3. Validator Testing
 
-- **W3C HTML Validator:** 100% compliant. Passed with zero structural errors or loose tags.
+- **W3C HTML Validator:** 100% compliant. Passed with zero structural errors or loose tags. Noted various info messages regarding trailing slashes on void elements.
 - **W3C CSS Validator:** Compliant. All dynamic custom variables (`--color-primary`) and layout primitives pass compilation safely.
 - **JSHint (ECMAScript 8):** Codebase analysed with strict rules. Zero memory leaks, zero undeclared variables, explicit global declarations wrapped for external libraries (`/* global Tone */`).
 
@@ -746,6 +746,8 @@ Rather than writing fragile media query breakpoints for every independent screen
 The inner mathematical states of the generative algorithms were verified using Chrome Developer Tools Console logs to track real-time engine processing telemetry.
 
 - _Visual Output Verification:_ Dynamic tracking maps are outputted to the developer console utilising structured tabular views (`console.table`). See documentation portfolio screenshots for raw data execution tables.
+
+- _Jest Testing:_
 
 ### 8. Bugs Fixed (Sprint Log)
 

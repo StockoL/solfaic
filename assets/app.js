@@ -1006,27 +1006,27 @@ function compileTourSequence() {
       elementId: isMobileViewport ? "btn-toggle-sidebar" : "ui-sidebar",
       text: isMobileViewport
         ? "Welcome! Tap this hamburger menu button at any time to open up your Kodály reference table."
-        : "Welcome to Solfaic! This is your permanent curriculum matrix guide. Reference your syllables and notation rules here.",
+        : "Welcome to Solfaic! This is your reference guide. Check your rhythmic solfege and notation rules here.",
       mobilePosition: "bottom", // Dictates CSS safe-area override intents
     },
     {
       elementId: "btn-replay",
-      text: "Step 1: Hit this primary action button to listen to your target sound wave.",
+      text: "Step 1: Hit this 'play' button to listen to your next phrase. Be sure to listen carefully, you only get 3 attempts!",
       mobilePosition: "bottom",
     },
     {
       elementId: "ui-workspace",
-      text: "Step 2: This is your dictation staff. Your rhythm cards will assemble across these active beat boxes.",
+      text: "Step 2: This is your workspace. Your chosen rhythm cards will assemble here. Tap a card to remove it, or tap an empty slot to prepare it for a new card.",
       mobilePosition: "bottom",
     },
     {
       elementId: "ui-motif-selector",
-      text: "Step 3: Choose your musical building block components here.",
+      text: "Step 3: Choose your rhythm cards from this menu. Drag 'em, click 'em, or tap a highlighted slot to place 'em. Remember, some cards are more than one beat long!",
       mobilePosition: "top",
     },
     {
       elementId: "btn-submit",
-      text: "Step 4: Once completely populated, smash this button to evaluate your precision.",
+      text: "Step 4: Once you're done, smash this button here to see if you got it right. Three successive correct answers will take you to the next level. Good luck!",
       mobilePosition: "top",
     },
   ];
@@ -1467,4 +1467,68 @@ window.addEventListener("DOMContentLoaded", () => {
   startLevel(1);
 
   console.log("Solfaic! App Initialised. 🚀");
+});
+
+// ==========================================================================
+// ACCESSIBILITY: GLOBAL HOTKEY ROUTING
+// ==========================================================================
+document.addEventListener("keydown", (e) => {
+  // 1. Prevent hotkeys from firing if the user has a modal open or game is locked
+  if (sessionState.playbackState === "LOCKED") return;
+
+  switch (e.code) {
+    case "Space":
+      // Prevent the spacebar from scrolling the page downwards
+      e.preventDefault();
+      const playBtn = document.getElementById("btn-replay");
+      // Only click if it's not disabled (out of tokens)
+      if (playBtn && !playBtn.disabled) playBtn.click();
+      break;
+
+    case "Enter":
+      e.preventDefault();
+      const submitBtn = document.getElementById("btn-submit");
+      if (submitBtn) submitBtn.click();
+      break;
+
+    case "Backspace":
+      e.preventDefault();
+
+      // 1. Grab the individual clickable CARDS, not the measure bars!
+      const workspaceCards = document.querySelectorAll(
+        "#ui-workspace .workspace-card",
+      );
+
+      // 2. Loop backwards to find the last placed note or extension
+      for (let i = workspaceCards.length - 1; i >= 0; i--) {
+        // If the card does NOT have 'is-placeholder', it is holding a note (or an error)
+        if (!workspaceCards[i].classList.contains("is-placeholder")) {
+          workspaceCards[i].click(); // Safely trigger your exact removal logic
+          break; // Stop immediately so we only delete one beat per keystroke
+        }
+      }
+      break;
+  }
+
+  // 2. Map Number Keys (1-9) to the Motif Selection Pads
+  if (e.key >= "1" && e.key <= "9") {
+    const motifIndex = parseInt(e.key) - 1; // '1' becomes index 0
+
+    // Find all currently rendered motif buttons in the switcher
+    const motifPads = document.querySelectorAll(
+      "#ui-motif-selector .motif-pad",
+    );
+
+    if (motifPads[motifIndex]) {
+      // Trigger the exact same click event as if the user tapped it
+      motifPads[motifIndex].click();
+
+      // Add a quick flash effect so the user knows it registered
+      motifPads[motifIndex].classList.add("is-active");
+      setTimeout(
+        () => motifPads[motifIndex].classList.remove("is-active"),
+        150,
+      );
+    }
+  }
 });
