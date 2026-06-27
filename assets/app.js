@@ -1251,7 +1251,7 @@ const AudioEngine = {
       return;
     }
 
-    await this.init();
+    // 1. Lock UI and update states IMMEDIATELY upon click to prevent double-firing
     sessionState.currentState = "PLAYING";
     sessionState.playCount++;
 
@@ -1259,6 +1259,11 @@ const AudioEngine = {
     if (DOM.playsRemaining)
       DOM.playsRemaining.innerText = `Plays remaining: ${sessionState.maxPlays - sessionState.playCount} / ${sessionState.maxPlays}`;
 
+    // 2. Await Tone.js hardware initialization AFTER the UI is safely locked
+    await this.init();
+
+    Tone.Transport.cancel();
+    Tone.Transport.stop();
     Tone.Transport.cancel();
     Tone.Transport.stop();
 

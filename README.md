@@ -741,16 +741,38 @@ Rather than writing fragile media query breakpoints for every independent screen
 - **Tested on iPhone SE (320px width):** The `minmax(min(220px, 100%), 1fr)` auto-grid gracefully drops to a single vertical scroll stack. Proportional clamps prevent card elongation.
 - **Tested on iPad Air & 4K Widescreen Display:** Columns automatically upscale cleanly to balanced multi-column matrices without breaking sheet-music layout syntax.
 
-### 7. Automated Unit Testing (Jest/Console Diagnostics)
+### 7. Automated End-to-End Testing (Playwright)
 
-The inner mathematical states of the generative algorithms were verified using Chrome Developer Tools Console logs to track real-time engine processing telemetry.
+Traditional unit testing frameworks like Jest operate in simulated Node.js environments (`jsdom`) that lack native soundcards and `window.AudioContext` support. Mocking the entire Web Audio API to satisfy Jest is an industry anti-pattern.
 
-- _Visual Output Verification:_ Dynamic tracking maps are outputted to the developer console utilising structured tabular views (`console.table`). See documentation portfolio screenshots for raw data execution tables.
+Instead, the application is covered by **Playwright**, an End-to-End (E2E) testing framework that spins up an actual Chromium browser. This ensures `Tone.js` initialises flawlessly and interactions are tested exactly as a human user experiences them.
 
-- _Jest Testing:_
+![Playwright E2E Testing Dashboard](./docs/screenshots/playwright_dashboard.png)
+
+The test suite executes 7 critical path verifications:
+
+**Phase 1: Initialisation & UI Routing**
+
+- **Test 1: App initialises with Level 1 defaults:** _(Necessity)_ Verifies that the initial DOM state mounts correctly, default parameters (4/4 time, 2 bars) are injected, and the motif selector array is populated before the user interacts.
+- **Test 2: Custom Dropdown navigates to Level 3:** _(Necessity)_ Ensures the bespoke event-bubbling dropdown safely closes upon selection, unmounts Level 1 arrays, and re-mounts the complex Level 3 configuration without memory leaks.
+
+**Phase 2: Input & Interaction Mechanics**
+
+- **Test 3: Mouse/Touch pad injection:** _(Necessity)_ Verifies the core interaction loop. Ensures that clicking a motif pad accurately targets the first available `is-placeholder` slot and replaces it with vector graphics.
+- **Test 4: Keyboard Accessibility (A11y) routing:** _(Necessity)_ Simulates a user pressing `Digit1` to inject a motif, followed by `Backspace`. Verifies that the custom surgical error workflow successfully walks backwards through the array, locates the last placed root note, and clears it without corrupting the array length.
+
+**Phase 3: Validation & Error Workflows**
+
+- **Test 5: Incomplete board submission block:** _(Necessity)_ Simulates an impatient user clicking 'Submit' early. Asserts that the validation engine aborts the sequence and triggers the `is-empty-panic` visual CSS feedback loop.
+- **Test 6: Full board sequence validation:** _(Necessity)_ Utilises a dynamic `while` loop to fill the board algorithmically, bypassing rendering race conditions. Submits the full board to guarantee the evaluation engine maps `is-success` or `is-error` states to the DOM correctly.
+
+**Phase 4: Audio Context & Thread Locking**
+
+- **Test 7: Audio trigger state locking:** _(Necessity)_ Verifies that the application securely locks the UI (`is-locked`) when the audio transport begins, preventing users from double-firing the synthesizer or mutating arrays during playback.
 
 ### 8. Bugs Fixed (Sprint Log)
 
+- **The Audio-Lock Race Condition (Caught by Playwright):** Automated E2E testing revealed a race condition where the UI failed to lock fast enough on the first audio playback. The engine was executing `await this.init()` (booting the Tone.js hardware context) _before_ applying the `is-locked` CSS classes. On older devices, this 500ms boot-up delay allowed users to double-click the play button. _Fix:_ Shifted the synchronous DOM locking sequence (`sessionState.currentState = "PLAYING"`) to execute immediately upon the click event, deferring the asynchronous hardware initialization safely behind the UI lock.
 - **The "Skyscraper" Card Stretching Bug:** Tall viewports forced `flex: 1` grids to excessively stretch the vertical heights of the input staves, distorting note dimensions. _Fix:_ Implemented a strict row clamp (`grid-auto-rows: clamp(55px, 10vh, 85px)`) to create a hard visual ceiling.
 - **The Collapsing SVG Window Bug:** Moving the cards to a strict flex layout collapsed the underlying programmatic vector graphic heights to 0. _Fix:_ Explicitly scaled the dynamic `.svg-container` to map out 100% of parent dimensions.
 
