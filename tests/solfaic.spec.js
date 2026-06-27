@@ -3,16 +3,14 @@ const { test, expect } = require("@playwright/test");
 
 /**
  * SOLFAIC - Playwright End-to-End Test Suite
- * * Note: Change the URL below to match the local development server port
  */
-const LOCAL_URL = "http://127.0.0.1:5500";
 
 test.describe("Solfaic Interactive Application Suite", () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the app before each test
-    await page.goto(LOCAL_URL);
+    // Navigate to the app root (Base URL is handled by Playwright config)
+    await page.goto("/");
 
-    // Optional: Dismiss the tour modal
+    // Optional: Dismiss the tour modal if it auto-triggers on load
     const skipTourBtn = page.locator("#btn-tour-no");
     if (await skipTourBtn.isVisible()) {
       await skipTourBtn.click();
