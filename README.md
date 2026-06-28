@@ -51,7 +51,7 @@ _Focus: Pedagogy, motif-based learning, and consistency._
 - **User Story:** As a teacher recommending a practice tool, I want the app to function cleanly on small mobile browsers so that students can execute training sessions efficiently on the go.
   - _Acceptance Criterion:_ The layout utilises **Intrinsic Web Design** principles (The Switcher and The Stack) to ensure all interactive elements remain accessible and well-spaced on small viewports without vertical overflow.
 
-## <p align="right">(<a href="#top">Back to top</a>)</p>
+<p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 2. <a name="research"></a>🔬 Strategic Research
 
@@ -67,15 +67,20 @@ _Focus: Pedagogy, motif-based learning, and consistency._
 - **The Flat Note (What fails):** Entirely reactive architecture; it lacks any system for scheduled timing grids, automated timeline sequence loops, or objective entry validation.
 - **Innovation:** Solfaic isolates the interactive audio pad mechanism of a drum machine but steps it up into a Scheduled Timeline Matrix, feeding static loops into deterministic evaluation processors.
 
-## <p align="right">(<a href="#top">Back to top</a>)</p>
+<p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 3. <a name="ux-strategy"></a> 🖼️ UX Design Strategy (The 5 Planes)
 
 ### Initial Wireframes
 
+<details>
+<summary><b>🔍 Expand Initial UI Wireframes</b></summary>
+
 ![Initial Desktop Concept](./docs/wireframes/solfaic-wireframe-level-view-desktop.png)
 ![Initial Mobile Concept](./docs/wireframes/solfaic-wireframe-level-view-mobile.png)
 ![Performance Workspace](./docs/wireframes/solfaic-wireframe-performance-view-mobile.png)
+
+</details>
 
 ### I. Strategy
 
@@ -143,7 +148,7 @@ Educational software requires engagement. To fight cognitive fatigue, we injecte
 
 - **Touch-First Sensation Mapping:** Hover definitions are suppressed entirely on mobile to eliminate sticky layout scaling freezes. Touch inputs focus exclusively on the high-fidelity `:active` state, delivering a crisp, immediate touch-down spring compression feel (`scale(0.96)`) the precise millisecond a finger makes contact.
 
-## <p align="right">(<a href="#top">Back to top</a>)</p>
+<p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 4. <a name="architecture"></a> 🗺️ System Architecture & Logic Maps
 
@@ -207,7 +212,7 @@ For an overview of the initial conception of the verification sequence, see: doc
 └──────────────────────────────────────┘
 ```
 
-## <p align="right">(<a href="#top">Back to top</a>)</p>
+<p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 5. <a name="features"></a> ✨ Core Features & UI Overhauls
 
@@ -256,7 +261,7 @@ Wiping a student's entire input ledger after a single incorrect rhythm element i
 - **Acoustic Delineation:** Shifted to a warm, resonant triangle wave oscillator (`Synth`) voiced at a crisp, mid-range register (`G3`).
 - **The Articulation Gap:** Solved the problem of consecutive identical notes blending into a muddy tone by scaling durations to **82% of their structural metric space**, creating crisp acoustic separation between attacks.
 
-## <p align="right">(<a href="#top">Back to top</a>)</p>
+<p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 6. <a name="deployment"></a> 🌐 Deployment Guide
 
@@ -289,7 +294,7 @@ If you do not utilise VSCode's Live Server extension, navigate to the cloned roo
 - **Python 3.x:** `python -m http.server 8000`
 - **Python 2.x:** `python -m SimpleHTTPServer 8000`
 
-## <p align="right">(<a href="#top">Back to top</a>)</p>
+<p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 7. <a name="credits"></a> 🤝 Credits & Acknowledgements
 
@@ -327,7 +332,7 @@ Artificial Intelligence (LLMs) was utilised strictly as a "Pair Programmer" and 
 └── README.md                 # Technical project case study & documentation
 ```
 
-## <p align="right">(<a href="#top">Back to top</a>)</p>
+<p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 8. <a name="dev-log"></a>🏗️ Development Log & Engineering Phases
 
@@ -673,7 +678,7 @@ To guarantee a pristine user experience on every device — from an iPhone SE to
 **Implementation:** Positioned an outer flex wrapper (`min-height: 100dvh`) to lock absolute screen centering, and configured internal padding bounds using fixed text clamps (`clamp(1.5rem, 6vw, 3.5rem)`).
 **Outcome:** Fallback paths securely catch missing URLs and route traffic smoothly back to active tasks without breaking system styling continuity.
 
-## <p align="right">(<a href="#top">Back to top</a>)</p>
+<p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 9. <a name="testing"></a> 🧪 Testing & Quality Assurance Portfolio
 
@@ -726,16 +731,26 @@ Verification of core target audience features mapped back to the primary user re
 - **As a music teacher**, I want students to practise with real pedagogical motifs rather than random durations:
   - _Verified._ The `generateBarSequence()` algorithm computes exact mathematical tick allotments per bar and randomly draws from curated `MOTIF_POOLS`. It utilises an intersection filter (`isValid`) to guarantee the generated rhythm always mathematically resolves to the exact metre. Furthermore, the logical relationship between the Markhov Syntax Dictionary, the `MOTIF_POOL`, and the `FORM_TEMPLATES` result in the generation of more convincing musical examples. They work together to generate examples that have a more conventional musical form, exhibiting elements of repetition, and natural cadence (e.g. the last beat of the phrase being a longer note for a natural sense of finality).
 
+<details>
+<summary><b>🔍 Screenshot of section responsible for musical phrase</b></summary>
+
 ![Meeting Teacher Test](./docs/screenshots/user_story_teacher_met.png)
+
+</details>
 
 - **As an Instructor**, I want the app layout to stay completely on the screen so my class does not lose track of buttons:
   - _Verified._ Replaced raw flex flows with a restricted viewport shell (`height: 100dvh`, `overflow: hidden`) forcing the workspace to act as a responsive layout sponge via intrinsic web design CSS primitives.
+
+<details>
+<summary><b>🔍 Screenshots of app layout on desktop, mobile, and tablet examples</b></summary>
 
 ![Meeting Instructor Test Desktop](./docs/screenshots/user_story_instructor_desktop.png)
 
 ![Meeting Instructor Test Mobile](./docs/screenshots/user_story_instructor_mobile.png)
 
 ![Meeting Instructor Test Tablet](./docs/screenshots/user_story_instructor_tablet.png)
+
+</details>
 
 ### 3. Validator Testing
 
