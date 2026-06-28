@@ -708,12 +708,38 @@ Manual testing was performed using rigorous boundary input constraints to stress
 
 Verification of core target audience features mapped back to the primary user requirements.
 
-- **As a Student**, I want clear visual feedback when I make an error so I know exactly where my ear failed: _Verified. The `evaluateSubmission()` controller runs a synchronous index comparison against `flatTarget`, instantly applying dynamic CSS modifier classes (`.is-success` or `.is-error`) directly to the corresponding DOM cards._
-- **As an Instructor**, I want the app layout to stay completely on the screen so my class doesn't lose track of buttons: _Verified. Replaced raw flex flows with a restricted viewport shell (`height: 100dvh`, `overflow: hidden`) forcing the workspace to act as a responsive layout sponge._
+#### The Examination/Audition Candidate
+
+- **As an aural examination applicant**, I want to practise identifying rhythmic motifs within a structured progression:
+  - _Verified._ The `loadLevelSettings()` function actively flushes the workspace and mounts different configurations, dynamically switching from 4/4 simple time in Level 1 to complex 6/8 compound matrices in Level 3.
+
+- **As a Student**, I want clear visual feedback when I make an error so I know exactly where my ear failed:
+  - _Verified._ The `evaluateSubmission()` controller runs a synchronous index comparison against `flatTarget`, instantly applying dynamic CSS modifier classes (`.is-success` or `.is-error`) directly to the corresponding DOM cards, alongside a horizontal frustration shake animation.
+
+![Meeting Student Test](./docs/screenshots/error_workflow_screenshot.png)
+
+- **As a candidate simulating exam conditions**, I want a strict limit on audio playbacks to force internal memory reliance:
+  - _Verified._ The `playSequence()` method tracks a `playCount` state against a `maxPlays` ceiling. Upon the third execution, the playback button receives the `is-locked` modifier and the user is prompted to submit their final guess.
+
+#### The Music Educator (The Facilitator)
+
+- **As a music teacher**, I want students to practise with real pedagogical motifs rather than random durations:
+  - _Verified._ The `generateBarSequence()` algorithm computes exact mathematical tick allotments per bar and randomly draws from curated `MOTIF_POOLS`. It utilises an intersection filter (`isValid`) to guarantee the generated rhythm always mathematically resolves to the exact metre. Furthermore, the logical relationship between the Markhov Syntax Dictionary, the `MOTIF_POOL`, and the `FORM_TEMPLATES` result in the generation of more convincing musical examples. They work together to generate examples that have a more conventional musical form, exhibiting elements of repetition, and natural cadence (e.g. the last beat of the phrase being a longer note for a natural sense of finality).
+
+![Meeting Teacher Test](./docs/screenshots/user_story_teacher_met.png)
+
+- **As an Instructor**, I want the app layout to stay completely on the screen so my class does not lose track of buttons:
+  - _Verified._ Replaced raw flex flows with a restricted viewport shell (`height: 100dvh`, `overflow: hidden`) forcing the workspace to act as a responsive layout sponge via intrinsic web design CSS primitives.
+
+![Meeting Instructor Test Desktop](./docs/screenshots/user_story_instructor_desktop.png)
+
+![Meeting Instructor Test Mobile](./docs/screenshots/user_story_instructor_mobile.png)
+
+![Meeting Instructor Test Tablet](./docs/screenshots/user_story_instructor_tablet.png)
 
 ### 3. Validator Testing
 
-- **W3C HTML Validator:** 100% compliant. Passed with zero structural errors or loose tags. Noted various info messages regarding trailing slashes on void elements.
+- **W3C HTML Validator:** 100% compliant. Passed with zero structural errors or loose tags. Noted messages regarding trailing slashes on void elements, which can be safely ignored.
 - **W3C CSS Validator:** Compliant. All dynamic custom variables (`--color-primary`) and layout primitives pass compilation safely.
 - **JSHint (ECMAScript 8):** Codebase analysed with strict rules. Zero memory leaks, zero undeclared variables, explicit global declarations wrapped for external libraries (`/* global Tone */`).
 
