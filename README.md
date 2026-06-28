@@ -7,7 +7,7 @@
 [![Lighthouse Best Practices](https://img.shields.io/badge/Lighthouse_Performance-100%25-brightgreen)](https://github.com/StockoL/solfaic)
 [![Lighthouse SEO](https://img.shields.io/badge/Lighthouse_Performance-100%25-brightgreen)](https://github.com/StockoL/solfaic)
 
-**[🔴 LIVE APPLICATION: Click here to view the deployed site on GitHub Pages](https://stockol.github.io/solfaic/)**
+**<a href="https://stockol.github.io/solfaic/" target="_blank" rel="noopener noreferrer">🔴 LIVE APPLICATION: Click here to view the deployed site on GitHub Pages</a>**
 
 Solfaic is an interactive web application designed to isolate and build rhythmic dictation and metric internalisation through a pedagogical progressive "ladder". It adheres to a core tenet of music theory education that a foundation in structural rhythm processing must be developed before pitch in the understanding of melody.
 
@@ -271,7 +271,7 @@ To deploy the site to GitHub Pages, the following steps were executed:
 3. **Source Selection:** Ensure the "Source" dropdown is set to **Deploy from a branch**.
 4. **Branch Targeting:** Select the **`main`** branch, and ensure the folder dropdown is set to **`/ (root)`**.
 5. **Save & Build:** Click the **Save** button to trigger the automated GitHub Actions build workflow.
-6. **Live Link:** After a few minutes, the link appears at the top of the settings page: _"Your site is live at [[URL](https://stockol.github.io/solfaic/)]"_.
+6. **Live Link:** After a few minutes, the link appears at the top of the settings page: _"Your site is live at [<a href="https://stockol.github.io/solfaic/" target="_blank" rel="noopener noreferrer">URL</a>]"_.
 
 ### Local Deployment (Cloning)
 
@@ -589,7 +589,7 @@ During the synthesis phase of development, the project scope was intentionally r
 
 ### Phase 7: The Phrase Engine Refactor (Algorithmic Pedagogy)
 
-Refactored the core timeline generator from flat randomized item grouping into a fully balanced, structural composition engine driven by three core mathematical rules:
+Refactored the core timeline generator from flat randomised item grouping into a fully balanced, structural composition engine driven by three core mathematical rules:
 
 1. **The Form Router:** Automatically mirrors classical repetition templates (e.g., pop form, parallel period structures) utilising a temporary memory cache loop to reduce parsing loads.
 2. **The Markov Syntax Dictionary:** Governs consecutive beat relationships using weighted lotteries to emulate genuine musical tension and release grammar blocks.
@@ -668,7 +668,7 @@ To guarantee a pristine user experience on every device — from an iPhone SE to
 
 ### [2026-06-17] UI Architecture: Custom 404 Error Routing & Viewport Scaling
 
-**Context:** Out-of-bounds error pages required a customized layout fallback matching internal brand properties. Early mockups using variable-heavy CSS calculations inside nested math parameters crashed mid-tier tablet layout engines.
+**Context:** Out-of-bounds error pages required a customised layout fallback matching internal brand properties. Early mockups using variable-heavy CSS calculations inside nested math parameters crashed mid-tier tablet layout engines.
 **Decision:** Engineered a clean `404.html` canvas fallback, stripping layout parameters down to bulletproof constraints.
 **Implementation:** Positioned an outer flex wrapper (`min-height: 100dvh`) to lock absolute screen centering, and configured internal padding bounds using fixed text clamps (`clamp(1.5rem, 6vw, 3.5rem)`).
 **Outcome:** Fallback paths securely catch missing URLs and route traffic smoothly back to active tasks without breaking system styling continuity.
@@ -683,7 +683,7 @@ This section outlines the holistic verification suite executed to guarantee the 
 
 Manual testing was performed using rigorous boundary input constraints to stress-test the `Tone.js` transport engine state machine.
 
-- **TM-01: Phrase Engine Initialization Pipeline**
+- **TM-01: Phrase Engine Initialisation Pipeline**
   - _System Target:_ Algorithmic Blueprint Generation Core
   - _Input / Action:_ Select **Level 1** and trigger the engine initialization routine.
   - _Expected Result:_ System constructs a mathematically tight 2-bar through-composed timeline array, with timestamps strictly bound from `0:0:0` up to `1:1:0` max.
@@ -721,7 +721,7 @@ Verification of core target audience features mapped back to the primary user re
 
 Performance optimisation was targeted directly through structural code changes, completely eliminating forced synchronous reflows by utilising double `requestAnimationFrame` microtasks for UI transitions (e.g., bar shaking physics).
 
-- **Performance:** 98% (Highly optimized vector SVGs, localized DOM cache queries).
+- **Performance:** 98% (Highly optimised vector SVGs, localised DOM cache queries).
 - **Accessibility:** 100% (High contrast colour ratios, explicit `aria-labels` on icon buttons, screen-reader semantic trees).
 - **Best Practices:** 100%
 - **SEO:** 100%

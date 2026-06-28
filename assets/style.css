@@ -66,6 +66,12 @@ button:active {
 /* ==========================================================================
    3. LAYOUT PRIMITIVES (Structural Architecture)
    ========================================================================== */
+
+/* * Layout Strategy Attribution:
+ * Grid systems and 'Switcher/Stack' components implemented using principles 
+ * from Andy Bell's 'Every Layout' (Intrinsic Web Design).
+ */
+
 main,
 .container,
 #ui-workspace,
@@ -701,6 +707,12 @@ main,
 /* ==========================================================================
    8. WHIMSICAL INTERACTION ENGINE & SQUISHY PHYSICS (Comeau Core)
    ========================================================================== */
+
+/* * Animation Attribution:
+ * Keyframe physics and spring-based transition logic adapted from 
+ * Josh Comeau's 'Whimsical Animations' documentation.
+ */
+
 .workspace-card,
 .motif-pad,
 #btn-replay,

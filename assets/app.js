@@ -906,6 +906,10 @@ function renderStreakTracker() {
 // 5. SUCCESS CELEBRATION MODALS
 // ============================================================================
 
+// Animation Attribution:
+// Keyframe physics and spring-based transition logic adapted from
+// Josh Comeau's 'Whimsical Animations' documentation.
+
 function triggerCelebrationModal(targetLevelId) {
   const overlay = document.createElement("div");
   overlay.className = "celebration-overlay";
@@ -1214,6 +1218,11 @@ function triggerTourCompletionModal() {
 // ============================================================================
 // 7. TONE.JS AUDIO ENGINE
 // ============================================================================
+
+/* * Audio Engine Attribution:
+ * Web Audio API synthesis, scheduling, and transport management
+ * implemented using Tone.js (v14.x) library.
+ */
 
 const AudioEngine = {
   synth: null,
