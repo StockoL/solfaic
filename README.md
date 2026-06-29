@@ -207,8 +207,8 @@ For an overview of the initial conception of the verification sequence, see: doc
 ┌──────────────────────────────────────┐
 │ Audio Scheduling Infrastructure │
 ├──────────────────────────────────────┤
-│ • Tone.js Transport Engine │ ──► [ AudioContext Hardware Thread ]
-│ • Acoustic Attenuation Factor (82%) │ (Jitter-Free Studio Playback)
+│ • Tone.js Transport Engine           │ ──► [ AudioContext Hardware Thread ]
+│ • Acoustic Attenuation Factor (82%)  │ (Jitter-Free Studio Playback)
 └──────────────────────────────────────┘
 ```
 
