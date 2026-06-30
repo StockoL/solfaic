@@ -782,7 +782,32 @@ Rather than writing fragile media query breakpoints for every independent screen
 - **Tested on iPhone SE (320px width):** The `minmax(min(220px, 100%), 1fr)` auto-grid gracefully drops to a single vertical scroll stack. Proportional clamps prevent card elongation.
 - **Tested on iPad Air & 4K Widescreen Display:** Columns automatically upscale cleanly to balanced multi-column matrices without breaking sheet-music layout syntax.
 
-### 7. Automated End-to-End Testing (Playwright)
+### 7. Developmental & Implementation Testing Lifecycle (Manual Verification)
+
+Before implementing the final automated Playwright End-to-End regression suite, strict manual diagnostic testing procedures were executed incrementally at every phase of the development cycle. This ensured that foundational features were stable and structurally sound before subsequent layers were compiled on top of them.
+
+**Phase A: UI Layout Shell & Component Integrity (HTML/CSS)**
+
+- **Procedure:** Component-by-component rendering validation across simulated viewport aspect ratios (320px to 3840px).
+- **Verification Method:** Leveraged browser developer tools to forcefully compress containers into narrow boundaries to verify that Every Layout primitives (The Switcher, The Stack) accurately recalculated element widths without generating layout overflow bugs or hidden text clipping.
+- **Implementation Fixes:** Discovered the iOS WebKit SVG Flexbox Collapse during this phase, forcing an immediate CSS patch (min-width: 0) to stabilise Safari before any JavaScript was written.
+
+**Phase B: State Mutation & Event Flow (Model/Controller)**
+**Procedure:** Visual console logging and strict mock array tracking during structural user input states.
+**Verification Method:** Embedded diagnostic console log statements into the event delegation interceptor hooks. When a user clicked a motif pad, the console printed the exact state mutation of the userSubmission[] array alongside a tracking profile of active DOM IDs.
+**Implementation Fixes:** Audited array mutation states to ensure that clicking a pad strictly appended data to the end of the array without shifting indices or leaking memory across level configurations.
+
+**Phase C: Asynchronous Audio Thread Scheduling (Tone.js Engine)**
+Procedure:** Metric timeline stress-testing using high-density subdivisions (Level 3 Semiquavers).
+**Verification Method:** Utilised the native browser Web Audio API analyzer to inspect sound card scheduling pipelines. Rhythms were tested at extreme tempos (40 BPM to 220 BPM) while simultaneously triggering window resising events to ensure the audio transport thread remained decoupled and unaffected by primary main-thread paint reflows.
+**Implementation Fixes:\*\* Identified that consecutive identical notes blended into a singular muddy tone. This manual audit led directly to the implementation of the 82% Acoustic Space Attenuation formula to enforce distinct sound attacks.
+
+**Phase D: Cross-Browser Edge-Case Explorations (Pre-Deployment)**
+**Procedure:** Manual cross-compilation check on Apple iOS (Safari/Chrome WebKit) and Android (Chromium).
+**Verification Method:** Sourced external hardware devices to test tactile touch down feedback and screen-reader accessibility layouts under active mobile cellular data conditions.
+**Implementation Fixes:** Uncovered Apple's hidden hyperlink styling override, resulting in the deployment of explicit user-agent normalisation overrides (-webkit-appearance: none) across all custom button skins.
+
+### 8. Automated End-to-End Testing (Playwright)
 
 Traditional unit testing frameworks like Jest operate in simulated Node.js environments (`jsdom`) that lack native soundcards and `window.AudioContext` support. Mocking the entire Web Audio API to satisfy Jest is an industry anti-pattern.
 
@@ -811,13 +836,13 @@ The test suite executes 7 critical path verifications:
 
 - **Test 7: Audio trigger state locking:** _(Necessity)_ Verifies that the application securely locks the UI (`is-locked`) when the audio transport begins, preventing users from double-firing the synthesizer or mutating arrays during playback.
 
-### 8. Bugs Fixed (Sprint Log)
+### 9. Bugs Fixed (Sprint Log)
 
 - **The Audio-Lock Race Condition (Caught by Playwright):** Automated E2E testing revealed a race condition where the UI failed to lock fast enough on the first audio playback. The engine was executing `await this.init()` (booting the Tone.js hardware context) _before_ applying the `is-locked` CSS classes. On older devices, this 500ms boot-up delay allowed users to double-click the play button. _Fix:_ Shifted the synchronous DOM locking sequence (`sessionState.currentState = "PLAYING"`) to execute immediately upon the click event, deferring the asynchronous hardware initialization safely behind the UI lock.
 - **The "Skyscraper" Card Stretching Bug:** Tall viewports forced `flex: 1` grids to excessively stretch the vertical heights of the input staves, distorting note dimensions. _Fix:_ Implemented a strict row clamp (`grid-auto-rows: clamp(55px, 10vh, 85px)`) to create a hard visual ceiling.
 - **The Collapsing SVG Window Bug:** Moving the cards to a strict flex layout collapsed the underlying programmatic vector graphic heights to 0. _Fix:_ Explicitly scaled the dynamic `.svg-container` to map out 100% of parent dimensions.
 
-### 9. Known Issues
+### 10. Known Issues
 
 - **Tone.js Cold-Start Lag:** On older mobile processors, the very first note triggered after initialisation can occasionally experience a ~50ms audio latency spike as the browser compiles the Web Audio API oscillator nodes. Subsequent playbacks run entirely in real-time.
 
