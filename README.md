@@ -699,6 +699,10 @@ Following an accessibility and layout review, it was identified that the applica
 
 The application now boasts a commercially compliant, 100% accessible footer and legal routing system. Users can seamlessly review terms and policies mid-session without breaking the application state, losing their streak data, or triggering linter warnings within the codebase.
 
+### [2026-07-01] Brand Itentity: Favicon
+
+A custom, vector-based SVG favicon was engineered to ensure sharp legibility across all desktop and mobile tab resolutions. The icon utilises the application's primary brand identity (#1e3a8a) and reinforces the "So" solfège mnemonic, serving as a persistent visual landmark for users within multi-tab browsing environments.
+
 <p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 9. <a name="testing"></a> 🧪 Testing & Quality Assurance Portfolio
@@ -896,7 +900,8 @@ The test suite executes 7 critical path verifications:
 
 **ESLint Lexical/Assignment Analysis**
 
-- Identified "useless assignments" and potential scope leakage within switch statement case blocks. -_Fix:_ Refactored tour-step coordinate declarations for clean initialisation and wrapped switch/case logic in block-scope curly braces {} to satisfy modern ES8 block-scoping requirements.
+- Identified "useless assignments" and potential scope leakage within switch statement case blocks.
+- _Fix:_ Refactored tour-step coordinate declarations for clean initialisation and wrapped switch/case logic in block-scope curly braces {} to satisfy modern ES8 block-scoping requirements.
 
 ### 11. Known Issues
 
