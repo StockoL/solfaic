@@ -502,8 +502,88 @@
             <button id="btn-submit" class="btn-submit">SUBMIT SEQUENCE</button>
           </div>
         </main>
+        <footer class="global-footer l-box" role="contentinfo">
+          <div class="l-center">
+            <div class="l-cluster">
+              <p>
+                &copy; 2026 Louis Stockton / Loose Leaf Applications. All rights
+                reserved.
+              </p>
+              <ul class="footer-links" role="list">
+                <li role="listitem"><a href="#privacy">Privacy Policy</a></li>
+                <li role="listitem"><a href="#terms">Terms of Service</a></li>
+              </ul>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
+    <aside
+      id="modal-privacy"
+      class="compliance-overlay is-hidden"
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="privacy-title"
+    >
+      <div class="compliance-modal">
+        <h2 id="privacy-title" class="compliance-title">Privacy Policy</h2>
+        <div class="compliance-body">
+          <p><strong>Last Updated: July 2026</strong></p>
+          <p>
+            Solfaic operates completely locally within your client-side browser
+            runtime environment. We do not utilise background trackers, cookies,
+            or telemetry scripts.
+          </p>
+          <p>
+            Your interactive gameplay telemetry, including level tracking,
+            streaks, and validation scoring parameters, is stored exclusively in
+            active session memory profiles. No data is transmitted to external
+            cloud servers or database-backed third parties.
+          </p>
+          <p>
+            Audio processing tasks are handled entirely through your native
+            local hardware via the Web Audio API and Tone.js libraries.
+          </p>
+        </div>
+        <button class="compliance-close-btn" data-close-target="modal-privacy">
+          Close & Return to Lesson
+        </button>
+      </div>
+    </aside>
+
+    <aside
+      id="modal-terms"
+      class="compliance-overlay is-hidden"
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="terms-title"
+    >
+      <div class="compliance-modal">
+        <h2 id="terms-title" class="compliance-title">Terms of Service</h2>
+        <div class="compliance-body">
+          <p><strong>Last Updated: July 2026</strong></p>
+          <p>
+            By interacting with the Solfaic dictation platform, you agree to
+            access the system strictly for educational, aural, and dictation
+            training purposes.
+          </p>
+          <p>
+            The algorithmic phrase composition engines, Markov syntax matrices,
+            and customised vector musical staves are provided "as is" without
+            warranty of any kind.
+          </p>
+          <p>
+            All source components, layout primitives, and interactive mechanics
+            are protected under open-source software distributions. Unauthorized
+            extraction or plagiarism of core timeline generation logic for
+            academic submission is strictly monitored.
+          </p>
+        </div>
+        <button class="compliance-close-btn" data-close-target="modal-terms">
+          Close & Return to Lesson
+        </button>
+      </div>
+    </aside>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"
       defer

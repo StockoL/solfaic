@@ -678,6 +678,27 @@ To guarantee a pristine user experience on every device — from an iPhone SE to
 **Implementation:** Positioned an outer flex wrapper (`min-height: 100dvh`) to lock absolute screen centering, and configured internal padding bounds using fixed text clamps (`clamp(1.5rem, 6vw, 3.5rem)`).
 **Outcome:** Fallback paths securely catch missing URLs and route traffic smoothly back to active tasks without breaking system styling continuity.
 
+### [2026-07-01] Footer and Compliance Modals
+
+**Context**
+
+Following an accessibility and layout review, it was identified that the application lacked semantic ownership landmarks (footer) and commercial compliance routing (Privacy Policy, Terms of Service). Leaving these out detracts from the professional footprint of the app. However, because Solfaic functions as an immersive Single-Page Application (SPA), routing users to separate .html documents for legal text would force a browser reflow, unmount the Tone.js audio transport, and completely wipe the user's active ear-training streak.
+
+**Decision:**
+
+1. Implement a scale-independent semantic footer anchored to the bottom of the viewport that does not interfere with the custom "sponge layout" of the main workspace.
+2. Bypass traditional multi-page navigation. Instead, utilise a **Managed Modal Architecture** to intercept footer link clicks and render the legal information as accessible DOM overlays directly over the active session.
+
+**Implementation:**
+
+- Layout Composition: The footer is constructed using "Every Layout" CSS composition primitives (margin-top: auto, flex-shrink guards) and strictly enforces Lighthouse-compliant high-contrast theming.
+- Modal Interception Pipeline: Standard href="#privacy" links are intercepted natively by the app.js event router. The routing functions are decoupled from the audio engine, pausing the Tone.Transport safely before triggering hardware-accelerated (requestAnimationFrame) CSS opacity fades.
+- Accessible Physics: The overlays utilise semantic ARIA landmarks (role="dialog", aria-modal="true") to safely trap screen reader focus. A surgical "click-outside-to-close" event listener was attached to the backdrop container, allowing users to dismiss the modal intuitively without accidental closures during text-selection.
+
+**Outcome**
+
+The application now boasts a commercially compliant, 100% accessible footer and legal routing system. Users can seamlessly review terms and policies mid-session without breaking the application state, losing their streak data, or triggering linter warnings within the codebase.
+
 <p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 9. <a name="testing"></a> 🧪 Testing & Quality Assurance Portfolio

@@ -1477,6 +1477,78 @@ window.addEventListener("DOMContentLoaded", () => {
     DOM.replayBtn.addEventListener("click", () => AudioEngine.playSequence());
   }
 
+  // --- COMPLIANCE OVERLAY MODAL MANAGER ---
+  const privacyModal = document.getElementById("modal-privacy");
+  const termsModal = document.getElementById("modal-terms");
+  const footerLinks = document.querySelectorAll(".footer-links a");
+  const closeButtons = document.querySelectorAll(".compliance-close-btn");
+
+  function displayComplianceOverlay(targetModal) {
+    if (!targetModal) {
+      return;
+    }
+    // De-couple transport loops if music is actively executing
+    if (typeof Tone !== "undefined" && Tone.Transport) {
+      Tone.Transport.stop();
+    }
+
+    targetModal.classList.remove("is-hidden");
+
+    // Smooth fade configuration using hardware frames
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        targetModal.classList.add("is-visible");
+      });
+    });
+  }
+
+  function hideComplianceOverlay(targetModal) {
+    if (!targetModal) {
+      return;
+    }
+    targetModal.classList.remove("is-visible");
+    setTimeout(function () {
+      targetModal.classList.add("is-hidden");
+    }, 250);
+  }
+
+  // Intercept footer link routing natively
+  footerLinks.forEach(function (link) {
+    link.addEventListener("click", function (e) {
+      const anchorValue = link.getAttribute("href");
+      if (anchorValue === "#privacy") {
+        e.preventDefault();
+        displayComplianceOverlay(privacyModal);
+      } else if (anchorValue === "#terms") {
+        e.preventDefault();
+        displayComplianceOverlay(termsModal);
+      }
+    });
+  });
+
+  // Wire close actions explicitly using element data attribute arrays
+  closeButtons.forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const modalId = btn.getAttribute("data-close-target");
+      const activeOverlay = document.getElementById(modalId);
+      hideComplianceOverlay(activeOverlay);
+    });
+  });
+
+  // Allow users to close the modal by clicking the darkened background overlay
+  const overlays = document.querySelectorAll(".compliance-overlay");
+
+  overlays.forEach(function (overlay) {
+    overlay.addEventListener("click", function (e) {
+      // e.target is what was actually clicked. overlay is the background container.
+      // If they match exactly, the user clicked outside the white modal box.
+      if (e.target === overlay) {
+        hideComplianceOverlay(overlay);
+      }
+    });
+  });
+
   // Initiate active gameplay seamlessly
   startLevel(1);
 
