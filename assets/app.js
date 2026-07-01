@@ -1,6 +1,3 @@
-/* jshint esversion: 8 */
-/* global Tone */
-
 /**
  * ============================================================================
  * SOLFAIC! - Rhythm Dictation Core Application Engine
@@ -1098,8 +1095,8 @@ function executeTourStepPass() {
       tooltipBox.style.display = "block";
       const tooltipHeight = tooltipBox.offsetHeight;
 
-      let computedLeft = 0;
-      let computedTop = 0;
+      let computedLeft;
+      let computedTop;
 
       if (window.innerWidth < 1024) {
         // MOBILE OVERRIDES
@@ -1563,21 +1560,21 @@ document.addEventListener("keydown", (e) => {
   if (sessionState.playbackState === "LOCKED") return;
 
   switch (e.code) {
-    case "Space":
+    case "Space": {
       // Prevent the spacebar from scrolling the page downwards
       e.preventDefault();
       const playBtn = document.getElementById("btn-replay");
       // Only click if it's not disabled (out of tokens)
       if (playBtn && !playBtn.disabled) playBtn.click();
       break;
-
-    case "Enter":
+    }
+    case "Enter": {
       e.preventDefault();
       const submitBtn = document.getElementById("btn-submit");
       if (submitBtn) submitBtn.click();
       break;
-
-    case "Backspace":
+    }
+    case "Backspace": {
       e.preventDefault();
 
       // 1. Grab the individual clickable CARDS, not the measure bars!
@@ -1594,6 +1591,7 @@ document.addEventListener("keydown", (e) => {
         }
       }
       break;
+    }
   }
 
   // 2. Map Number Keys (1-9) to the Motif Selection Pads
