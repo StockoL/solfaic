@@ -628,6 +628,7 @@ main,
   border-radius: 6px;
   padding: 0;
   cursor: pointer;
+  touch-action: manipulation; /* Improves mobile tap responsiveness */
 }
 
 /* Ensure SVGs shrink perfectly within the crushed cards */
@@ -682,6 +683,7 @@ main,
 
 .motif-pad:active {
   cursor: grabbing;
+  touch-action: manipulation;
 }
 .motif-pad .svg-container {
   height: 44px;
@@ -772,6 +774,7 @@ main,
     transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
     background-color 0.2s ease,
     box-shadow 0.3s ease;
+  touch-action: manipulation;
 }
 
 @media (hover: hover) {
@@ -1226,6 +1229,7 @@ main,
     font-size: clamp(0.7rem, 1.5vh, 0.95rem);
     gap: clamp(2px, 0.5vh, 6px);
     padding: 4px;
+    touch-action: manipulation;
   }
 
   .motif-pad .svg-container {
@@ -1320,6 +1324,7 @@ main,
   .motif-pad {
     flex-direction: column;
     padding: 2px;
+    touch-action: manipulation;
   }
   .motif-pad .svg-container {
     width: 100%;
@@ -1424,6 +1429,7 @@ main,
 
   .motif-pad {
     min-height: clamp(40px, 8vh, 64px);
+    touch-action: manipulation;
   }
 
   #btn-replay,
@@ -1434,6 +1440,7 @@ main,
     margin-left: auto;
     margin-right: auto;
     padding: clamp(0.5rem, 2vh, 1.25rem);
+    touch-action: manipulation;
   }
 
   .status-bar .ghost-btn {
@@ -1442,6 +1449,7 @@ main,
   .hamburger-btn,
   .sidebar-close-btn {
     display: none !important;
+    touch-action: manipulation;
   }
 }
 
@@ -1520,6 +1528,7 @@ main,
     background-color 0.2s ease,
     transform 0.1s ease;
   box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+  touch-action: manipulation;
 }
 
 .btn-error-home:hover {
@@ -1609,6 +1618,7 @@ main,
   padding: var(--space-sm) var(--space-lg);
   font-size: 0.95rem;
   font-weight: 700;
+  touch-action: manipulation;
   width: 100%;
   margin-top: auto;
   box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
