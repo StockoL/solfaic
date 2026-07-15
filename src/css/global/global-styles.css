@@ -58,6 +58,10 @@ h3 {
 h4 {
   font-size: var(--size-step-1);
 }
+h5,
+h6 {
+  font-size: var(--size-step-0);
+}
 
 /*
  * Body-copy links (accordion panels, hero subtext, footer). reset.css sets
