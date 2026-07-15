@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Practice Room - Solfaic</title>
+    <meta
+      name="description"
+      content="Focus-mode rhythm dictation practice session for Solfaic."
+    />
+
+    <link rel="preload" href="src/css/index.css" as="style" />
+    <link rel="stylesheet" href="src/css/index.css" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="assets/media/favicon-solfaic.svg"
+    />
+  </head>
+  <body class="practice-room">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <div class="practice-shell">
+      <!--
+        THIN HEADER per plan doc: level + streak pips on the left,
+        metre/bars on the right. No global nav here — focus mode strips
+        everything the user doesn't need mid-exercise. "Back to Classroom"
+        replaces the nav entirely.
+      -->
+      <header class="practice-header">
+        <div class="practice-header__start">
+          <a href="classroom.html" class="practice-header__back">
+            <span aria-hidden="true">←</span> Classroom
+          </a>
+          <span id="ui-level-badge" class="level-badge">Level 1</span>
+          <div
+            id="ui-streak-tracker"
+            class="streak-tracker"
+            role="status"
+            aria-label="Current streak"
+          ></div>
+        </div>
+
+        <div class="practice-header__end">
+          <span id="ui-metre-display" class="meta-chip">Metre: --</span>
+          <span id="ui-bars-display" class="meta-chip">Bars: --</span>
+        </div>
+      </header>
+
+      <main id="main-content" class="practice-main">
+        <div class="playback-panel">
+          <button id="btn-replay" class="button" data-variant="primary">
+            🔊 Play Rhythm
+          </button>
+          <p id="ui-plays-remaining" class="plays-remaining" role="status"></p>
+        </div>
+
+        <!--
+          WORKSPACE GRID: fixed 4x4 per plan doc (16 bars maximum). Each box
+          holds a container with two variable-state cards — rhythm (top) and
+          solfege (bottom) — which must align columns, since the rhythm
+          card's stick placement determines the solfege card's column count.
+          Bar count beyond the current exercise is marked data-state="disabled"
+          by JS; Level 1 defaults to 2 active bars below as a static baseline.
+        -->
+        <section class="workspace" aria-label="Your answer workspace">
+          <div id="ui-workspace" class="workspace-grid">
+            <div class="workspace-box" data-bar-index="0">
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 1 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 1 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div class="workspace-box" data-bar-index="1">
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 2 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 2 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div class="workspace-box" data-state="disabled" data-bar-index="2">
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 3 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 3 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div class="workspace-box" data-state="disabled" data-bar-index="3">
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 4 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 4 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div class="workspace-box" data-state="disabled" data-bar-index="4">
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 5 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 5 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div class="workspace-box" data-state="disabled" data-bar-index="5">
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 6 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 6 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div class="workspace-box" data-state="disabled" data-bar-index="6">
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 7 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 7 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div class="workspace-box" data-state="disabled" data-bar-index="7">
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 8 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 8 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div class="workspace-box" data-state="disabled" data-bar-index="8">
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 9 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 9 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div class="workspace-box" data-state="disabled" data-bar-index="9">
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 10 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 10 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="workspace-box"
+              data-state="disabled"
+              data-bar-index="10"
+            >
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 11 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 11 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="workspace-box"
+              data-state="disabled"
+              data-bar-index="11"
+            >
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 12 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 12 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="workspace-box"
+              data-state="disabled"
+              data-bar-index="12"
+            >
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 13 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 13 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="workspace-box"
+              data-state="disabled"
+              data-bar-index="13"
+            >
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 14 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 14 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="workspace-box"
+              data-state="disabled"
+              data-bar-index="14"
+            >
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 15 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 15 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="workspace-box"
+              data-state="disabled"
+              data-bar-index="15"
+            >
+              <div class="workspace-box__container">
+                <div
+                  class="workspace-card workspace-card--rhythm"
+                  aria-label="Bar 16 rhythm slot"
+                >
+                  <!-- Rhythm motif SVG rendered here by JS -->
+                </div>
+                <div
+                  class="workspace-card workspace-card--solfege"
+                  aria-label="Bar 16 solfege slot"
+                >
+                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!--
+          PRACTICE REEL: horizontal motif selector. Cards animate on/off
+          viewport (possible rolodex-style, Flair phase) when they exceed the visible
+          width. Prev/Next buttons exist for keyboard/switch-access users who
+          can't drag-scroll.
+        -->
+        <section class="practice-reel" aria-label="Rhythm motif selector">
+          <button
+            class="practice-reel__nav practice-reel__nav--prev"
+            aria-label="Scroll motifs left"
+          >
+            <span aria-hidden="true">‹</span>
+          </button>
+          <div
+            id="ui-motif-reel"
+            class="practice-reel__track"
+            role="listbox"
+            aria-label="Available rhythm motifs"
+          >
+            <!-- Motif cards rendered here by JS -->
+          </div>
+          <button
+            class="practice-reel__nav practice-reel__nav--next"
+            aria-label="Scroll motifs right"
+          >
+            <span aria-hidden="true">›</span>
+          </button>
+        </section>
+
+        <div class="action-panel">
+          <button id="btn-submit" class="button" data-variant="primary">
+            Submit Sequence
+          </button>
+        </div>
+      </main>
+    </div>
+
+    <!--
+      FOCUS VIGNETTE: tap-and-hold a workspace card to spotlight it full-width
+      while the rest of the screen dims, with the reel still available below
+      for quick edits. Escape (X) top-right returns to normal view.
+    -->
+    <div
+      id="ui-card-vignette"
+      class="vignette-overlay is-hidden"
+      aria-modal="true"
+      role="dialog"
+      aria-label="Edit card"
+    >
+      <button class="vignette-overlay__close" aria-label="Close card editor">
+        <span aria-hidden="true">✕</span>
+      </button>
+      <div
+        class="vignette-overlay__focused-card"
+        id="vignette-focused-card"
+      ></div>
+      <div class="vignette-overlay__reel" id="vignette-reel"></div>
+    </div>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"
+      defer
+    ></script>
+    <script type="module" src="src/js/app.js" defer></script>
+  </body>
+</html>
