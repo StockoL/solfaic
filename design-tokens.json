@@ -12,11 +12,21 @@
 
     "surface-base": "{alabaster-grey}",
     "surface-card": "{white}",
+    "surface-sunken": "{alabaster-grey}",
+    "border-subtle": "{alabaster-grey}",
     "text-base": "{graphite}",
     "text-muted": "{charcoal}",
     "action-primary": "{atomic-tangerine}",
     "action-secondary": "{golden-pollen}",
     "status-success": "{muted-teal}"
+  },
+
+  "_comment_motion": "Durations + easing curves referenced across Block components (accordion, dropdown, navbar, offcanvas). 'spring' curves intentionally overshoot slightly for a tactile feel; 'smooth' curves don't.",
+  "motion": {
+    "dur-fast": "150ms",
+    "dur-base": "250ms",
+    "spring-smooth": "cubic-bezier(0.25, 0.1, 0.25, 1)",
+    "spring-snappy": "cubic-bezier(0.34, 1.56, 0.64, 1)"
   },
 
   "_comment_typography": "Two-typeface pairing (Galindo/display, Poppins/body) plus the fluid type scale. PROCESS: scale generated via https://utopia.fyi/type/calculator?c=320,16,1.2,1240,20,1.2,5,2,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12 — re-run there and paste back in if the scale ever needs to change.",
