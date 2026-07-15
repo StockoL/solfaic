@@ -21,7 +21,6 @@
 @import url("./compositions/flow.css") layer(compositions);
 @import url("./compositions/grid.css") layer(compositions);
 @import url("./compositions/reel.css") layer(compositions);
-@import url("./compositions/sidebar.css") layer(compositions);
 @import url("./compositions/spread.css") layer(compositions);
 @import url("./compositions/switcher.css") layer(compositions);
 @import url("./compositions/wrapper.css") layer(compositions);
@@ -32,5 +31,7 @@
 @import url("./blocks/level-select.css") layer(blocks);
 @import url("./blocks/modal.css") layer(blocks);
 @import url("./blocks/badge.css") layer(blocks);
+@import url("./blocks/curriculum-table.css") layer(blocks);
 
-/* @import url("./utilities/accessibility.css") layer(utilities); */
+@import url("./utilities/animations.css") layer(utilities);
+@import url("./utilities/colors.css") layer(utilities);
