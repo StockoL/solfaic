@@ -10,6 +10,7 @@
  */
 
 import { MOTIF_LIBRARY } from "./data.js";
+import { sessionState } from "./state.js";
 
 // ============================================================================
 // 1. DOM CACHE
@@ -49,6 +50,81 @@ export function unlockUI() {
 // 3. CORE RENDERERS
 // ============================================================================
 
+/**
+ * NEW: Paints the "thin header" style metadata strip: level badge, metre,
+ * bar count, and remaining plays. None of this was previously wired up.
+ */
+export function renderMeta(state) {
+  const config = state.activeConfig;
+  if (!config) return;
+
+  if (DOM.levelBadge) {
+    DOM.levelBadge.textContent = `Level ${state.currentLevel}`;
+  }
+  if (DOM.metreDisplay) {
+    DOM.metreDisplay.textContent = `Metre: ${config.metre}`;
+  }
+  if (DOM.barsDisplay) {
+    DOM.barsDisplay.textContent = `Bars: ${config.bars}`;
+  }
+  if (DOM.playsRemaining) {
+    const remaining = Math.max(0, state.maxPlays - state.playCount);
+    DOM.playsRemaining.textContent = `Plays remaining: ${remaining} / ${state.maxPlays}`;
+  }
+}
+
+/**
+ * NEW: Restores the V1 "incomplete board" feedback pass — a horizontal
+ * frustration shake on every bar, plus a crimson halo pulse on every
+ * still-empty slot. This existed in the monolith's evaluateSubmission()
+ * but was dropped when that function was split into a pure engine.js
+ * function (which can't touch the DOM) and a caller in app.js (which
+ * never picked up this half of the logic).
+ */
+export function triggerIncompleteBoardFeedback() {
+  if (!DOM.workspace) return;
+  const bars = DOM.workspace.querySelectorAll(".workspace-bar");
+  bars.forEach((bar) => {
+    bar.classList.remove("is-shaking");
+    // Double rAF avoids a forced synchronous reflow when re-triggering the animation.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        bar.classList.add("is-shaking");
+      });
+    });
+  });
+
+  const missingSlots = DOM.workspace.querySelectorAll(
+    ".workspace-card.is-placeholder",
+  );
+  missingSlots.forEach((card) => card.classList.add("is-empty-panic"));
+
+  setTimeout(() => {
+    bars.forEach((bar) => bar.classList.remove("is-shaking"));
+    missingSlots.forEach((card) => card.classList.remove("is-empty-panic"));
+  }, 500);
+}
+
+/**
+ * NEW: Keeps the custom level dropdown's active item + button label in sync
+ * with sessionState.currentLevel, regardless of *how* the level changed
+ * (manual dropdown click, celebration modal auto-advance, or tour).
+ */
+export function syncLevelDropdown(levelId) {
+  if (!DOM.levelBtn || !DOM.levelItems) return;
+
+  DOM.levelItems.forEach((item) => {
+    const isActive = parseInt(item.getAttribute("data-value"), 10) === levelId;
+    item.classList.toggle("is-active", isActive);
+  });
+
+  // Only touch the text node so we don't clobber the dropdown's SVG icon.
+  const labelNode = Array.from(DOM.levelBtn.childNodes).find(
+    (node) => node.nodeType === Node.TEXT_NODE,
+  );
+  if (labelNode) labelNode.textContent = `Level ${levelId} `;
+}
+
 export function renderStreakTracker(streakCount) {
   if (!DOM.streakTracker) return;
   DOM.streakTracker.innerHTML = "";
@@ -76,12 +152,13 @@ export function renderMotifSelector(allowedMotifs) {
     // Desktop Drag Engine hooks
     btn.setAttribute("draggable", "true");
     btn.addEventListener("dragstart", (e) => {
+      if (sessionState.currentState === "PLAYING") return e.preventDefault();
       e.dataTransfer.setData("text/plain", motifId);
     });
 
     // Mobile / Click Engine hooks
     btn.addEventListener("click", () => {
-      // Stage Manager calls out the cue: "A motif was selected!"
+      if (sessionState.currentState === "PLAYING") return;
       btn.dispatchEvent(
         new CustomEvent("action-select-motif", {
           bubbles: true,
@@ -99,7 +176,7 @@ export function renderWorkspace(state) {
   DOM.workspace.innerHTML = "";
   const config = state.activeConfig;
 
-  // Render the inner scrolling track to hold the dashed border (The Reel primitive)
+  // Render the inner scrolling track to hold the dashed border
   const scrollTrack = document.createElement("div");
   scrollTrack.className = "workspace-scroll-track";
 
@@ -125,11 +202,14 @@ export function renderWorkspace(state) {
       else if (state.slotStates[index] === "error")
         card.classList.add("is-error");
 
-      card.addEventListener("dragover", (e) => e.preventDefault());
+      card.addEventListener("dragover", (e) => {
+        if (sessionState.currentState === "PLAYING") return;
+        e.preventDefault();
+      });
       card.addEventListener("drop", (e) => {
+        if (sessionState.currentState === "PLAYING") return;
         e.preventDefault();
         const motifId = e.dataTransfer.getData("text/plain");
-        // Dispatch Custom Event for Drops
         card.dispatchEvent(
           new CustomEvent("action-insert-motif", {
             bubbles: true,
@@ -148,6 +228,7 @@ export function renderWorkspace(state) {
           card.classList.add("is-targeted");
 
         card.addEventListener("click", () => {
+          if (sessionState.currentState === "PLAYING") return;
           card.dispatchEvent(
             new CustomEvent("action-target-slot", {
               bubbles: true,
@@ -163,6 +244,7 @@ export function renderWorkspace(state) {
         card.innerHTML = `<div class="svg-container" style="font-size: 1.5rem; color: var(--color-text-muted); font-weight:800;">—</div>`;
 
         card.addEventListener("click", () => {
+          if (sessionState.currentState === "PLAYING") return;
           card.dispatchEvent(
             new CustomEvent("action-clear-note", {
               bubbles: true,
@@ -181,6 +263,7 @@ export function renderWorkspace(state) {
             : `<div class="svg-container">${token}</div>`;
 
         card.addEventListener("click", () => {
+          if (sessionState.currentState === "PLAYING") return;
           card.dispatchEvent(
             new CustomEvent("action-clear-note", {
               bubbles: true,
@@ -207,7 +290,7 @@ export function triggerCelebrationModal(targetLevelId, startLevelCallback) {
   modal.className = "celebration-modal";
 
   let titleText = `Level ${targetLevelId - 1} Mastered! 🚀`;
-  let subText = `Sensational!<br>Ready to unlock Level ${targetLevelId}?`;
+  let subText = `Sensational ear tracking.<br>Ready to unlock Level ${targetLevelId}?`;
   let actionText = "Onwards! →";
 
   if (targetLevelId > 3) {
@@ -230,7 +313,6 @@ export function triggerCelebrationModal(targetLevelId, startLevelCallback) {
     overlay.classList.remove("is-active");
     setTimeout(() => {
       overlay.remove();
-      // The Conductor passed this callback, allowing core.js to trigger the next level
       startLevelCallback(targetLevelId <= 3 ? targetLevelId : 1);
     }, 300);
   });
@@ -286,7 +368,221 @@ function fireMasteryConfetti() {
 }
 
 // ============================================================================
-// 5. GLOBAL UI INITIALISATION (Sidebar, Tour, Overlays)
+// 5. ONBOARDING TOUR WIZARD
+// ============================================================================
+
+let tourCurrentStepIndex = 0;
+let activeTourSteps = [];
+
+function compileTourSequence() {
+  const isMobileViewport = window.innerWidth < 1024;
+  return [
+    {
+      elementId: isMobileViewport ? "btn-toggle-sidebar" : "ui-sidebar",
+      text: isMobileViewport
+        ? "Welcome! Tap this hamburger menu button at any time to open up your Kodály reference table."
+        : "Welcome to Solfaic! This is your reference guide. Check your rhythmic solfege and notation rules here.",
+      mobilePosition: "bottom",
+    },
+    {
+      elementId: "btn-replay",
+      text: "Step 1: Hit this 'play' button to listen to your next phrase. Be sure to listen carefully, you only get 3 attempts!",
+      mobilePosition: "bottom",
+    },
+    {
+      elementId: "ui-workspace",
+      text: "Step 2: This is your workspace. Your chosen rhythm cards will assemble here. Tap a card to remove it, or tap an empty slot to prepare it for a new card.",
+      mobilePosition: "bottom",
+    },
+    {
+      elementId: "ui-motif-selector",
+      text: "Step 3: Choose your rhythm cards from this menu. Drag 'em, click 'em, or tap a highlighted slot to place 'em. Remember, some cards are more than one beat long!",
+      mobilePosition: "top",
+    },
+    {
+      elementId: "btn-submit",
+      text: "Step 4: Once you're done, smash this button here to see if you got it right. Three successive correct answers will take you to the next level. Good luck!",
+      mobilePosition: "top",
+    },
+  ];
+}
+
+export function startGuidedTour() {
+  const promptEl = document.getElementById("ui-tour-prompt");
+  const tooltipEl = document.getElementById("ui-tour-tooltip");
+  if (promptEl) promptEl.classList.add("is-hidden");
+  if (tooltipEl) tooltipEl.classList.remove("is-hidden");
+
+  activeTourSteps = compileTourSequence();
+  tourCurrentStepIndex = 0;
+
+  window.addEventListener("click", handleGlobalTourProgression);
+  window.addEventListener("keydown", handleGlobalTourKeydown);
+
+  executeTourStepPass();
+}
+
+function executeTourStepPass() {
+  const tourOverlayElement = document.getElementById("ui-tour");
+  const tooltipBox = document.getElementById("ui-tour-tooltip");
+  const textBox = document.getElementById("ui-tour-text");
+
+  if (tooltipBox) tooltipBox.style.opacity = "0";
+
+  document.querySelectorAll(".tour-highlight-active").forEach((el) => {
+    el.classList.remove("tour-highlight-active");
+  });
+
+  if (tourCurrentStepIndex >= activeTourSteps.length) {
+    setTimeout(() => {
+      if (tooltipBox) tooltipBox.classList.add("is-hidden");
+      if (tourOverlayElement) tourOverlayElement.classList.add("is-hidden");
+    }, 200);
+
+    window.removeEventListener("click", handleGlobalTourProgression);
+    window.removeEventListener("keydown", handleGlobalTourKeydown);
+    localStorage.setItem("solfaic_onboarded_matrix", "true");
+    triggerTourCompletionModal();
+    return;
+  }
+
+  const currentStep = activeTourSteps[tourCurrentStepIndex];
+  const targetElement = document.getElementById(currentStep.elementId);
+
+  if (targetElement) {
+    targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    setTimeout(() => {
+      targetElement.classList.add("tour-highlight-active");
+      if (textBox) textBox.innerHTML = currentStep.text;
+
+      const targetRect = targetElement.getBoundingClientRect();
+      const tooltipWidth = window.innerWidth < 1024 ? 280 : 320;
+
+      if (tooltipBox) {
+        tooltipBox.classList.remove("is-mobile-top", "is-mobile-bottom");
+        tooltipBox.style.display = "block";
+        const tooltipHeight = tooltipBox.offsetHeight;
+
+        let computedLeft;
+        let computedTop;
+
+        if (window.innerWidth < 1024) {
+          if (currentStep.mobilePosition === "top")
+            tooltipBox.classList.add("is-mobile-top");
+          else tooltipBox.classList.add("is-mobile-bottom");
+
+          tooltipBox.style.left = "50%";
+          tooltipBox.style.top = "auto";
+        } else {
+          if (currentStep.elementId === "ui-sidebar") {
+            computedLeft = targetRect.right + 24;
+            computedTop = targetRect.top + window.scrollY + 120;
+          } else {
+            computedLeft =
+              targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
+            computedLeft = Math.max(
+              10,
+              Math.min(computedLeft, window.innerWidth - tooltipWidth - 10),
+            );
+            computedTop =
+              targetRect.top + window.scrollY + targetRect.height + 16;
+
+            if (targetRect.bottom + tooltipHeight + 30 > window.innerHeight) {
+              computedTop =
+                targetRect.top + window.scrollY - tooltipHeight - 16;
+            }
+          }
+          tooltipBox.style.left = `${computedLeft}px`;
+          tooltipBox.style.top = `${computedTop}px`;
+        }
+      }
+
+      if (tourOverlayElement) {
+        tourOverlayElement.style.alignItems = "flex-start";
+        tourOverlayElement.style.justifyContent = "flex-start";
+      }
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (tooltipBox) tooltipBox.style.opacity = "1";
+        });
+      });
+    }, 320);
+  } else {
+    setTimeout(() => {
+      if (textBox) textBox.innerHTML = currentStep.text;
+      if (tourOverlayElement) {
+        tourOverlayElement.style.alignItems = "center";
+        tourOverlayElement.style.justifyContent = "center";
+      }
+      if (tooltipBox) {
+        tooltipBox.style.position = "static";
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            tooltipBox.style.opacity = "1";
+          });
+        });
+      }
+    }, 200);
+  }
+}
+
+function handleGlobalTourProgression() {
+  tourCurrentStepIndex++;
+  executeTourStepPass();
+}
+
+function handleGlobalTourKeydown(e) {
+  if (e.code === "Space" || e.code === "Enter") {
+    e.preventDefault();
+    tourCurrentStepIndex++;
+    executeTourStepPass();
+  }
+}
+
+export function terminateTourImmediately() {
+  const tourOverlay = document.getElementById("ui-tour");
+  const tooltipBox = document.getElementById("ui-tour-tooltip");
+  if (tourOverlay) tourOverlay.classList.add("is-hidden");
+  if (tooltipBox) tooltipBox.classList.add("is-hidden");
+  localStorage.setItem("solfaic_onboarded_matrix", "true");
+}
+
+function triggerTourCompletionModal() {
+  const overlay = document.createElement("div");
+  overlay.className = "celebration-overlay";
+
+  const modal = document.createElement("div");
+  modal.className = "celebration-modal";
+
+  modal.innerHTML = `
+    <div class="celebration-title">You're Ready!</div>
+    <div class="celebration-subtext">Your interactive dictation workspace is fully unlocked and ready for practice.<br><br>Good luck, Maestro! 🎻</div>
+  `;
+
+  const btn = document.createElement("button");
+  btn.className = "celebration-btn";
+  btn.innerText = "Let's Begin! 🚀";
+
+  btn.addEventListener("click", () => {
+    overlay.classList.remove("is-active");
+    setTimeout(() => overlay.remove(), 300);
+  });
+
+  modal.appendChild(btn);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      overlay.classList.add("is-active");
+    });
+  });
+}
+
+// ============================================================================
+// 6. GLOBAL UI INITIALISATION (Sidebar & Overlays)
 // ============================================================================
 
 export function initialiseCoreUI() {
@@ -322,6 +618,7 @@ export function initialiseCoreUI() {
   document.addEventListener("keydown", (e) => {
     // Stage Manager catches keyboard shortcuts and translates them to UI clicks
     if (document.querySelector(".celebration-overlay.is-active")) return;
+    if (sessionState.currentState === "PLAYING") return;
 
     switch (e.code) {
       case "Space":
@@ -339,7 +636,7 @@ export function initialiseCoreUI() {
         if (DOM.submitBtn && !DOM.submitBtn.classList.contains("is-locked"))
           DOM.submitBtn.click();
         break;
-      case "Backspace":
+      case "Backspace": {
         e.preventDefault();
         const workspaceCards = document.querySelectorAll(
           "#ui-workspace .workspace-card",
@@ -351,6 +648,7 @@ export function initialiseCoreUI() {
           }
         }
         break;
+      }
     }
 
     if (e.key >= "1" && e.key <= "9") {
