@@ -1,0 +1,80 @@
+/* ==========================================================================
+   BLOCK: CURRICULUM TABLE
+   ========================================================================== */
+
+/*
+ * The Kodály reference matrix on the Classroom page. Sits on the page like
+ * nav/modal/accordion, so surface-card (white) is correct here, not
+ * surface-base.
+ */
+.curriculum-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.curriculum-table th,
+.curriculum-table td {
+  padding: var(--space-xs) var(--space-m);
+  text-align: left;
+  border-block-end: 1px solid var(--color-border-subtle);
+}
+
+.curriculum-table thead th {
+  background-color: var(--color-surface-sunken);
+  font-size: var(--size-step--1);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.curriculum-table tbody tr:last-child th,
+.curriculum-table tbody tr:last-child td {
+  border-block-end: none;
+}
+
+.curriculum-table tbody tr {
+  transition: background-color var(--dur-fast) ease;
+}
+
+.curriculum-table tbody tr:hover {
+  background-color: var(--color-surface-sunken);
+}
+
+/*
+ * The Syllable Token
+ * A small solfege/rhythm-syllable pill (e.g. "ta", "ti-ti") — same visual
+ * language as Badge (surface-sunken pill, heading typeface) but kept as its
+ * own class since it's semantically a table cell label, not a status badge.
+ */
+.syllable-token {
+  display: inline-block;
+  padding: var(--space-3xs) var(--space-xs);
+  background-color: var(--color-surface-sunken);
+  border-radius: 4px;
+  font-family: var(--font-family-heading);
+  font-size: var(--size-step-0);
+  color: var(--color-action-primary);
+}
+
+/*
+ * The Notation Preview
+ * Fixed block-size keeps every row's SVG glyph vertically aligned regardless
+ * of how tall/wide the individual rhythm notation is (viewBox varies per
+ * row). currentColor lets the SVG fills/strokes in the markup inherit this.
+ */
+.table-svg-preview {
+  display: flex;
+  align-items: center;
+  block-size: 2.5rem;
+  color: var(--color-text-base);
+}
+
+.table-svg-preview svg {
+  block-size: 100%;
+  inline-size: auto;
+}
