@@ -1,0 +1,143 @@
+/* ==========================================================================
+   BLOCK: BUTTON
+   ========================================================================== */
+
+/*
+ * The base .button — used for frequent, low-key actions (Practice Room's
+ * Submit/Replay, secondary links). Adapted from the LooseLeaf template with
+ * one fix: --button-text on the primary variant was --color-surface-base,
+ * which in LooseLeaf's own token example is white, but in Solfaic's tokens
+ * surface-base is the page background (alabaster grey), not white. Left
+ * unfixed it would've rendered near-invisible grey text on an orange
+ * button. Uses --color-surface-card (actually white) instead.
+ */
+.button {
+  --button-bg: transparent;
+  --button-text: var(--color-text-base);
+  --button-border: var(--color-border-subtle);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-m);
+
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border: 1px solid var(--button-border);
+  border-radius: 4px;
+
+  font-family: inherit;
+  font-size: var(--size-step-base);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    filter var(--dur-base) ease,
+    background-color var(--dur-base) ease;
+}
+
+.button:hover,
+.button:focus-visible {
+  filter: brightness(0.9);
+}
+
+.button[data-variant="primary"] {
+  --button-bg: var(--color-action-primary);
+  --button-text: var(--color-surface-card);
+  --button-border: var(--color-action-primary);
+}
+
+/*
+ * The Pushable — reserved for hero-level CTAs only (Home's "Practice Now",
+ * Classroom's "Go to Practice Room"). NOT used for Practice Room's
+ * Submit/Replay: a bouncy 3D press feels right for a once-per-page moment,
+ * but would feel gimmicky on buttons clicked dozens of times per session.
+ *
+ * Colour layer rebuilt from --color-action-primary via color-mix()
+ */
+.pushable {
+  --pushable-bg: var(--color-action-primary);
+  --pushable-text: var(--color-surface-card);
+  --pushable-shadow: color-mix(in srgb, var(--color-graphite) 55%, transparent);
+  --pushable-edge-dark: color-mix(in srgb, var(--pushable-bg) 60%, black 40%);
+  --pushable-edge-light: color-mix(in srgb, var(--pushable-bg) 82%, black 18%);
+
+  position: relative;
+  display: inline-block;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter var(--dur-base) ease;
+}
+
+.pushable .shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: var(--pushable-shadow);
+  will-change: transform;
+  transform: translateY(2px);
+  transition: transform var(--dur-base) var(--spring-smooth);
+}
+
+.pushable .edge {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: linear-gradient(
+    to left,
+    var(--pushable-edge-dark) 0%,
+    var(--pushable-edge-light) 8%,
+    var(--pushable-edge-light) 92%,
+    var(--pushable-edge-dark) 100%
+  );
+}
+
+.pushable .front {
+  display: block;
+  position: relative;
+  padding: var(--space-xs) var(--space-l);
+  border-radius: 12px;
+  font-family: var(--font-family-heading);
+  font-size: var(--size-step-1);
+  font-weight: 400;
+  color: var(--pushable-text);
+  background: var(--pushable-bg);
+  will-change: transform;
+  transform: translateY(-4px);
+  transition: transform var(--dur-base) var(--spring-smooth);
+}
+
+.pushable:hover {
+  filter: brightness(1.05);
+}
+
+.pushable:hover .front {
+  transform: translateY(-6px);
+  transition: transform 250ms var(--spring-snappy);
+}
+
+.pushable:active .front {
+  transform: translateY(-2px);
+  transition: transform 34ms;
+}
+
+.pushable:hover .shadow {
+  transform: translateY(4px);
+  transition: transform 250ms var(--spring-snappy);
+}
+
+.pushable:active .shadow {
+  transform: translateY(1px);
+  transition: transform 34ms;
+}
+
+/*
+ * No :focus-visible rule here on purpose — Global's site-wide focus-visible
+ * treatment already applies to .pushable, and layer(blocks) sits above
+ * layer(global) in the cascade, so adding one here would silently win over
+ * Global's outline-offset for this one button and nowhere else.
+ */
