@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Solfaic - Solfege Ear Training</title>
+    <title>Solfaic - Ear Training</title>
     <meta
       name="description"
-      content="Solfaic is an interactive musical dictation and sight-reading tool designed to train ears using the British Kodály Academy curriculum."
+      content="Solfaic is an interactive musical dictation and sight-reading tool designed to train rhythmic ears using the British Kodály Academy curriculum."
     />
 
     <link rel="preload" href="src/css/index.css" as="style" />
@@ -14,11 +14,23 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!--
-      TODO (CUBE/Flair phase): confirm final typeface pairing before wiring
-      this up. The design plan doc underlines "Solfaic and Poppins" as the likely
-      pick, but leaving unconfirmed until the type scale pass.
-    -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Galindo&family=Poppins:wght@400;500;600;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Galindo&family=Poppins:wght@400;500;600;700&display=swap"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Galindo&family=Poppins:wght@400;500;600;700&display=swap"
+      />
+    </noscript>
 
     <link
       rel="icon"
@@ -64,7 +76,7 @@
     <main id="main-content">
       <section class="hero" aria-labelledby="hero-heading">
         <!--
-          Background animation mount point. The plan doc includes a
+          Background animation mount point. Design plan doc includes a
           reference implementation (Louis Hoebregts, CodePen BxMQYQ) using
           20 ambient floating particles. Structure is ready; motion + color
           land in the Flair pass.
@@ -82,7 +94,7 @@
 
         <div class="hero__content">
           <h1 id="hero-heading" class="hero__title">
-            Train your ear, one motif at a time.
+            Train your rhythmic ear, one motif at a time.
           </h1>
           <p class="hero__subtitle">
             Solfaic is an interactive Kodály-based rhythm dictation trainer,
@@ -171,7 +183,7 @@
           </p>
           <p>
             All source components, layout primitives, and interactive mechanics
-            are protected under open-source software distributions. Unauthorised
+            are protected under open-source software distributions. Unauthorized
             extraction or plagiarism of core timeline generation logic for
             academic submission is strictly monitored.
           </p>
