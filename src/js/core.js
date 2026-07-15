@@ -600,17 +600,36 @@ export function initialiseCoreUI() {
       sidebarElement?.classList.remove("is-open"),
     );
 
-  // Compliance Overlays
+  // Compliance Modals (native <dialog> — migrated from manual div show/hide)
+  const openTriggers = document.querySelectorAll("[data-open-target]");
+  openTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", (e) => {
+      e.preventDefault();
+      const modalId = trigger.getAttribute("data-open-target");
+      const dialog = document.getElementById(modalId);
+      if (dialog && typeof dialog.showModal === "function") {
+        dialog.showModal();
+      }
+    });
+  });
+
   const closeButtons = document.querySelectorAll(".compliance-close-btn");
   closeButtons.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
+    btn.addEventListener("click", () => {
       const modalId = btn.getAttribute("data-close-target");
-      const activeOverlay = document.getElementById(modalId);
-      if (activeOverlay) {
-        activeOverlay.classList.remove("is-visible");
-        setTimeout(() => activeOverlay.classList.add("is-hidden"), 250);
+      const dialog = document.getElementById(modalId);
+      if (dialog && typeof dialog.close === "function") {
+        dialog.close();
       }
+    });
+  });
+
+  // Click-outside-to-close: a click that lands on the <dialog> element
+  // itself (rather than bubbling up from a child) means it landed on the
+  // ::backdrop, since the dialog's own box is exactly its rendered content.
+  document.querySelectorAll("dialog.modal").forEach((dialog) => {
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) dialog.close();
     });
   });
 
