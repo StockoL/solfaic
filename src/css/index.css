@@ -18,10 +18,16 @@
 @import url("./global/variables.css") layer(global);
 @import url("./global/global-styles.css") layer(global);
 
-/* @import url("./compositions/flow.css") layer(compositions); */
-/* @import url("./compositions/cluster.css") layer(compositions); */
-/* @import url("./compositions/sidebar.css") layer(compositions); */
-/* @import url("./compositions/switcher.css") layer(compositions); */
+@import url("./compositions/center.css") layer(compositions);
+@import url("./compositions/cluster.css") layer(compositions);
+@import url("./compositions/container.css") layer(compositions);
+@import url("./compositions/flow.css") layer(compositions);
+@import url("./compositions/grid.css") layer(compositions);
+@import url("./compositions/reel.css") layer(compositions);
+@import url("./compositions/sidebar.css") layer(compositions);
+@import url("./compositions/spread.css") layer(compositions);
+@import url("./compositions/switcher.css") layer(compositions);
+@import url("./compositions/wrapper.css") layer(compositions);
 
 /* @import url("./blocks/button.css") layer(blocks); */
 /* @import url("./blocks/card.css") layer(blocks); */

@@ -1,0 +1,20 @@
+/* ==========================================================================
+   COMPOSITION: SPREAD
+   ========================================================================== */
+
+/*
+ * The Spread
+ * Cluster's sibling: identical wrapping flex-gap grouping, but pushes items
+ * to opposite ends of the row instead of packing them together. This is the
+ * one thing Cluster deliberately can't do — its justify-content is fixed to
+ * flex-start. Reach for Spread whenever two or more groups need to sit at
+ * opposite ends of a bar (a nav's brand + menu, a thin header's start/end
+ * groups) and fall back to a vertical stack together once space runs out.
+ */
+.spread {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gutter, 1rem);
+  justify-content: space-between;
+  align-items: var(--spread-align, center);
+}

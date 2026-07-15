@@ -1,0 +1,27 @@
+/* ==========================================================================
+   COMPOSITION: CENTER 
+   ========================================================================== */
+
+/* 
+ * The Center
+ * Manages vertical and horizontal centering of child elements.
+ */
+.center {
+  box-sizing: content-box; /* Crucial: padding doesn't subtract from our max-inline-size */
+  display: block;
+  max-inline-size: var(--center-max-width, var(--measure, 60ch));
+  margin-inline: auto;
+  padding-inline: var(--center-gutters, var(--spacing-md, 1.5rem));
+}
+
+/* Optional utility exception: centers the text alignment inside the center box too */
+.center[data-and-text] {
+  text-align: center;
+}
+
+/* Optional utility exception: forces child elements to center themselves if they are flex/grid items */
+.center[data-intrinsic] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

@@ -1,0 +1,26 @@
+/* ==========================================================================
+   COMPOSITION: CONTAINER
+   ========================================================================== */
+
+/*
+ * The Container
+ * A generic macro-layout shell: caps overall page/region width and provides
+ * intrinsic horizontal padding, independent of prose measure.
+ *
+ * Wrapper vs. Container — both cap width and center via margin-inline: auto,
+ * but they answer different questions:
+ *   - Wrapper defaults to var(--measure) (60ch). Reach for it when the
+ *     content itself is prose and SHOULD be capped at a readable line
+ *     length — a paragraph-heavy section, an article body.
+ *   - Container defaults to a much wider app-shell value. Reach for it for
+ *     page/region shells that hold non-prose content — nav bars, grids,
+ *     hero layouts, the practice workspace — where 60ch would be far too
+ *     narrow and isn't the point of the constraint anyway.
+ * Neither is "more correct" than the other; picking wrong just means
+ * overriding the max-width variable every time instead of once.
+ */
+.container {
+  max-width: var(--container-max-width, 80rem);
+  margin-inline: auto;
+  padding-inline: var(--gutter, 1rem);
+}
