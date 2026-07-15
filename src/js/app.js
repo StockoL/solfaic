@@ -245,19 +245,15 @@ function initialiseEventListeners() {
     renderWorkspace(sessionState);
   });
 
-  // --- LEVEL DROPDOWN ---
-  if (DOM.levelBtn && DOM.levelMenu) {
-    DOM.levelBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = DOM.levelMenu.classList.toggle("is-open");
-      DOM.levelBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    });
-
+  // --- LEVEL DROPDOWN (Practice Room only) ---
+  // core.js's initialiseCoreUI() handles the shared open/close/active-item
+  // chrome for this control on every page. Practice Room additionally needs
+  // picking a level to actually restart the engine, so it layers that on
+  // top by listening for the same clicks here.
+  if (DOM.levelItems.length) {
     DOM.levelItems.forEach((item) => {
       item.addEventListener("click", () => {
         const levelId = parseInt(item.getAttribute("data-value"), 10);
-        DOM.levelMenu.classList.remove("is-open");
-        DOM.levelBtn.setAttribute("aria-expanded", "false");
 
         // Jumping levels manually mid-exercise should cut any in-flight
         // audio and not let an old streak carry over into the new level.
@@ -268,12 +264,6 @@ function initialiseEventListeners() {
         sessionState.streak = 0;
         startLevel(levelId);
       });
-    });
-
-    // Click-outside-to-close
-    document.addEventListener("click", () => {
-      DOM.levelMenu.classList.remove("is-open");
-      DOM.levelBtn.setAttribute("aria-expanded", "false");
     });
   }
 
@@ -301,8 +291,14 @@ function initialiseEventListeners() {
 // ============================================================================
 
 window.addEventListener("DOMContentLoaded", () => {
+  // initialiseCoreUI() wires up chrome shared by every page (nav, accordion,
+  // level-select, compliance modals). Everything below it is the Practice
+  // Room engine itself, which only has DOM to attach to on practice.html.
   initialiseCoreUI();
-  initialiseEventListeners();
-  startLevel(1);
-  console.log("Solfaic! Conductor Active. 🚀");
+
+  if (DOM.workspace) {
+    initialiseEventListeners();
+    startLevel(1);
+    console.log("Solfaic! Conductor Active. 🚀");
+  }
 });

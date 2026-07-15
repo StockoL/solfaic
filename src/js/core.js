@@ -29,7 +29,7 @@ export const DOM = {
   levelSelect: document.getElementById("control-level-select"),
   levelBtn: document.getElementById("btn-level-dropdown"),
   levelMenu: document.getElementById("menu-level-dropdown"),
-  levelItems: document.querySelectorAll(".dropdown-item"),
+  levelItems: document.querySelectorAll(".level-select__item"),
 };
 
 // ============================================================================
@@ -586,19 +586,71 @@ function triggerTourCompletionModal() {
 // ============================================================================
 
 export function initialiseCoreUI() {
-  // Mobile Sidebar Controls
-  const sidebarElement = document.getElementById("ui-sidebar");
-  const toggleBtn = document.getElementById("btn-toggle-sidebar");
-  const closeBtn = document.getElementById("btn-close-sidebar");
+  // Primary Nav (mobile collapse toggle)
+  const navToggle = document.getElementById("btn-toggle-nav");
+  const navMenu = document.getElementById("site-nav-menu");
 
-  if (toggleBtn)
-    toggleBtn.addEventListener("click", () =>
-      sidebarElement?.classList.add("is-open"),
+  if (navToggle && navMenu) {
+    navToggle.addEventListener("click", () => {
+      const isOpen = navMenu.getAttribute("data-state") === "open";
+      navMenu.setAttribute("data-state", isOpen ? "closed" : "open");
+      navToggle.setAttribute("aria-expanded", isOpen ? "false" : "true");
+    });
+  }
+
+  // Accordion (Classroom's Level Guides)
+  document.querySelectorAll(".accordion__trigger").forEach((trigger) => {
+    const panel = document.getElementById(
+      trigger.getAttribute("aria-controls"),
     );
-  if (closeBtn)
-    closeBtn.addEventListener("click", () =>
-      sidebarElement?.classList.remove("is-open"),
+    if (!panel) return;
+
+    trigger.addEventListener("click", () => {
+      const isOpen = trigger.getAttribute("aria-expanded") === "true";
+      trigger.setAttribute("aria-expanded", isOpen ? "false" : "true");
+      panel.setAttribute("data-state", isOpen ? "closed" : "open");
+    });
+  });
+
+  // Level Select (Classroom's level-picker dropdown)
+  const levelSelectTrigger = document.getElementById("btn-level-dropdown");
+  const levelSelectMenu = document.getElementById("menu-level-dropdown");
+
+  if (levelSelectTrigger && levelSelectMenu) {
+    const levelSelectItems = levelSelectMenu.querySelectorAll(
+      ".level-select__item",
     );
+
+    const closeLevelSelect = () => {
+      levelSelectMenu.setAttribute("data-state", "closed");
+      levelSelectTrigger.setAttribute("aria-expanded", "false");
+    };
+
+    levelSelectTrigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = levelSelectMenu.getAttribute("data-state") === "open";
+      levelSelectMenu.setAttribute("data-state", isOpen ? "closed" : "open");
+      levelSelectTrigger.setAttribute("aria-expanded", isOpen ? "false" : "true");
+    });
+
+    levelSelectItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        levelSelectItems.forEach((i) => i.classList.remove("is-active"));
+        item.classList.add("is-active");
+
+        const labelNode = Array.from(levelSelectTrigger.childNodes).find(
+          (node) => node.nodeType === Node.TEXT_NODE,
+        );
+        if (labelNode) {
+          labelNode.textContent = `Level ${item.getAttribute("data-value")} `;
+        }
+
+        closeLevelSelect();
+      });
+    });
+
+    document.addEventListener("click", closeLevelSelect);
+  }
 
   // Compliance Modals (native <dialog> — migrated from manual div show/hide)
   const openTriggers = document.querySelectorAll("[data-open-target]");
