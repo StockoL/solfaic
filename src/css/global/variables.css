@@ -5,16 +5,18 @@
 
 :root {
   /* -- COLOUR -------------------------------------------------------------- */
-  --color-alabaster-grey: #dddddd;
-  --color-white: #ffffff;
-  --color-atomic-tangerine: #ff6b35;
-  --color-golden-pollen: #ffc857;
-  --color-muted-teal: #82b895;
-  --color-graphite: #2d2d2d;
+  --color-alabaster-grey: #DDDDDD;
+  --color-white: #FFFFFF;
+  --color-atomic-tangerine: #FF6B35;
+  --color-golden-pollen: #FFC857;
+  --color-muted-teal: #82B895;
+  --color-graphite: #2D2D2D;
   --color-charcoal: #545454;
 
   --color-surface-base: var(--color-alabaster-grey);
   --color-surface-card: var(--color-white);
+  --color-surface-sunken: var(--color-alabaster-grey);
+  --color-border-subtle: var(--color-alabaster-grey);
   --color-text-base: var(--color-graphite);
   --color-text-muted: var(--color-charcoal);
   --color-action-primary: var(--color-atomic-tangerine);
@@ -22,8 +24,8 @@
   --color-status-success: var(--color-muted-teal);
 
   /* -- TYPOGRAPHY ---------------------------------------------------------- */
-  --font-family-heading: "Galindo", system-ui, sans-serif;
-  --font-family-body: "Poppins", system-ui, sans-serif;
+  --font-family-heading: 'Galindo', system-ui, sans-serif;
+  --font-family-body: 'Poppins', system-ui, sans-serif;
   --size-step--2: clamp(0.6944rem, 0.6341rem + 0.3019vw, 0.8681rem);
   --size-step--1: clamp(0.8333rem, 0.7609rem + 0.3623vw, 1.0417rem);
   --size-step-0: clamp(1rem, 0.913rem + 0.4348vw, 1.25rem);
