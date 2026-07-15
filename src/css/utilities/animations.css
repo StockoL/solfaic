@@ -1,0 +1,123 @@
+/* ==========================================================================
+   UTILITY: ANIMATIONS
+   ========================================================================== */
+
+/* --- The Lift & Scale --- */
+.anim-lift {
+  transition:
+    transform var(--dur-base) var(--spring-snappy),
+    box-shadow var(--dur-base) var(--spring-snappy);
+  will-change: transform;
+}
+
+.anim-lift:hover {
+  transform: translateY(calc(var(--space-xs) * -1)) scale(1.02);
+}
+
+/* --- The Ambient Mesh --- */
+/*
+ * Tokenized from LooseLeaf's literal rgba(0, 112, 243...) / rgba(168, 85,
+ * 247...) demo blues/purples to Solfaic's own action-primary/secondary via
+ * color-mix(), keeping the same ~5% alpha the template used.
+ *
+ * NOT used for the Home hero — the plan doc explicitly specs a 20-particle
+ * drift animation there (Louis Hoebregts, CodePen BxMQYQ), already
+ * scaffolded as empty spans in index.html. This utility stays available for
+ * other ambient sections (e.g. a future celebration/success screen) rather
+ * than being forced into a slot that already has a named, intended answer.
+ */
+.bg-mesh {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-surface-base);
+  z-index: 0;
+}
+
+.bg-mesh::before,
+.bg-mesh::after {
+  content: "";
+  position: absolute;
+  width: 150vw;
+  height: 150vh;
+  top: -25vh;
+  left: -25vw;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-action-primary) 5%, transparent) 0%,
+    transparent 60%
+  );
+  animation: mesh-drift 15s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.bg-mesh::after {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-action-secondary) 5%, transparent) 0%,
+    transparent 50%
+  );
+  animation: mesh-drift 20s ease-in-out infinite alternate-reverse;
+  top: 10vh;
+  left: 20vw;
+}
+
+@keyframes mesh-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(5%, 5%) scale(1.1);
+  }
+  100% {
+    transform: translate(-5%, -5%) scale(0.9);
+  }
+}
+
+/* --- The Infinite Marquee --- */
+.marquee {
+  --marquee-speed: 40s;
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  gap: var(--gutter, 1rem);
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+}
+
+.marquee__track {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: var(--gutter, 1rem);
+  min-width: 100%;
+  animation: ll-marquee var(--marquee-speed) linear infinite;
+}
+
+.marquee:hover .marquee__track,
+.marquee:focus-within .marquee__track {
+  animation-play-state: paused;
+}
+
+@keyframes ll-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gutter, 1rem)));
+  }
+}
