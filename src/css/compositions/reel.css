@@ -13,7 +13,10 @@
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  padding-block-end: 1rem; /* Intrinsic padding for the native scrollbar */
+  padding-block-end: var(
+    --gutter,
+    1rem
+  ); /* Intrinsic padding for the native scrollbar */
 }
 
 .reel > * {

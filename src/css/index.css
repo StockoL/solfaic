@@ -32,6 +32,8 @@
 @import url("./blocks/modal.css") layer(blocks);
 @import url("./blocks/badge.css") layer(blocks);
 @import url("./blocks/curriculum-table.css") layer(blocks);
+@import url("./blocks/hero.css") layer(blocks);
+@import url("./blocks/footer.css") layer(blocks);
 
 @import url("./utilities/animations.css") layer(utilities);
 @import url("./utilities/colors.css") layer(utilities);
