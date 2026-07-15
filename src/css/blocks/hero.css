@@ -1,0 +1,37 @@
+/* ==========================================================================
+   BLOCK: HERO
+   ========================================================================== */
+
+.hero {
+  padding-block: var(--space-3xl);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-action-secondary) 15%, transparent),
+    transparent
+  );
+}
+
+/*
+ * Both mounts are reserved for the Flair pass (ambient particle animation,
+ * hero illustration) — no assets/motion exist yet, so they stay hidden
+ * rather than rendering as empty holes. display: none also drops
+ * .hero__media out of .hero__layout's switcher flow entirely, so
+ * .hero__content takes the full width instead of sharing it with a blank
+ * column.
+ */
+.hero__background,
+.hero__media {
+  display: none;
+}
+
+.hero__layout {
+  align-items: center;
+}
+
+.hero__title {
+  font-size: var(--size-step-5);
+}
+
+.hero__subtitle {
+  color: var(--color-text-muted);
+}
