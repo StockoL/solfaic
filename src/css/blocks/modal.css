@@ -1,0 +1,37 @@
+/* ==========================================================================
+   BLOCK: MODAL (native <dialog>)
+   ========================================================================== */
+
+/*
+ * Migrated from a <div class="compliance-overlay"> with manual show/hide
+ * classes to a real <dialog>. This is a free upgrade: showModal()/close()
+ * handle focus-trapping and top-layer stacking natively, Escape-to-close
+ * works with zero JS, and ::backdrop only renders on an actual <dialog> —
+ * none of that worked on a plain div, however it was styled.
+ */
+.modal {
+  padding: var(--space-l);
+  border: none;
+  border-radius: 8px;
+  background-color: var(--color-surface-card);
+  color: var(--color-text-base);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  max-inline-size: var(--measure);
+  width: 90vw;
+  margin: auto; /* Resets the browser's default dialog centering quirks */
+}
+
+.modal::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+/*
+ * .compliance-title / .compliance-body / .compliance-close-btn never had
+ * dedicated Block CSS before this migration — they were purely functional
+ * JS hooks sitting on unstyled elements. h2 already inherits sizing from
+ * global-styles.css's heading scale, so no override needed there.
+ */
+.compliance-close-btn {
+  align-self: flex-start;
+}
