@@ -117,17 +117,19 @@
 
 .pushable:hover .front {
   transform: translateY(-6px);
-  transition: transform 250ms var(--spring-snappy);
+  transition: transform var(--dur-base) var(--spring-snappy);
 }
 
 .pushable:active .front {
   transform: translateY(-2px);
+  /* Deliberately below --dur-fast (150ms) — the press-down snap needs to
+     read as near-instant, not just "fast". */
   transition: transform 34ms;
 }
 
 .pushable:hover .shadow {
   transform: translateY(4px);
-  transition: transform 250ms var(--spring-snappy);
+  transition: transform var(--dur-base) var(--spring-snappy);
 }
 
 .pushable:active .shadow {
