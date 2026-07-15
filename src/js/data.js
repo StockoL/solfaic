@@ -7,7 +7,7 @@
  * Storing SVGs as strings allows us to inject them dynamically into the DOM.
  * Using 'currentColor' allows the CSS to control the stroke/fill colors natively.
  */
-const SVG_ICONS = {
+export const SVG_ICONS = {
   ta: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/></svg>`,
   titi: `<svg viewBox="0 0 80 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="64" cy="85" rx="12" ry="8" transform="rotate(-20 64 85)"/><rect x="72" y="15" width="3" height="70"/><rect x="22" y="15" width="53" height="8"/></svg>`,
   taRest: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M 25 20 L 15 40 L 30 55 L 15 80" fill="none"/></svg>`,
@@ -26,7 +26,7 @@ const SVG_ICONS = {
  * Maps visual tokens to mathematical time representations required by Tone.js.
  * 'ticks' represent spatial cost (e.g., taa requires 2 empty layout slots).
  */
-const MOTIF_LIBRARY = {
+export const MOTIF_LIBRARY = {
   ta: {
     type: "simple",
     duration: "4n",
@@ -124,13 +124,13 @@ const MOTIF_LIBRARY = {
  * ----------------------------------------------------------------------------
  */
 
-const MOTIF_POOLS = {
+export const MOTIF_POOLS = {
   coreSimple: ["ta", "titi", "taRest"],
   advSimple: ["tikatika", "tikati", "titika", "taa"],
   coreCompound: ["tai", "tititi", "tati", "taiRest"],
 };
 
-const FORM_TEMPLATES = {
+export const FORM_TEMPLATES = {
   bars2: [
     ["A", "B"], // 2-bar through-composed snippet
     ["A", "A"], // 2-bar repeated snippet
@@ -172,7 +172,7 @@ const FORM_TEMPLATES = {
  * Higher numbers represent a stronger musical pull (idiomatic resolution).
  * ----------------------------------------------------------------------------
  */
-const SYNTAX_DICTIONARY = {
+export const SYNTAX_DICTIONARY = {
   // ==========================================
   // SIMPLE METRE MOTIFS (2/4, 3/4, 4/4)
   // ==========================================
@@ -260,7 +260,7 @@ const SYNTAX_DICTIONARY = {
  * Uses ES6 Spread Operators (...) to cumulatively inherit arrays from previous levels.
  * ----------------------------------------------------------------------------
  */
-const levelRules = {
+export const levelRules = {
   1: {
     allowedMetres: ["2/4", "3/4", "4/4"],
     barOptions: [2],
@@ -288,3 +288,9 @@ const levelRules = {
     enforceCadence: true,
   },
 };
+
+/**
+ * Pedagogical Cadence Pool
+ * These are the structurally stable blocks used to musically resolve phrases.
+ */
+export const CADENCE_MOTIFS = ["ta", "taa", "taRest", "tai", "taiRest"];
