@@ -109,6 +109,15 @@ function compileLayout(layout) {
   return lines;
 }
 
+function compileMotion(motion) {
+  const lines = [];
+  Object.entries(motion).forEach(([key, value]) => {
+    if (isDocKey(key)) return;
+    lines.push(`  --${key}: ${value};`);
+  });
+  return lines;
+}
+
 function build() {
   const raw = fs.readFileSync(TOKENS_PATH, "utf8");
   const tokens = JSON.parse(raw);
@@ -117,6 +126,7 @@ function build() {
     { title: "COLOUR", lines: compileColors(tokens.colors || {}) },
     { title: "TYPOGRAPHY", lines: compileTypography(tokens.typography || {}) },
     { title: "SPACE", lines: compileSpace(tokens.space || {}) },
+    { title: "MOTION", lines: compileMotion(tokens.motion || {}) },
     { title: "LAYOUT", lines: compileLayout(tokens.layout || {}) },
   ];
 
