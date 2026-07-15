@@ -1,0 +1,29 @@
+/**
+ * ============================================================================
+ * SOLFAIC V2 - CSS ORCHESTRATOR
+ * ============================================================================
+ * The only file linked directly from HTML. Declares the cascade layer order
+ * up front (this is what makes specificity predictable under CUBE CSS —
+ * later layers always beat earlier ones, regardless of selector weight) and
+ * imports each tier into its layer.
+ *
+ * Compositions, Blocks, and Utilities are empty for now — populated in the
+ * next phases of the rebuild.
+ * ============================================================================
+ */
+
+@layer reset, global, compositions, blocks, utilities;
+
+@import url("./global/reset.css") layer(reset);
+@import url("./global/variables.css") layer(global);
+@import url("./global/global-styles.css") layer(global);
+
+/* @import url("./compositions/flow.css") layer(compositions); */
+/* @import url("./compositions/cluster.css") layer(compositions); */
+/* @import url("./compositions/sidebar.css") layer(compositions); */
+/* @import url("./compositions/switcher.css") layer(compositions); */
+
+/* @import url("./blocks/button.css") layer(blocks); */
+/* @import url("./blocks/card.css") layer(blocks); */
+
+/* @import url("./utilities/accessibility.css") layer(utilities); */
