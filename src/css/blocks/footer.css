@@ -1,0 +1,10 @@
+/* ==========================================================================
+   BLOCK: SITE FOOTER
+   ========================================================================== */
+
+.site-footer {
+  padding-block: var(--space-m);
+  border-block-start: 1px solid var(--color-border-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--size-step--1);
+}
