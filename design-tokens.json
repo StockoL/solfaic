@@ -1,7 +1,6 @@
 {
   "colors": {
     "_comment": "PRIMITIVE tokens (raw hex) first, then SEMANTIC aliases below that reference them via {token-name}. Never reach for a primitive in component CSS — always go through the semantic layer so a future palette swap only touches this file.",
-
     "alabaster-grey": "#DDDDDD",
     "white": "#FFFFFF",
     "atomic-tangerine": "#FF6B35",
@@ -9,7 +8,7 @@
     "muted-teal": "#82B895",
     "graphite": "#2D2D2D",
     "charcoal": "#545454",
-
+    "amaranth-red": "#D6334A",
     "surface-base": "{alabaster-grey}",
     "surface-card": "{white}",
     "surface-sunken": "{alabaster-grey}",
@@ -18,9 +17,9 @@
     "text-muted": "{charcoal}",
     "action-primary": "{atomic-tangerine}",
     "action-secondary": "{golden-pollen}",
-    "status-success": "{muted-teal}"
+    "status-success": "{muted-teal}",
+    "status-danger": "{amaranth-red}"
   },
-
   "_comment_motion": "Durations + easing curves referenced across Block components (accordion, dropdown, navbar, offcanvas). 'spring' curves intentionally overshoot slightly for a tactile feel; 'smooth' curves don't.",
   "motion": {
     "dur-fast": "150ms",
@@ -28,12 +27,10 @@
     "spring-smooth": "cubic-bezier(0.25, 0.1, 0.25, 1)",
     "spring-snappy": "cubic-bezier(0.34, 1.56, 0.64, 1)"
   },
-
   "_comment_typography": "Two-typeface pairing (Galindo/display, Poppins/body) plus the fluid type scale. PROCESS: scale generated via https://utopia.fyi/type/calculator?c=320,16,1.2,1240,20,1.2,5,2,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12 — re-run there and paste back in if the scale ever needs to change.",
   "typography": {
     "font-family-heading": "'Galindo', system-ui, sans-serif",
     "font-family-body": "'Poppins', system-ui, sans-serif",
-
     "step--2": "clamp(0.6944rem, 0.6341rem + 0.3019vw, 0.8681rem)",
     "step--1": "clamp(0.8333rem, 0.7609rem + 0.3623vw, 1.0417rem)",
     "step-0": "clamp(1rem, 0.913rem + 0.4348vw, 1.25rem)",
@@ -43,7 +40,6 @@
     "step-4": "clamp(2.0736rem, 1.8933rem + 0.9016vw, 2.592rem)",
     "step-5": "clamp(2.4883rem, 2.2719rem + 1.0819vw, 3.1104rem)"
   },
-
   "_comment_space": "Fluid space scale. PROCESS: generated via https://utopia.fyi/space/calculator?c=320,16,1.2,1240,20,1.2,5,2,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12 — includes one-up pairs (for transitions between two adjacent steps) and the custom s-l pair from the plan doc.",
   "space": {
     "3xs": "clamp(0.25rem, 0.2283rem + 0.1087vw, 0.3125rem)",
@@ -55,7 +51,6 @@
     "xl": "clamp(3rem, 2.7391rem + 1.3043vw, 3.75rem)",
     "2xl": "clamp(4rem, 3.6522rem + 1.7391vw, 5rem)",
     "3xl": "clamp(6rem, 5.4783rem + 2.6087vw, 7.5rem)",
-
     "3xs-2xs": "clamp(0.25rem, 0.1196rem + 0.6522vw, 0.625rem)",
     "2xs-xs": "clamp(0.5rem, 0.3478rem + 0.7609vw, 0.9375rem)",
     "xs-s": "clamp(0.75rem, 0.5761rem + 0.8696vw, 1.25rem)",
@@ -64,10 +59,8 @@
     "l-xl": "clamp(2rem, 1.3913rem + 3.0435vw, 3.75rem)",
     "xl-2xl": "clamp(3rem, 2.3043rem + 3.4783vw, 5rem)",
     "2xl-3xl": "clamp(4rem, 2.7826rem + 6.087vw, 7.5rem)",
-
     "s-l": "clamp(1rem, 0.4783rem + 2.6087vw, 2.5rem)"
   },
-
   "_comment_layout": "Bare layout primitives that don't belong to color/type/space scales. --measure is consumed directly by global-styles.css's typographic-measure rule.",
   "layout": {
     "measure": "60ch"

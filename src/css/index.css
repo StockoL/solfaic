@@ -6,9 +6,6 @@
  * up front (this is what makes specificity predictable under CUBE CSS —
  * later layers always beat earlier ones, regardless of selector weight) and
  * imports each tier into its layer.
- *
- * Compositions, Blocks, and Utilities are empty for now — populated in the
- * next phases of the rebuild.
  * ============================================================================
  */
 
@@ -29,7 +26,11 @@
 @import url("./compositions/switcher.css") layer(compositions);
 @import url("./compositions/wrapper.css") layer(compositions);
 
-/* @import url("./blocks/button.css") layer(blocks); */
-/* @import url("./blocks/card.css") layer(blocks); */
+@import url("./blocks/button.css") layer(blocks);
+@import url("./blocks/nav.css") layer(blocks);
+@import url("./blocks/accordion.css") layer(blocks);
+@import url("./blocks/level-select.css") layer(blocks);
+@import url("./blocks/modal.css") layer(blocks);
+@import url("./blocks/badge.css") layer(blocks);
 
 /* @import url("./utilities/accessibility.css") layer(utilities); */
