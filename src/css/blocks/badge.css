@@ -1,0 +1,43 @@
+/* ==========================================================================
+   BLOCK: BADGE
+   ========================================================================== */
+
+/*
+ * Almost a direct port — badge.css was one of the few templates that didn't
+ * hit the surface-base/surface-card collision, since its default already
+ * referenced --color-surface-sunken rather than --color-surface-base.
+ */
+.badge {
+  --badge-bg: var(--color-surface-sunken);
+  --badge-text: var(--color-text-base);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 0.85em;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.25em 0.65em;
+  border-radius: 999px;
+  background-color: var(--badge-bg);
+  color: var(--badge-text);
+}
+
+.badge[data-variant="primary"] {
+  --badge-bg: var(--color-action-primary);
+  --badge-text: var(--color-surface-card);
+}
+
+.badge[data-status="danger"] {
+  --badge-bg: #fee2e2;
+  --badge-text: #991b1b;
+}
+
+.badge[data-placement="floating"] {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
