@@ -1,0 +1,102 @@
+/* ==========================================================================
+   BLOCK: LEVEL SELECT
+   ========================================================================== */
+
+/*
+ * Adapted from LooseLeaf's dropdown.css — same visual physics (position,
+ * shadow, hidden-state transition), different structure. dropdown.css
+ * expects a .dropdown-wrapper[data-state="open"] .dropdown pattern (state
+ * on a wrapper around both trigger and menu); our .level-select__menu
+ * carries data-state directly and is the trigger's sibling, not the
+ * trigger's child, so the selector targets the menu's own attribute
+ * instead. "level-select" stays the domain-specific name rather than
+ * renaming to the generic "dropdown" — this is a level picker, not a
+ * general-purpose menu, even though it borrows the same recipe.
+ */
+.level-select {
+  position: relative;
+  display: inline-flex;
+}
+
+.level-select__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-m);
+  background-color: var(--color-surface-card);
+  color: var(--color-text-base);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: var(--size-step-base);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.level-select__icon {
+  width: 1rem;
+  height: 1rem;
+  transition: transform var(--dur-fast) var(--spring-smooth);
+}
+
+.level-select__trigger[aria-expanded="true"] .level-select__icon {
+  transform: rotate(180deg);
+}
+
+.level-select__menu {
+  --level-select-width: 16rem;
+  --level-select-offset: var(--space-xs);
+
+  position: absolute;
+  top: calc(100% + var(--level-select-offset));
+  left: 0;
+  z-index: 100;
+  min-inline-size: var(--level-select-width);
+  margin: 0;
+  padding: var(--space-xs);
+  list-style: none;
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+
+  /* Hidden-state physics */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(calc(var(--level-select-offset) * -1));
+  transition:
+    opacity var(--dur-base) var(--spring-smooth),
+    transform var(--dur-base) var(--spring-snappy),
+    visibility var(--dur-base);
+  will-change: transform, opacity;
+}
+
+.level-select__menu[data-state="open"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.level-select__item {
+  display: block;
+  padding: var(--space-xs) var(--space-s);
+  color: var(--color-text-base);
+  border-radius: 4px;
+  font-size: var(--size-step-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+
+.level-select__item:hover,
+.level-select__item:focus-visible {
+  background-color: var(--color-surface-sunken);
+  color: var(--color-action-primary);
+}
+
+.level-select__item.is-active {
+  color: var(--color-action-primary);
+  font-weight: 700;
+}
