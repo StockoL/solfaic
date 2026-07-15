@@ -138,6 +138,11 @@ function initialiseEventListeners() {
   }
 }
 
+document.addEventListener("action-clear-note", (e) => {
+  // e.detail.index contains the array index!
+  clearMultiBeatNote(e.detail.index, e.detail.motifId);
+});
+
 // ============================================================================
 // BOOTSTRAP PIPELINE
 // ============================================================================
