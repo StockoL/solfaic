@@ -1,0 +1,14 @@
+/* ==========================================================================
+   COMPOSITION: WRAPPER
+   ========================================================================== */
+
+/* 
+ * The Wrapper 
+ * Constrains macro-layout widths and provides intrinsic horizontal padding.
+ * Replaces <l-container> and <l-center>.
+ */
+.wrapper {
+  max-width: var(--wrapper-max-width, var(--measure));
+  margin-inline: auto;
+  padding-inline: var(--gutter, 1rem);
+}

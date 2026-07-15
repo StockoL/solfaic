@@ -6,7 +6,7 @@
     <title>Practice Room - Solfaic</title>
     <meta
       name="description"
-      content="Focus-mode music dictation practice session for Solfaic."
+      content="Focus-mode rhythm dictation practice session for Solfaic."
     />
 
     <link rel="preload" href="src/css/index.css" as="style" />
@@ -42,35 +42,35 @@
   <body class="practice-room">
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <div class="practice-shell">
+    <div class="practice-shell container">
       <!--
         THIN HEADER per plan doc: level + streak pips on the left,
         metre/bars on the right. No global nav here — focus mode strips
         everything the user doesn't need mid-exercise. "Back to Classroom"
         replaces the nav entirely.
       -->
-      <header class="practice-header">
-        <div class="practice-header__start">
+      <header class="practice-header spread">
+        <div class="practice-header__start cluster">
           <a href="classroom.html" class="practice-header__back">
             <span aria-hidden="true">←</span> Classroom
           </a>
           <span id="ui-level-badge" class="level-badge">Level 1</span>
           <div
             id="ui-streak-tracker"
-            class="streak-tracker"
+            class="streak-tracker cluster"
             role="status"
             aria-label="Current streak"
           ></div>
         </div>
 
-        <div class="practice-header__end">
+        <div class="practice-header__end cluster">
           <span id="ui-metre-display" class="meta-chip">Metre: --</span>
           <span id="ui-bars-display" class="meta-chip">Bars: --</span>
         </div>
       </header>
 
       <main id="main-content" class="practice-main">
-        <div class="playback-panel">
+        <div class="playback-panel cluster">
           <button id="btn-replay" class="button" data-variant="primary">
             🔊 Play Rhythm
           </button>
@@ -86,7 +86,19 @@
           by JS; Level 1 defaults to 2 active bars below as a static baseline.
         -->
         <section class="workspace" aria-label="Your answer workspace">
-          <div id="ui-workspace" class="workspace-grid">
+          <!--
+            NOTE: --grid-placement/--grid-min-item-size force exactly 4
+            equal columns here, reusing Grid's exposed custom properties
+            rather than its default auto-fit reflow behaviour. A mobile
+            breakpoint override (likely --grid-placement: 2) belongs in
+            blocks/workspace.css once that phase starts — not here, since
+            Compositions stay media-query-free by design.
+          -->
+          <div
+            id="ui-workspace"
+            class="workspace-grid grid"
+            style="--grid-placement: 4; --grid-min-item-size: 1px"
+          >
             <div class="workspace-box" data-bar-index="0">
               <div class="workspace-box__container">
                 <div
@@ -400,7 +412,7 @@
           </button>
           <div
             id="ui-motif-reel"
-            class="practice-reel__track"
+            class="practice-reel__track reel"
             role="listbox"
             aria-label="Available rhythm motifs"
           >
@@ -429,7 +441,7 @@
     -->
     <div
       id="ui-card-vignette"
-      class="vignette-overlay is-hidden"
+      class="vignette-overlay is-hidden flow"
       aria-modal="true"
       role="dialog"
       aria-label="Edit card"
@@ -441,7 +453,7 @@
         class="vignette-overlay__focused-card"
         id="vignette-focused-card"
       ></div>
-      <div class="vignette-overlay__reel" id="vignette-reel"></div>
+      <div class="vignette-overlay__reel reel" id="vignette-reel"></div>
     </div>
 
     <script

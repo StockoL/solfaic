@@ -6,7 +6,7 @@
     <title>Classroom - Solfaic</title>
     <meta
       name="description"
-      content="Learn the Kodály rhythm syllables, solfege and notation, then step into the Practice Room to test your ear."
+      content="Learn the Kodály syllables and notation, then step into the Practice Room to test your ear."
     />
 
     <link rel="preload" href="src/css/index.css" as="style" />
@@ -42,8 +42,8 @@
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <header class="site-header">
-      <nav class="nav" aria-label="Primary">
-        <div class="nav__brand">
+      <nav class="nav spread" aria-label="Primary">
+        <div class="nav__brand cluster">
           <button
             id="btn-toggle-nav"
             class="nav__toggle"
@@ -62,7 +62,7 @@
           </a>
         </div>
 
-        <ul id="site-nav-menu" class="nav__menu" data-state="closed">
+        <ul id="site-nav-menu" class="nav__menu cluster" data-state="closed">
           <li><a href="index.html" class="nav__link">Home</a></li>
           <li>
             <a href="classroom.html" class="nav__link" aria-current="page"
@@ -76,12 +76,19 @@
       </nav>
     </header>
 
-    <main id="main-content" class="classroom">
-      <section class="classroom__intro" aria-labelledby="classroom-heading">
+    <main
+      id="main-content"
+      class="classroom container flow"
+      style="--container-max-width: 75rem"
+    >
+      <section
+        class="classroom__intro flow"
+        aria-labelledby="classroom-heading"
+      >
         <h1 id="classroom-heading">Classroom</h1>
         <p>
-          Learn the rhythm syllables, solfege and notation rules below, then
-          test what you've learned in the Practice Room.
+          Learn the Kodály rhythm syllables and notation rules below, then test
+          what you've learned in the Practice Room.
         </p>
         <a href="practice.html" class="button" data-variant="primary">
           Go to Practice Room
@@ -148,7 +155,7 @@
         </div>
       </section>
 
-      <section class="classroom__matrix" aria-labelledby="matrix-heading">
+      <section class="classroom__matrix flow" aria-labelledby="matrix-heading">
         <h2 id="matrix-heading">Kodály Reference Matrix</h2>
 
         <table class="curriculum-table">
@@ -496,98 +503,100 @@
       <section class="classroom__levels" aria-label="Level guides">
         <h2>Level Guides</h2>
 
-        <div class="accordion" data-level="1">
-          <h3>
-            <button
-              class="accordion__trigger"
-              id="level-1-trigger"
-              aria-expanded="false"
-              aria-controls="level-1-panel"
-            >
-              Level 1: Core Simple
-            </button>
-          </h3>
-          <div
-            id="level-1-panel"
-            class="accordion__panel"
-            role="region"
-            aria-labelledby="level-1-trigger"
-            data-state="closed"
-            hidden
-          >
-            <p>
-              Introduces 2/4, 3/4, and 4/4 time using only ta, ti-ti, and ta
-              rest across short 2-bar phrases.
-            </p>
+        <div class="classroom__levels-grid grid">
+          <div class="accordion" data-level="1">
+            <h3>
+              <button
+                class="accordion__trigger"
+                id="level-1-trigger"
+                aria-expanded="false"
+                aria-controls="level-1-panel"
+              >
+                Level 1: Core Simple
+              </button>
+            </h3>
             <div
-              class="accordion__video"
-              aria-label="Video explanation placeholder"
+              id="level-1-panel"
+              class="accordion__panel flow"
+              role="region"
+              aria-labelledby="level-1-trigger"
+              data-state="closed"
+              hidden
             >
-              <!-- Video embed mount point -->
+              <p>
+                Introduces 2/4, 3/4, and 4/4 time using only ta, ti-ti, and ta
+                rest across short 2-bar phrases.
+              </p>
+              <div
+                class="accordion__video"
+                aria-label="Video explanation placeholder"
+              >
+                <!-- Video embed mount point -->
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="accordion" data-level="2">
-          <h3>
-            <button
-              class="accordion__trigger"
-              id="level-2-trigger"
-              aria-expanded="false"
-              aria-controls="level-2-panel"
-            >
-              Level 2: Advanced Simple
-            </button>
-          </h3>
-          <div
-            id="level-2-panel"
-            class="accordion__panel"
-            role="region"
-            aria-labelledby="level-2-trigger"
-            data-state="closed"
-            hidden
-          >
-            <p>
-              Introduces 6/8 compound time and 4-bar classical forms with
-              enforced cadences.
-            </p>
+          <div class="accordion" data-level="2">
+            <h3>
+              <button
+                class="accordion__trigger"
+                id="level-2-trigger"
+                aria-expanded="false"
+                aria-controls="level-2-panel"
+              >
+                Level 2: Advanced Simple
+              </button>
+            </h3>
             <div
-              class="accordion__video"
-              aria-label="Video explanation placeholder"
+              id="level-2-panel"
+              class="accordion__panel flow"
+              role="region"
+              aria-labelledby="level-2-trigger"
+              data-state="closed"
+              hidden
             >
-              <!-- Video embed mount point -->
+              <p>
+                Introduces 6/8 compound time and 4-bar classical forms with
+                enforced cadences.
+              </p>
+              <div
+                class="accordion__video"
+                aria-label="Video explanation placeholder"
+              >
+                <!-- Video embed mount point -->
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="accordion" data-level="3">
-          <h3>
-            <button
-              class="accordion__trigger"
-              id="level-3-trigger"
-              aria-expanded="false"
-              aria-controls="level-3-panel"
-            >
-              Level 3: Compound Matrix
-            </button>
-          </h3>
-          <div
-            id="level-3-panel"
-            class="accordion__panel"
-            role="region"
-            aria-labelledby="level-3-trigger"
-            data-state="closed"
-            hidden
-          >
-            <p>
-              Adds semiquaver subdivisions (tika-tika, tika-ti, ti-tika) and
-              extended 8-bar phrase forms.
-            </p>
+          <div class="accordion" data-level="3">
+            <h3>
+              <button
+                class="accordion__trigger"
+                id="level-3-trigger"
+                aria-expanded="false"
+                aria-controls="level-3-panel"
+              >
+                Level 3: Compound Matrix
+              </button>
+            </h3>
             <div
-              class="accordion__video"
-              aria-label="Video explanation placeholder"
+              id="level-3-panel"
+              class="accordion__panel flow"
+              role="region"
+              aria-labelledby="level-3-trigger"
+              data-state="closed"
+              hidden
             >
-              <!-- Video embed mount point -->
+              <p>
+                Adds semiquaver subdivisions (tika-tika, tika-ti, ti-tika) and
+                extended 8-bar phrase forms.
+              </p>
+              <div
+                class="accordion__video"
+                aria-label="Video explanation placeholder"
+              >
+                <!-- Video embed mount point -->
+              </div>
             </div>
           </div>
         </div>
@@ -595,12 +604,12 @@
     </main>
 
     <footer class="site-footer">
-      <div class="site-footer__inner">
+      <div class="site-footer__inner cluster">
         <p>
-          &copy; 2026 Louis Stockton / Loose Leaf Applications. All rights
+          &copy; 2026 Louis Mannix / Loose Leaf Applications. All rights
           reserved.
         </p>
-        <ul class="footer-links">
+        <ul class="footer-links cluster">
           <li>
             <a href="#privacy" data-open-target="modal-privacy"
               >Privacy Policy</a
@@ -620,7 +629,7 @@
       role="dialog"
       aria-labelledby="privacy-title"
     >
-      <div class="compliance-modal">
+      <div class="compliance-modal flow">
         <h2 id="privacy-title" class="compliance-title">Privacy Policy</h2>
         <div class="compliance-body">
           <p><strong>Last Updated: July 2026</strong></p>
@@ -653,7 +662,7 @@
       role="dialog"
       aria-labelledby="terms-title"
     >
-      <div class="compliance-modal">
+      <div class="compliance-modal flow">
         <h2 id="terms-title" class="compliance-title">Terms of Service</h2>
         <div class="compliance-body">
           <p><strong>Last Updated: July 2026</strong></p>

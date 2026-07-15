@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Solfaic - Ear Training</title>
+    <title>Solfaic - Solfege Ear Training</title>
     <meta
       name="description"
-      content="Solfaic is an interactive musical dictation and sight-reading tool designed to train rhythmic ears using the British Kodály Academy curriculum."
+      content="Solfaic is an interactive musical dictation and sight-reading tool designed to train ears using the British Kodály Academy curriculum."
     />
 
     <link rel="preload" href="src/css/index.css" as="style" />
@@ -42,8 +42,8 @@
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <header class="site-header">
-      <nav class="nav" aria-label="Primary">
-        <div class="nav__brand">
+      <nav class="nav spread" aria-label="Primary">
+        <div class="nav__brand cluster">
           <button
             id="btn-toggle-nav"
             class="nav__toggle"
@@ -61,7 +61,7 @@
           </a>
         </div>
 
-        <ul id="site-nav-menu" class="nav__menu" data-state="closed">
+        <ul id="site-nav-menu" class="nav__menu cluster" data-state="closed">
           <li>
             <a href="index.html" class="nav__link" aria-current="page">Home</a>
           </li>
@@ -88,32 +88,34 @@
           <span></span><span></span><span></span><span></span><span></span>
         </div>
 
-        <div class="hero__media" aria-hidden="true">
-          <!-- Animated hero image mount point -->
-        </div>
+        <div class="hero__layout switcher container">
+          <div class="hero__media" aria-hidden="true">
+            <!-- Animated hero image mount point -->
+          </div>
 
-        <div class="hero__content">
-          <h1 id="hero-heading" class="hero__title">
-            Train your rhythmic ear, one motif at a time.
-          </h1>
-          <p class="hero__subtitle">
-            Solfaic is an interactive Kodály-based rhythm dictation trainer,
-            built for aural exam preparation.
-          </p>
-          <a href="practice.html" class="button" data-variant="primary">
-            Practice Now
-          </a>
+          <div class="hero__content center flow" data-and-text>
+            <h1 id="hero-heading" class="hero__title">
+              Train your rhythmic ear, one motif at a time.
+            </h1>
+            <p class="hero__subtitle">
+              Solfaic is an interactive Kodály-based rhythm dictation trainer,
+              built for aural exam preparation.
+            </p>
+            <a href="practice.html" class="button" data-variant="primary">
+              Practice Now
+            </a>
+          </div>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
-      <div class="site-footer__inner">
+      <div class="site-footer__inner cluster">
         <p>
           &copy; 2026 Louis Mannix / Loose Leaf Applications. All rights
           reserved.
         </p>
-        <ul class="footer-links">
+        <ul class="footer-links cluster">
           <li>
             <a href="#privacy" data-open-target="modal-privacy"
               >Privacy Policy</a
@@ -134,7 +136,7 @@
       role="dialog"
       aria-labelledby="privacy-title"
     >
-      <div class="compliance-modal">
+      <div class="compliance-modal flow">
         <h2 id="privacy-title" class="compliance-title">Privacy Policy</h2>
         <div class="compliance-body">
           <p><strong>Last Updated: July 2026</strong></p>
@@ -167,7 +169,7 @@
       role="dialog"
       aria-labelledby="terms-title"
     >
-      <div class="compliance-modal">
+      <div class="compliance-modal flow">
         <h2 id="terms-title" class="compliance-title">Terms of Service</h2>
         <div class="compliance-body">
           <p><strong>Last Updated: July 2026</strong></p>
