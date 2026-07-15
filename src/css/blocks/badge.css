@@ -1,11 +1,14 @@
+Badge · CSS
 /* ==========================================================================
    BLOCK: BADGE
    ========================================================================== */
-
+ 
 /*
  * Almost a direct port — badge.css was one of the few templates that didn't
  * hit the surface-base/surface-card collision, since its default already
  * referenced --color-surface-sunken rather than --color-surface-base.
+ * data-status="danger" is derived from --color-status-danger via
+ * color-mix() rather than the template's hardcoded #fee2e2/#991b1b.
  */
 .badge {
   --badge-bg: var(--color-surface-sunken);
@@ -30,8 +33,16 @@
 }
 
 .badge[data-status="danger"] {
-  --badge-bg: #fee2e2;
-  --badge-text: #991b1b;
+  --badge-bg: color-mix(
+    in srgb,
+    var(--color-status-danger) 15%,
+    var(--color-surface-card)
+  );
+  --badge-text: color-mix(
+    in srgb,
+    var(--color-status-danger) 70%,
+    var(--color-graphite)
+  );
 }
 
 .badge[data-placement="floating"] {
