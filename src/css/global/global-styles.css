@@ -2,6 +2,15 @@
    GLOBAL STYLES & BASE TYPOGRAPHY
    ========================================================================== */
 
+/*
+ * Solfaic V2 has no dark palette yet — telling the browser explicitly stops
+ * native form controls, scrollbars, and the like from guessing based on the
+ * OS theme and rendering with the wrong (dark) chrome around a light page.
+ */
+:root {
+  color-scheme: light;
+}
+
 html,
 body {
   min-height: 100%; /* Better support than min-inline-size */
@@ -48,4 +57,45 @@ h3 {
 }
 h4 {
   font-size: var(--size-step-1);
+}
+
+/*
+ * Body-copy links (accordion panels, hero subtext, footer). reset.css sets
+ * a:not([class]) to color: currentColor so it blends into surrounding text
+ * by default — this Global-layer rule overrides that via the cascade layer
+ * order (reset < global), not via specificity, to give unclassed prose
+ * links a visible, on-brand treatment. Any component that wants a link to
+ * blend in again just gives it a class and styles it in Blocks.
+ */
+
+a:not([class]) {
+  color: var(--color-action-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+a:not([class]):visited {
+  opacity: 0.85;
+}
+
+a:not([class]):hover {
+  color: var(--color-action-secondary);
+}
+
+/*
+ * Visible keyboard focus. This is the floor for every interactive element
+ * site-wide — Blocks may layer on more specific treatments later. :focus-visible 
+ *(rather than :focus) keeps mouse/touch interactions free of an outline while
+ * keyboard and switch-access users always get one.
+ */
+:focus-visible {
+  outline: 3px solid var(--color-action-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Brand touch on text selection */
+::selection {
+  background-color: var(--color-action-primary);
+  color: var(--color-surface-card);
 }
