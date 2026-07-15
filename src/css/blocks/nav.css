@@ -1,0 +1,138 @@
+/* ==========================================================================
+   BLOCK: NAV
+   ========================================================================== */
+
+/*
+ * Adapted from LooseLeaf's navbar.css, renamed to match Solfaic's existing
+ * .nav* classes rather than renaming the HTML to .navbar*. Layout itself
+ * (.nav spread, .nav__brand cluster, .nav__menu cluster) already comes from
+ * Compositions — this file only adds visual identity plus the mobile
+ * collapse behaviour, which is a Block-level concern (media queries aren't
+ * something Compositions do).
+ */
+.nav {
+  background-color: var(--color-surface-card);
+  border-bottom: 1px solid var(--color-border-subtle);
+  position: relative;
+  z-index: 50;
+  padding-block: var(--space-s);
+}
+
+.nav__logo {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2xs);
+  font-family: var(--font-family-heading);
+  font-size: var(--size-step-1);
+  color: var(--color-text-base);
+  text-decoration: none;
+}
+
+.nav__logo-mark {
+  /* Reserved for the "drawn on" logo animation (Flair phase) */
+  display: inline-block;
+  width: 1.5em;
+  height: 1.5em;
+}
+
+.nav__logo-subtitle {
+  font-family: var(--font-family-body);
+  font-size: var(--size-step--1);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.nav__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2xs);
+}
+
+.nav__toggle-icon,
+.nav__toggle-icon::before,
+.nav__toggle-icon::after {
+  display: block;
+  width: 1.5rem;
+  height: 2px;
+  background-color: var(--color-text-base);
+  border-radius: 1px;
+}
+
+.nav__toggle-icon {
+  position: relative;
+}
+
+.nav__toggle-icon::before,
+.nav__toggle-icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  transition: transform var(--dur-fast) var(--spring-smooth);
+}
+
+.nav__toggle-icon::before {
+  top: -6px;
+}
+
+.nav__toggle-icon::after {
+  top: 6px;
+}
+
+.nav__link {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: var(--size-step-base);
+  padding: var(--space-xs) var(--space-s);
+  border-radius: 4px;
+  transition:
+    color var(--dur-fast) ease,
+    background-color var(--dur-fast) ease;
+}
+
+.nav__link:hover,
+.nav__link:focus-visible {
+  color: var(--color-text-base);
+  background-color: var(--color-surface-sunken);
+}
+
+.nav__link[aria-current="page"] {
+  color: var(--color-action-primary);
+  font-weight: 700;
+}
+
+/* Mobile: collapse the menu behind the toggle below 45rem */
+@media (max-width: 44.99rem) {
+  .nav__toggle {
+    display: inline-flex;
+  }
+
+  .nav__menu {
+    display: none;
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav__menu[data-state="open"] {
+    display: flex;
+    animation: nav-menu-in var(--dur-fast) var(--spring-smooth);
+  }
+}
+
+@keyframes nav-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
