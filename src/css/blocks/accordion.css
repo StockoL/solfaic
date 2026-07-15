@@ -1,0 +1,81 @@
+/* ==========================================================================
+   BLOCK: ACCORDION
+   ========================================================================== */
+
+/*
+ * Adapted from the LooseLeaf template. Two structural differences from the
+ * original: (1) Solfaic's classroom page uses three independent
+ * single-item accordions rather than one .accordion grouping several
+ * .accordion__item children, so the item/border-between-items rules are
+ * dropped entirely; (2) --color-surface-base was the card's own background
+ * in the original template, which collides with Solfaic's page-background
+ * meaning of surface-base — swapped for --color-surface-card.
+ */
+.accordion {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  background-color: var(--color-surface-card);
+  overflow: hidden;
+}
+
+.accordion__trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-s);
+  padding: var(--space-s) var(--space-m);
+  background: transparent;
+  border: none;
+  color: var(--color-text-base);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: var(--size-step-base);
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease;
+}
+
+.accordion__trigger:hover,
+.accordion__trigger:focus-visible {
+  background-color: var(--color-surface-sunken);
+}
+
+/*
+ * Grid Interpolation Trick for smooth auto-height, driven by data-state
+ * rather than the boolean `hidden` attribute — the two don't mix: an
+ * unconditional `display: grid` here (author CSS) always beats the UA
+ * stylesheet's `[hidden] { display: none }`, which would make `hidden`
+ * silently inert. data-state + overflow:hidden on .accordion__content
+ * handles both the visual collapse and (via aria-expanded on the trigger)
+ * the assistive-tech state.
+ */
+.accordion__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-base) var(--spring-smooth);
+}
+
+.accordion__panel[data-state="open"] {
+  grid-template-rows: 1fr;
+}
+
+.accordion__content {
+  overflow: hidden;
+  padding-inline: var(--space-m);
+}
+
+.accordion__panel[data-state="open"] .accordion__content {
+  padding-bottom: var(--space-m);
+}
+
+.accordion__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  transition: transform var(--dur-base) var(--spring-snappy);
+}
+
+.accordion__trigger[aria-expanded="true"] .accordion__icon {
+  transform: rotate(180deg);
+}
