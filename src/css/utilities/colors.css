@@ -1,0 +1,38 @@
+/* ==========================================================================
+   UTILITY: COLORS (Text & Surface)
+   ========================================================================== */
+
+/*
+ * Two fixes from the LooseLeaf template: (1) .bg-primary's text color was
+ * --color-surface-base, which collides with Solfaic's page-background
+ * meaning of that token — swapped for --color-surface-card (white) so text
+ * is actually readable on an orange background. (2) .text-danger was a
+ * hardcoded #dc2626 with a prefers-color-scheme dark-mode override that
+ * directly contradicts global-styles.css's color-scheme: light — Solfaic
+ * has no dark palette anywhere else in the project, so a single lonely
+ * dark-mode branch here would be dead weight, not a feature. Dropped it;
+ * now uses the formalized --color-status-danger token instead.
+ */
+
+/* --- Text Colors --- */
+.text-primary {
+  color: var(--color-action-primary);
+}
+.text-muted {
+  color: var(--color-text-muted);
+}
+.text-danger {
+  color: var(--color-status-danger);
+}
+
+/* --- Surface Colors --- */
+.bg-surface-base {
+  background-color: var(--color-surface-base);
+}
+.bg-surface-sunken {
+  background-color: var(--color-surface-sunken);
+}
+.bg-primary {
+  background-color: var(--color-action-primary);
+  color: var(--color-surface-card);
+}
