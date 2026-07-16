@@ -13,10 +13,20 @@ export const sessionState = {
   streak: 0,
   maxPlays: 3,
   activeConfig: null, // Stores current metre, bars, and tick allocations
-  targetTimeline: [], // The algorithmic 'correct' answer
-  userSubmission: [], // What the user has placed on the board
-  slotStates: [], // Validation feedback memory ('idle', 'success', 'error')
+  targetTimeline: [], // The algorithmic 'correct' answer (rhythm)
+  userSubmission: [], // What the user has placed on the board (rhythm)
+  slotStates: [], // Rhythm validation feedback memory ('idle', 'success', 'error')
   selectedSlotIndex: null, // Tracks mobile tap-to-target logic
   currentState: "IDLE", // 'IDLE' or 'PLAYING' (locks UI during audio)
   allowedMotifs: [], // Current level's reel contents, cached for the vignette's mirrored reel
+
+  // --- Melodic engine additions ---
+  // An exercise is dictated in two passes: rhythm first, then solfège over
+  // the already-confirmed rhythm. exercisePhase tracks which reel/workspace
+  // pass is currently active; the two-phase evaluation flow that reads/sets
+  // it is UI wiring for a later pass, not part of this schema addition.
+  exercisePhase: "RHYTHM", // 'RHYTHM' or 'PITCH'
+  targetPitchLine: null, // generatePitchLine()'s output for the current exercise
+  pitchSubmission: [], // What the user has placed on the solfège reel, one slot per sounding note
+  pitchSlotStates: [], // Solfège validation feedback memory ('idle', 'success', 'error')
 };
