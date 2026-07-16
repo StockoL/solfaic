@@ -1,6 +1,6 @@
 // src/js/audio.js
 
-import { MOTIF_LIBRARY } from "./data.js";
+import { MOTIF_LIBRARY, SOLFEGE_DEGREES } from "./data.js";
 
 /**
  * ============================================================================
@@ -11,6 +11,68 @@ import { MOTIF_LIBRARY } from "./data.js";
  * to synchronise visual feedback. It contains absolutely no DOM manipulation.
  * ============================================================================
  */
+
+// Sharp spelling only — enharmonic spelling doesn't matter here (out of
+// scope per the design doc header), only the correct pitch does.
+const CHROMATIC_SCALE = [
+  "C",
+  "C#",
+  "D",
+  "D#",
+  "E",
+  "F",
+  "F#",
+  "G",
+  "G#",
+  "A",
+  "A#",
+  "B",
+];
+
+const PITCH_CLASS_INDEX = {
+  C: 0,
+  "C#": 1,
+  Db: 1,
+  D: 2,
+  "D#": 3,
+  Eb: 3,
+  E: 4,
+  F: 5,
+  "F#": 6,
+  Gb: 6,
+  G: 7,
+  "G#": 8,
+  Ab: 8,
+  A: 9,
+  "A#": 10,
+  Bb: 10,
+  B: 11,
+};
+
+/**
+ * Movable-do resolution: a solfège token ("so", "do'", "fi"...) plus a
+ * chosen tonic ("C4", "Eb4"...) becomes a real Tone.js note name, via
+ * SOLFEGE_DEGREES' semitone-from-tonic table. Falls back to returning the
+ * tonic unchanged if either input can't be resolved.
+ */
+export function resolveSolfegeToNote(token, tonic) {
+  const semitoneOffset = SOLFEGE_DEGREES[token];
+  if (semitoneOffset === undefined) return tonic;
+
+  const match = /^([A-G][#b]?)(\d+)$/.exec(tonic);
+  if (!match) return tonic;
+
+  const [, pitchClass, octaveStr] = match;
+  const tonicIndex = PITCH_CLASS_INDEX[pitchClass];
+  if (tonicIndex === undefined) return tonic;
+
+  const octave = parseInt(octaveStr, 10);
+  const totalSemitones = tonicIndex + semitoneOffset;
+  const noteIndex = ((totalSemitones % 12) + 12) % 12;
+  const octaveShift = Math.floor(totalSemitones / 12);
+
+  return `${CHROMATIC_SCALE[noteIndex]}${octave + octaveShift}`;
+}
 
 export const AudioEngine = {
   synth: null,
@@ -39,7 +101,7 @@ export const AudioEngine = {
    * Schedules and plays the rhythm sequence.
    * Returns a Promise that resolves when playback completes.
    */
-  async playSequence(targetTimeline, activeConfig) {
+  async playSequence(targetTimeline, activeConfig, tonic = null) {
     await this.init();
 
     Tone.Transport.cancel();
@@ -55,12 +117,21 @@ export const AudioEngine = {
       const motifData = MOTIF_LIBRARY[event.motifId];
       let subTime = currentTime;
 
-      motifData.playback.forEach((subDuration) => {
-        playableEvents.push({
-          time: subTime,
-          duration: subDuration,
-          pitch: event.pitch || "G3",
-        });
+      motifData.playback.forEach((subDuration, i) => {
+        // restMask slots still consume their share of the beat but never
+        // trigger a note — advance the cursor and skip scheduling.
+        if (!motifData.restMask?.[i]) {
+          const resolvedPitch =
+            tonic && event.pitch && SOLFEGE_DEGREES[event.pitch] !== undefined
+              ? resolveSolfegeToNote(event.pitch, tonic)
+              : event.pitch || "G3";
+
+          playableEvents.push({
+            time: subTime,
+            duration: subDuration,
+            pitch: resolvedPitch,
+          });
+        }
         subTime += Tone.Time(subDuration).toSeconds();
       });
       currentTime += Tone.Time(motifData.duration).toSeconds();
