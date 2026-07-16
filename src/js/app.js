@@ -170,7 +170,7 @@ function initialiseEventListeners() {
       await AudioEngine.playSequence(
         sessionState.targetTimeline,
         sessionState.activeConfig,
-        sessionState,
+        sessionState.targetPitchLine?.tonic,
       );
 
       sessionState.currentState = "IDLE";
