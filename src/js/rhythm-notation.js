@@ -65,7 +65,7 @@ function getSegments(motifId) {
     return [{ duration: null, weight: 4, isRest: true }];
   }
 
-  return playback.map((duration, i) => ({
+  const segments = playback.map((duration, i) => ({
     duration,
     weight: NOTE_WEIGHTS[duration] || 4,
     // restMask (rest-ti, rest-tika) marks specific slots silent without the
@@ -73,6 +73,24 @@ function getSegments(motifId) {
     // never inferred from duration.
     isRest: motif.restMask?.[i] === true,
   }));
+
+  if (motif.ticks <= 1) return segments;
+
+  // A motif spanning more than one box (too/toom/tum-ti/syncopa v2) is
+  // still rendered as a single card for its first box — but only the
+  // segments that *start* within that first box's own beat-width belong
+  // there. A note that starts later (because an earlier note in this same
+  // motif is still sounding) belongs entirely to the extension box's own
+  // rendering instead (see renderTieArcSVG), not crammed in here too.
+  const oneBoxWeight = motif.type === "compound" ? 6 : 4;
+  const truncated = [];
+  let cursor = 0;
+  for (const seg of segments) {
+    if (cursor >= oneBoxWeight) break;
+    truncated.push(seg);
+    cursor += seg.weight;
+  }
+  return truncated;
 }
 
 /**
