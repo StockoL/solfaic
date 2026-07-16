@@ -547,3 +547,159 @@ export const IRREGULAR_METRE_GROUPINGS = {
     ],
   },
 };
+
+/**
+ * ----------------------------------------------------------------------------
+ * PITCH DATA LAYER (Movable-Do Solfège)
+ * ----------------------------------------------------------------------------
+ */
+
+/**
+ * Semitone offset from the movable tonic ("do" = 0). Used to resolve a
+ * solfège token + a chosen tonic into a real pitch. Enharmonic spelling is
+ * deliberately not modelled (out of scope per the design doc header) — `si`
+ * and `le` share a semitone value (#5/b6 are the same key), which is correct
+ * for audio purposes even though they're different taught scale degrees.
+ */
+export const SOLFEGE_DEGREES = {
+  do: 0,
+  ra: 1,
+  re: 2,
+  ma: 3,
+  mi: 4,
+  fa: 5,
+  fi: 6,
+  so: 7,
+  si: 8,
+  le: 8,
+  la: 9,
+  ta: 10,
+  ti: 11,
+  "do'": 12,
+};
+
+/**
+ * Tonic pool an exercise's movable "do" is randomly chosen from — a modest
+ * mid-range band (not specified numerically in the design doc) so Level 1-4
+ * material, which ranges as low as "so" below the tonic and as high as
+ * "do'" an octave above it, stays in a comfortable singing range.
+ */
+export const allowedTonics = ["C4", "D4", "Eb4", "F4", "G4"];
+
+export const PITCH_LEVEL_RULES = {
+  1: {
+    melodicGroups: {
+      soMiLa: { toneset: ["so", "mi", "la"], cadenceRequired: false },
+      doReMi: { toneset: ["do", "re", "mi"], cadenceRequired: false },
+    },
+    // Level 1 exercises should also draw from random NON-EMPTY subsets
+    // of a group's toneset (sometimes just {so,mi}, sometimes the full
+    // {so,mi,la}) rather than always using all 3 notes — this matches
+    // how real early repertoire progressively adds notes, and it's the
+    // direct reason cadence-forcing has to be optional in the first
+    // place (a 2-note subset has no meaningful "tonic").
+  },
+  2: {
+    toneset: ["do", "re", "mi", "so", "la", "do'"],
+    cadenceRequired: true,
+    cadenceTarget: "do",
+  },
+  3: {
+    toneset: ["do", "re", "mi", "fa", "so", "la"],
+    cadenceRequired: true,
+    cadenceTargets: ["do", "la"],
+    modes: {
+      do: { level: 3, mode: "doMode" },
+      la: { level: 3, mode: "laMode" },
+    },
+  },
+  4: {
+    // Plain 5-note pentatonic (no fa) — do/la modes are Level 3's tables,
+    // reused here and filtered down to this level's fa-less toneset.
+    toneset: ["do", "re", "mi", "so", "la"],
+    cadenceRequired: true,
+    cadenceTargets: ["do", "la", "re", "mi", "so"],
+    modes: {
+      do: { level: 3, mode: "doMode" },
+      la: { level: 3, mode: "laMode" },
+      re: { level: 4, mode: "reMode" },
+      mi: { level: 4, mode: "miMode" },
+      so: { level: 4, mode: "soMode" },
+    },
+  },
+};
+
+/**
+ * Fully namespaced Markov weights for pitch generation — each melodic
+ * group/mode is its own object so e.g. "mi" inside soMiLa and "mi" inside
+ * doReMi never collide. A genuine first draft (see design doc); every row
+ * sums to 100, matching SYNTAX_DICTIONARY's convention.
+ */
+export const PITCH_SYNTAX_DICTIONARY = {
+  1: {
+    soMiLa: {
+      so: { mi: 50, so: 20, la: 30 },
+      mi: { so: 45, mi: 20, la: 35 },
+      la: { so: 50, mi: 20, la: 30 },
+    },
+    doReMi: {
+      do: { do: 30, re: 30, mi: 40 },
+      re: { do: 55, mi: 30, re: 15 },
+      mi: { do: 45, re: 20, mi: 35 },
+    },
+  },
+
+  2: {
+    unified: {
+      do: { do: 20, re: 20, mi: 25, so: 15, la: 10, "do'": 10 },
+      re: { do: 45, mi: 25, re: 15, so: 15 },
+      mi: { do: 35, re: 15, mi: 15, so: 25, la: 10 },
+      so: { mi: 30, so: 15, la: 20, do: 15, re: 10, "do'": 10 },
+      la: { so: 40, mi: 15, la: 15, do: 20, "do'": 10 },
+      "do'": { la: 30, so: 25, "do'": 15, mi: 15, do: 15 },
+    },
+  },
+
+  3: {
+    doMode: {
+      do: { do: 20, re: 20, mi: 25, fa: 5, so: 15, la: 10, "do'": 5 },
+      re: { do: 45, mi: 25, fa: 10, re: 10, so: 10 },
+      mi: { do: 30, re: 15, mi: 15, fa: 15, so: 20, la: 5 },
+      fa: { mi: 60, so: 20, fa: 10, re: 10 },
+      so: { mi: 25, fa: 10, so: 15, la: 20, do: 20, re: 10 },
+      la: { so: 40, mi: 15, la: 15, do: 20, fa: 10 },
+    },
+    laMode: {
+      do: { la: 40, do: 15, mi: 20, re: 15, so: 10 },
+      re: { do: 30, mi: 20, re: 15, la: 25, fa: 10 },
+      mi: { re: 15, fa: 15, mi: 15, so: 15, la: 30, do: 10 },
+      fa: { mi: 55, so: 15, fa: 10, la: 20 },
+      so: { la: 35, mi: 20, fa: 10, so: 15, do: 20 },
+      la: { la: 25, so: 25, mi: 20, do: 20, fa: 10 },
+    },
+  },
+
+  4: {
+    reMode: {
+      do: { re: 35, do: 15, mi: 25, la: 15, so: 10 },
+      re: { re: 20, do: 25, mi: 25, so: 15, la: 15 },
+      mi: { re: 30, do: 20, mi: 15, so: 20, la: 15 },
+      so: { mi: 25, re: 30, so: 15, la: 15, do: 15 },
+      la: { so: 25, re: 30, la: 15, mi: 20, do: 10 },
+    },
+    miMode: {
+      do: { mi: 30, re: 20, do: 15, la: 20, so: 15 },
+      re: { mi: 35, do: 20, re: 15, la: 15, so: 15 },
+      mi: { mi: 20, re: 20, do: 15, so: 25, la: 20 },
+      so: { mi: 35, la: 20, so: 15, re: 15, do: 15 },
+      la: { mi: 30, so: 20, la: 15, re: 20, do: 15 },
+    },
+    soMode: {
+      do: { so: 25, mi: 25, re: 15, do: 15, la: 20 },
+      re: { so: 30, mi: 20, do: 20, re: 15, la: 15 },
+      mi: { so: 35, do: 20, re: 15, mi: 15, la: 15 },
+      so: { so: 20, mi: 25, la: 20, do: 20, re: 15 },
+      la: { so: 35, mi: 20, la: 15, do: 15, re: 15 },
+    },
+  },
+};
