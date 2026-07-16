@@ -95,7 +95,16 @@
   pointer-events: none;
 }
 
-.workspace-box:not([data-state="disabled"]) {
+/*
+ * Read-only (PITCH phase's confirmed rhythm cards): stays fully visible,
+ * unlike "disabled" - the student should still be able to read their
+ * confirmed answer, it just isn't targetable/editable any more.
+ */
+.workspace-box[data-state="readonly"] {
+  cursor: default;
+}
+
+.workspace-box:not([data-state="disabled"]):not([data-state="readonly"]) {
   cursor: pointer;
 }
 
@@ -219,4 +228,5 @@
 
 .solfege-card__cell.is-filled {
   color: var(--color-text-base);
+  cursor: pointer;
 }

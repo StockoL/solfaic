@@ -17,11 +17,14 @@ import {
   evaluateSubmission,
   insertMotif,
   clearMotif,
+  insertPitch,
+  clearPitch,
 } from "./engine.js";
 import {
   DOM,
   renderWorkspace,
   renderMotifReel,
+  renderSolfegeReel,
   renderStreakTracker,
   renderMeta,
   syncLevelDropdown,
@@ -76,6 +79,28 @@ export function startLevel(levelId) {
 
   console.log(
     `[Conductor] Level ${levelId} Initialised. Streak: ${sessionState.streak}/3`,
+  );
+}
+
+/**
+ * Transitions a confirmed-correct rhythm exercise into its solfège pass —
+ * the same targetTimeline/targetPitchLine, dictated again for a different
+ * task. Deliberately does NOT call generateRhythmTimeline/generatePitchLine
+ * again; that would silently swap the exercise out from under the student.
+ */
+export function enterPitchPhase() {
+  sessionState.exercisePhase = "PITCH";
+  sessionState.playCount = 0;
+  sessionState.currentState = "IDLE";
+  sessionState.selectedSlotIndex = null;
+
+  unlockUI();
+  renderWorkspace(sessionState);
+  renderSolfegeReel(sessionState.targetPitchLine.toneset);
+  renderMeta(sessionState);
+
+  console.log(
+    `[Conductor] Entered PITCH phase. Streak: ${sessionState.streak}/3`,
   );
 }
 
@@ -259,6 +284,41 @@ function initialiseEventListeners() {
     sessionState.userSubmission = newSubmission;
     sessionState.slotStates = newStates;
     sessionState.selectedSlotIndex = null;
+    renderWorkspace(sessionState);
+  });
+
+  // --- SOLFÈGE PLACEMENT: reel-pad click auto-advances to the first empty
+  // pitchSubmission slot; clicking an already-filled cell clears it. No
+  // click-to-target-a-specific-cell here (unlike rhythm) - pitchSubmission
+  // has no per-tick concept for a "selected slot" to even mean.
+
+  document.addEventListener("action-select-pitch", (e) => {
+    const { syllable } = e.detail;
+    const targetIndex = sessionState.pitchSubmission.findIndex(
+      (slot) => slot === null,
+    );
+    if (targetIndex === -1) return;
+
+    const { newPitchSubmission, newPitchSlotStates } = insertPitch(
+      sessionState.pitchSubmission,
+      sessionState.pitchSlotStates,
+      targetIndex,
+      syllable,
+    );
+    sessionState.pitchSubmission = newPitchSubmission;
+    sessionState.pitchSlotStates = newPitchSlotStates;
+    renderWorkspace(sessionState);
+  });
+
+  document.addEventListener("action-clear-pitch", (e) => {
+    const { index } = e.detail;
+    const { newPitchSubmission, newPitchSlotStates } = clearPitch(
+      sessionState.pitchSubmission,
+      sessionState.pitchSlotStates,
+      index,
+    );
+    sessionState.pitchSubmission = newPitchSubmission;
+    sessionState.pitchSlotStates = newPitchSlotStates;
     renderWorkspace(sessionState);
   });
 

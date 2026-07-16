@@ -307,10 +307,23 @@ function renderSolfegeCard(
     cell.className = "solfege-card__cell";
 
     if (!isRest) {
-      const syllable = pitchSubmission?.[pitchCursor];
+      const cellIndex = pitchCursor;
+      const syllable = pitchSubmission?.[cellIndex];
       if (syllable) {
         cell.textContent = syllable;
         cell.classList.add("is-filled");
+        // Placement itself is reel-pad-click auto-advance-to-first-empty-
+        // slot (see the action-select-pitch handler in app.js) — clicking
+        // a filled cell here is only ever a clear, mirroring rhythm's
+        // clear-on-click-a-filled-card gesture.
+        cell.addEventListener("click", () => {
+          cell.dispatchEvent(
+            new CustomEvent("action-clear-pitch", {
+              bubbles: true,
+              detail: { index: cellIndex },
+            }),
+          );
+        });
       }
       pitchCursor++;
     }
@@ -377,11 +390,18 @@ function buildWorkspaceBox(state, tickIndex) {
   const isActive = tickIndex < state.activeConfig.totalTicks;
   const token = isActive ? state.userSubmission[tickIndex] : null;
   const isExtension = typeof token === "string" && token.endsWith("_ext");
+  // Rhythm is confirmed correct by the time PITCH phase starts (that's the
+  // only way to get here) — its cards stay visible but stop being
+  // targetable/editable, so the student can still see their confirmed
+  // answer while working on solfège.
+  const isReadOnly = state.exercisePhase === "PITCH";
 
   if (!isActive) {
     box.setAttribute("data-state", "disabled");
   } else if (isExtension) {
     box.setAttribute("data-state", "extension");
+  } else if (isReadOnly) {
+    box.setAttribute("data-state", "readonly");
   }
 
   if (isActive && state.slotStates[tickIndex] === "success") {
@@ -443,7 +463,7 @@ function buildWorkspaceBox(state, tickIndex) {
   container.appendChild(solfegeCard);
   box.appendChild(container);
 
-  if (isActive && !isExtension) {
+  if (isActive && !isExtension && !isReadOnly) {
     box.addEventListener("click", () => {
       box.dispatchEvent(
         new CustomEvent("action-target-slot", {

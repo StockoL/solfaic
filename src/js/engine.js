@@ -479,3 +479,24 @@ export function evaluatePitchSubmission(userPitchSubmission, targetPitches) {
 
   return { isCorrect, newPitchSlotStates };
 }
+
+/**
+ * Pitch placement — much simpler than insertMotif/clearMotif since
+ * pitchSubmission has no ticks/duration/extension concept at all, just a
+ * direct 1:1 index per sounding note. A single assignment each.
+ */
+export function insertPitch(currentPitchSubmission, currentPitchSlotStates, index, syllable) {
+  const newPitchSubmission = [...currentPitchSubmission];
+  const newPitchSlotStates = [...currentPitchSlotStates];
+  newPitchSubmission[index] = syllable;
+  newPitchSlotStates[index] = "idle";
+  return { newPitchSubmission, newPitchSlotStates };
+}
+
+export function clearPitch(currentPitchSubmission, currentPitchSlotStates, index) {
+  const newPitchSubmission = [...currentPitchSubmission];
+  const newPitchSlotStates = [...currentPitchSlotStates];
+  newPitchSubmission[index] = null;
+  newPitchSlotStates[index] = "idle";
+  return { newPitchSubmission, newPitchSlotStates };
+}
