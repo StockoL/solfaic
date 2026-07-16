@@ -320,7 +320,10 @@ function renderWorkspacePagerDots(pageCount) {
   if (!DOM.workspaceDots || !navEl) return;
 
   DOM.workspaceDots.innerHTML = "";
-  navEl.hidden = pageCount <= 1;
+  // data-state, not the hidden attribute — workspace.css's .workspace-pager__nav
+  // sets display:flex, which (like Accordion's grid trick) always beats the UA
+  // stylesheet's [hidden] { display: none }, so hidden alone silently no-ops.
+  navEl.setAttribute("data-state", pageCount <= 1 ? "hidden" : "visible");
   if (pageCount <= 1) return;
 
   for (let i = 0; i < pageCount; i++) {
