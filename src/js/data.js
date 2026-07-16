@@ -521,3 +521,29 @@ export const CADENCE_MOTIFS = [
   "toom",
   "toomRest",
 ];
+
+/**
+ * ----------------------------------------------------------------------------
+ * IRREGULAR METRE GROUPING (5/8, 7/8)
+ * A "2" group is one simple-time beat's worth of content; a "3" group is one
+ * compound-time beat's worth. generateBarSequence is called once per group
+ * with ticksPerBar: 1 and the matching motif pool — no parallel irregular-
+ * metre generator needed. `default` is used for bars whose form letter
+ * matches the phrase's first letter ("A"); `variants` is drawn from for the
+ * first contrasting letter, tying the metre shift to the same place the
+ * melody/rhythm is already changing.
+ * ----------------------------------------------------------------------------
+ */
+export const IRREGULAR_METRE_GROUPINGS = {
+  "5/8": {
+    default: [2, 3],
+    variants: [[3, 2]],
+  },
+  "7/8": {
+    default: [2, 2, 3],
+    variants: [
+      [3, 2, 2],
+      [2, 3, 2],
+    ],
+  },
+};
