@@ -3,6 +3,7 @@ import {
   SYNTAX_DICTIONARY,
   levelRules,
   CADENCE_MOTIFS,
+  IRREGULAR_METRE_GROUPINGS,
 } from "./data.js";
 
 /**
@@ -80,6 +81,61 @@ export function generateBarSequence(
   return barMotifs;
 }
 
+/**
+ * Irregular-metre (5/8, 7/8) bar generation. Not a parallel generator — each
+ * group in the metre's grouping pattern is just one more call to
+ * generateBarSequence with ticksPerBar: 1, drawing from the simple pool for
+ * a "2" group or the compound pool for a "3" group (see design doc: each
+ * "2"/"3" is exactly one simple/compound beat's worth of existing content).
+ * `isContrastingBar` selects the variant grouping instead of the level's
+ * default — callers tie this to the phrase's form letter (e.g. the "B" in
+ * an AABA phrase), not an independent dice roll.
+ *
+ * Standalone and testable on its own; not yet wired into
+ * generateRhythmTimeline's dispatch because no level currently activates
+ * 5/8 or 7/8 (Level 6, the level the design doc assigns 5/8 to, is a
+ * melodic-sequence pass that's explicitly deferred).
+ */
+export function generateIrregularBar(
+  metre,
+  isContrastingBar,
+  simplePool,
+  compoundPool,
+) {
+  const groupingConfig = IRREGULAR_METRE_GROUPINGS[metre];
+  if (!groupingConfig) return [];
+
+  const grouping =
+    isContrastingBar && groupingConfig.variants.length > 0
+      ? groupingConfig.variants[
+          Math.floor(Math.random() * groupingConfig.variants.length)
+        ]
+      : groupingConfig.default;
+
+  const barMotifs = [];
+  grouping.forEach((groupSize) => {
+    const pool = groupSize === 3 ? compoundPool : simplePool;
+    barMotifs.push(...generateBarSequence(pool, 1, false));
+  });
+  return barMotifs;
+}
+
+const ANACRUSIS_PROBABILITY = 0.35;
+
+/**
+ * Level-gated, probabilistic anacrusis check. rest-ti/rest-tika are
+ * simple-time-only motifs (no compound rest-initial card exists in the
+ * vocabulary), so a compound-metre phrase never gets a pickup. Returns the
+ * chosen motif id, or null if no anacrusis was rolled this phrase.
+ */
+function maybeChooseAnacrusisMotif(rules, metreType) {
+  if (metreType !== "simple") return null;
+  const pool = rules.anacrusisMotifs || [];
+  if (pool.length === 0) return null;
+  if (Math.random() >= ANACRUSIS_PROBABILITY) return null;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 export function generateRhythmTimeline(levelId) {
   const rules = levelRules[levelId];
   if (!rules) return { timeline: [], config: null };
@@ -101,12 +157,20 @@ export function generateRhythmTimeline(levelId) {
     ticksPerBar = 2;
   }
 
+  const anacrusisMotifId = maybeChooseAnacrusisMotif(rules, metreType);
+
   const activeConfig = {
     metre: chosenMetre,
     bars: barCount,
     form: chosenForm,
-    totalTicks: barCount * ticksPerBar,
+    // +1 when a pickup is present — an anacrusis adds exactly one beat, not
+    // one bar, so FORM_TEMPLATES' bar count is unaffected. (No hard cap on
+    // this total is enforced here — the workspace pager already handles
+    // phrases longer than one page, which is the "16-box ceiling" concern
+    // this used to require a tick-budget for.)
+    totalTicks: barCount * ticksPerBar + (anacrusisMotifId ? 1 : 0),
     ticksPerBar: ticksPerBar,
+    hasAnacrusis: !!anacrusisMotifId,
     allowedMotifs:
       metreType === "simple" ? rules.simpleMotifs : rules.compoundMotifs,
   };
@@ -130,6 +194,19 @@ export function generateRhythmTimeline(levelId) {
   });
 
   const timeline = [];
+
+  if (anacrusisMotifId) {
+    const motifData = MOTIF_LIBRARY[anacrusisMotifId];
+    timeline.push({
+      // Bar -1 marks "before bar 0" (Tone.js BarsBeatsSixteenths pickup
+      // convention) — informational only, nothing currently reads .time.
+      time: "-1:0:0",
+      duration: motifData.duration,
+      motifId: anacrusisMotifId,
+      pitch: null,
+    });
+  }
+
   rawBarArrays.forEach((barMotifs, barIndex) => {
     let beatInBar = 0;
     barMotifs.forEach((motifId) => {
