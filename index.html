@@ -85,7 +85,7 @@
     <main id="main-content">
       <section class="hero" aria-labelledby="hero-heading">
         <!--
-          20-particle ambient drift (Louis Hoebregts, CodePen BxMQYQ). Full-
+          20-particle ambient drift (inspired by Louis Hoebregts, CodePen BxMQYQ). Full-
           bleed behind .hero__layout - see hero.css for the per-particle
           nth-child variety and the float keyframe.
         -->
@@ -96,7 +96,11 @@
           <span></span><span></span><span></span><span></span><span></span>
         </div>
 
-        <div class="hero__layout center" data-and-text>
+        <div
+          class="hero__layout center"
+          data-and-text
+          style="--center-max-width: 52rem"
+        >
           <div class="hero__content flow">
             <h1 id="hero-heading" class="hero__title">
               Train your ear, one motif at a time.
