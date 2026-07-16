@@ -1,0 +1,94 @@
+/* ==========================================================================
+   BLOCK: CELEBRATION MODAL (streak-complete / level-up overlay, and the
+   tour-completion "You're Ready!" modal — both built from the same
+   .celebration-* elements in core.js, so one block covers both)
+   ========================================================================== */
+
+/*
+ * These elements have existed in core.js since the V1 monolith split but
+ * never had any CSS at all — an unstyled, unpositioned div just sits in
+ * normal document flow whenever triggerCelebrationModal()/
+ * triggerTourCompletionModal() fires, off-screen below the fold with no
+ * backdrop. is-active is a plain class (not [data-state], unlike the
+ * vignette overlay) because that's what the existing JS already toggles.
+ */
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-l);
+  background-color: color-mix(in srgb, var(--color-graphite) 75%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--dur-base) var(--spring-smooth),
+    visibility var(--dur-base);
+}
+
+.celebration-overlay.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.celebration-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-m);
+  padding: var(--space-l);
+  max-inline-size: var(--measure);
+  width: 90vw;
+  text-align: center;
+  background-color: var(--color-surface-card);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transform: scale(0.9);
+  transition: transform var(--dur-base) var(--spring-smooth);
+}
+
+.celebration-overlay.is-active .celebration-modal {
+  transform: scale(1);
+}
+
+.celebration-title {
+  font-family: var(--font-family-heading);
+  font-size: var(--size-step-3);
+  color: var(--color-text-base);
+}
+
+.celebration-subtext {
+  font-size: var(--size-step-base);
+  color: var(--color-text-muted);
+}
+
+/*
+ * core.js gives this button both "button celebration-btn" and
+ * data-variant="primary" — the look comes entirely from the shared
+ * .button component (button.css); celebration-btn is just the click-
+ * handler hook, kept as a class in case this modal ever needs its own
+ * spacing/size override without touching every other primary button.
+ */
+
+.confetti-particle {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 310;
+  border-radius: 2px;
+  pointer-events: none;
+  animation: celebration-confetti-fall 3.5s ease-out forwards;
+}
+
+@keyframes celebration-confetti-fall {
+  from {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--x-drift), var(--y-drop)) rotate(var(--rotation));
+    opacity: 0;
+  }
+}

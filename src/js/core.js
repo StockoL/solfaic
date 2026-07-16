@@ -673,7 +673,8 @@ export function triggerCelebrationModal(targetLevelId, startLevelCallback) {
   `;
 
   const btn = document.createElement("button");
-  btn.className = "celebration-btn";
+  btn.className = "button celebration-btn";
+  btn.setAttribute("data-variant", "primary");
   btn.innerText = actionText;
 
   btn.addEventListener("click", () => {
@@ -929,7 +930,8 @@ function triggerTourCompletionModal() {
   `;
 
   const btn = document.createElement("button");
-  btn.className = "celebration-btn";
+  btn.className = "button celebration-btn";
+  btn.setAttribute("data-variant", "primary");
   btn.innerText = "Let's Begin! 🚀";
 
   btn.addEventListener("click", () => {

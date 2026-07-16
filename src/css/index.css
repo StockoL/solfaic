@@ -38,6 +38,7 @@
 @import url("./blocks/workspace.css") layer(blocks);
 @import url("./blocks/motif-pad.css") layer(blocks);
 @import url("./blocks/vignette-overlay.css") layer(blocks);
+@import url("./blocks/celebration-modal.css") layer(blocks);
 
 @import url("./utilities/animations.css") layer(utilities);
 @import url("./utilities/colors.css") layer(utilities);
