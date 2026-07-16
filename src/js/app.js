@@ -15,6 +15,7 @@ import {
   generatePitchLine,
   countSoundingNotes,
   evaluateSubmission,
+  evaluatePitchSubmission,
   insertMotif,
   clearMotif,
   insertPitch,
@@ -105,6 +106,40 @@ export function enterPitchPhase() {
 }
 
 /**
+ * Shared failure tail for both phases' submit handling — wipes the streak,
+ * then either shows the correct answer once plays run out (applying it via
+ * `applyCorrectAnswer`, phase-specific) before restarting the level, or
+ * unlocks the UI for another attempt. Identical timing/DOM-marking either
+ * way, only which submission array gets corrected differs.
+ */
+function handleFailedAttempt(applyCorrectAnswer) {
+  sessionState.streak = 0;
+  renderStreakTracker(sessionState.streak);
+
+  if (sessionState.playCount >= sessionState.maxPlays) {
+    // Out of plays: Show the correction sequence automatically
+    setTimeout(() => {
+      applyCorrectAnswer();
+      renderWorkspace(sessionState);
+
+      // Remedial highlight — data-state driven so workspace.css can
+      // style it with real tokens instead of hardcoded inline colours.
+      document
+        .querySelectorAll(".workspace-box:not([data-state='disabled'])")
+        .forEach((box) => box.setAttribute("data-feedback", "corrected"));
+
+      setTimeout(() => startLevel(sessionState.currentLevel), 4000);
+    }, 1500);
+  } else {
+    // Plays remaining: Unlock UI for another attempt
+    setTimeout(() => {
+      sessionState.currentState = "IDLE";
+      unlockUI();
+    }, 2000);
+  }
+}
+
+/**
  * Global Event Routing
  * We attach application-critical listeners to the cached DOM elements exported by core.js.
  */
@@ -121,6 +156,9 @@ function initialiseEventListeners() {
 
       // Block submission early if the board still has empty holes —
       // shake the bars and halo-pulse the empty slots instead of evaluating.
+      // TODO(task 8): only ever checks userSubmission — during PITCH phase
+      // that array is already guaranteed full (rhythm was confirmed to get
+      // here), so this never actually guards an incomplete pitchSubmission.
       if (sessionState.userSubmission.includes(null)) {
         triggerIncompleteBoardFeedback();
         sessionState.currentState = "IDLE";
@@ -128,59 +166,55 @@ function initialiseEventListeners() {
         return;
       }
 
-      // Ask the Engine for the mathematical truth (Pure Function)
-      const result = evaluateSubmission(
-        sessionState.userSubmission,
-        sessionState.targetTimeline,
-      );
+      if (sessionState.exercisePhase === "RHYTHM") {
+        const result = evaluateSubmission(
+          sessionState.userSubmission,
+          sessionState.targetTimeline,
+        );
+        sessionState.slotStates = result.newSlotStates;
+        renderWorkspace(sessionState);
 
-      // Update the Master Score (State)
-      sessionState.slotStates = result.newSlotStates;
-
-      // Paint the initial validation feedback
-      renderWorkspace(sessionState);
-
-      // Handle pedagogical progression routing
-      if (result.isCorrect) {
-        sessionState.streak++;
-        renderStreakTracker(sessionState.streak);
-
-        setTimeout(() => {
-          if (sessionState.streak >= 3) {
-            sessionState.streak = 0;
-            // Pass startLevel as a callback to prevent circular imports in core.js
-            triggerCelebrationModal(sessionState.currentLevel + 1, startLevel);
-          } else {
-            startLevel(sessionState.currentLevel); // Load next round
-          }
-        }, 1000);
-      } else {
-        sessionState.streak = 0; // Wipe streak on error
-        renderStreakTracker(sessionState.streak);
-
-        if (sessionState.playCount >= sessionState.maxPlays) {
-          // Out of plays: Show the correction sequence automatically
-          setTimeout(() => {
+        if (result.isCorrect) {
+          // Rhythm confirmed — move to the solfège pass over the SAME
+          // exercise rather than advancing the streak. The streak reflects
+          // completing both phases, not rhythm alone.
+          setTimeout(() => enterPitchPhase(), 1000);
+        } else {
+          handleFailedAttempt(() => {
             sessionState.userSubmission = [...result.flatTarget];
             sessionState.slotStates = Array(result.flatTarget.length).fill(
               "idle",
             );
-            renderWorkspace(sessionState);
+          });
+        }
+      } else {
+        // PITCH phase
+        const result = evaluatePitchSubmission(
+          sessionState.pitchSubmission,
+          sessionState.targetPitchLine.pitches,
+        );
+        sessionState.pitchSlotStates = result.newPitchSlotStates;
+        renderWorkspace(sessionState);
 
-            // Remedial highlight — data-state driven so workspace.css can
-            // style it with real tokens instead of hardcoded inline colours.
-            document
-              .querySelectorAll(".workspace-box:not([data-state='disabled'])")
-              .forEach((box) => box.setAttribute("data-feedback", "corrected"));
+        if (result.isCorrect) {
+          sessionState.streak++;
+          renderStreakTracker(sessionState.streak);
 
-            setTimeout(() => startLevel(sessionState.currentLevel), 4000);
-          }, 1500);
-        } else {
-          // Plays remaining: Unlock UI for another attempt
           setTimeout(() => {
-            sessionState.currentState = "IDLE";
-            unlockUI();
-          }, 2000);
+            if (sessionState.streak >= 3) {
+              sessionState.streak = 0;
+              // Pass startLevel as a callback to prevent circular imports in core.js
+              triggerCelebrationModal(sessionState.currentLevel + 1, startLevel);
+            } else {
+              startLevel(sessionState.currentLevel); // Load next round (fresh rhythm + pitch)
+            }
+          }, 1000);
+        } else {
+          handleFailedAttempt(() => {
+            const target = sessionState.targetPitchLine.pitches;
+            sessionState.pitchSubmission = [...target];
+            sessionState.pitchSlotStates = Array(target.length).fill("idle");
+          });
         }
       }
     });
