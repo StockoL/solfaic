@@ -88,6 +88,10 @@ export const MOTIF_LIBRARY = {
     ticks: 2,
     label: "tum-ti",
     playback: ["4n.", "8n"],
+    // Same box-spanning shape as syncopa v2: the dotted crotchet's second
+    // half rings into box B before the trailing quaver attacks — box B
+    // needs the tie-arc mark rather than the default flat dash.
+    tieContinuation: true,
   },
   syncopaV2: {
     type: "simple",
