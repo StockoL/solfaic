@@ -187,13 +187,30 @@ export const MOTIF_LIBRARY = {
  * ----------------------------------------------------------------------------
  * DATA DICTIONARIES: POOLS & TEMPLATES
  * Defining these externally keeps the main progression matrix DRY and scalable.
+ * Pools are named by the level a motif is *introduced* at; levelRules below
+ * composes them cumulatively so e.g. Level 3 still has access to Level 1/2
+ * content.
  * ----------------------------------------------------------------------------
  */
 
 export const MOTIF_POOLS = {
-  coreSimple: ["ta", "titi", "taRest"],
-  advSimple: ["tikatika", "tikati", "titika", "too"],
-  coreCompound: ["tum", "tititi", "tati", "tumRest"],
+  simpleL1: ["ta", "titi", "taRest"],
+  simpleL2: [
+    "tikatika",
+    "tikati",
+    "titika",
+    "too",
+    "tooRest",
+    "timKa",
+    "tumTi",
+    "syncopaV2",
+  ],
+  simpleL3: ["trioLa", "restTi"],
+  simpleL4: ["syncopaV1", "restTika"],
+  // Compound time doesn't start until Level 2 (see metre table).
+  compoundL2: ["tum", "tititi", "tati", "tumRest"],
+  compoundL3: ["tikaTikaTi", "toom", "toomRest"],
+  compoundL4: ["tiTikaTi"],
 };
 
 export const FORM_TEMPLATES = {
@@ -236,6 +253,11 @@ export const FORM_TEMPLATES = {
  * MARKOV SYNTAX DICTIONARY (Grammar & Phrasing)
  * Defines the probability of which motif should follow the current motif.
  * Higher numbers represent a stronger musical pull (idiomatic resolution).
+ * A first draft, same as the pitch tables below — tune against real
+ * repertoire once this is generating audible phrases. generateBarSequence
+ * falls back to uniform-random among viable options whenever the previous
+ * motif has no weighted entry for any of them, so gaps here are safe, just
+ * less idiomatic.
  * ----------------------------------------------------------------------------
  */
 export const SYNTAX_DICTIONARY = {
@@ -244,51 +266,115 @@ export const SYNTAX_DICTIONARY = {
   // ==========================================
 
   ta: {
-    ta: 40, // Crotchets comfortably repeat
-    titi: 30, // Smooth transition into quavers
-    tikatika: 15, // Sudden burst of energy
-    too: 10, // Settle into a minim
+    ta: 30, // Crotchets comfortably repeat
+    titi: 25, // Smooth transition into quavers
+    tikatika: 10, // Sudden burst of energy
+    too: 15, // Settle into a minim
     taRest: 5, // Take a quick breath
+    timKa: 10, // Lean into a dotted-quaver pickup
+    tumTi: 5,
   },
 
   titi: {
-    ta: 50, // Quavers heavily want to land on a solid downbeat
-    titi: 30, // Continuous running quavers
+    ta: 40, // Quavers heavily want to land on a solid downbeat
+    titi: 25, // Continuous running quavers
     tikati: 10, // Move into a syncopated feel
     titika: 10, // Move into a forward-leaning syncopation
+    too: 10,
+    syncopaV1: 5,
   },
 
   taRest: {
-    ta: 60, // Always step out of a rest with a strong, confident attack
+    ta: 55, // Always step out of a rest with a strong, confident attack
     titi: 30, // Or a running attack
     tikatika: 10, // Surprise burst out of the silence
+    too: 5,
   },
 
   too: {
-    ta: 40, // Minims are a full reset. Step out cleanly.
-    titi: 40, // Regain lost momentum immediately
+    ta: 35, // Minims are a full reset. Step out cleanly.
+    titi: 30, // Regain lost momentum immediately
     tikatika: 10,
     taRest: 10,
+    too: 10, // Sustained notes can also comfortably repeat
+    trioLa: 5,
+  },
+
+  tooRest: {
+    ta: 50,
+    titi: 30,
+    too: 20,
   },
 
   // --- Advanced Simple Subdivisions (High Tension) ---
 
   tikatika: {
-    ta: 70, // 4 semiquavers ALMOST ALWAYS resolve to a stable crotchet
+    ta: 55, // 4 semiquavers ALMOST ALWAYS resolve to a stable crotchet
     titi: 20, // Rarely, they resolve to running quavers
-    too: 10, // Huge release into a minim
+    too: 15, // Huge release into a minim
+    tikati: 5,
+    titika: 5,
   },
 
   tikati: {
-    ta: 60, // The trailing quaver lands nicely onto a crotchet
-    titi: 30,
+    ta: 55, // The trailing quaver lands nicely onto a crotchet
+    titi: 25,
     tikatika: 10,
+    too: 10,
   },
 
   titika: {
-    ta: 70, // The two trailing semiquavers act as a pickup, pushing heavily into the next beat
+    ta: 60, // The two trailing semiquavers act as a pickup, pushing heavily into the next beat
     titi: 20,
     too: 10,
+    tikatika: 10,
+  },
+
+  timKa: {
+    ta: 45, // The dotted-quaver-semiquaver snap wants a clean landing
+    titi: 25,
+    timKa: 15, // Comfortably repeats as a rhythmic figure
+    too: 15,
+  },
+
+  tumTi: {
+    ta: 40,
+    titi: 30,
+    too: 20,
+    taRest: 10,
+  },
+
+  syncopaV2: {
+    ta: 50, // Syncopation craves a strong resolution
+    too: 25,
+    titi: 15,
+    syncopaV2: 10,
+  },
+
+  trioLa: {
+    ta: 45,
+    titi: 25,
+    trioLa: 20, // Triplet runs comfortably chain together
+    too: 10,
+  },
+
+  restTi: {
+    ta: 55, // The pickup's sounding half wants a confident landing
+    titi: 30,
+    tikatika: 15,
+  },
+
+  syncopaV1: {
+    ta: 50,
+    titi: 25,
+    too: 15,
+    syncopaV1: 10,
+  },
+
+  restTika: {
+    ta: 55,
+    titi: 30,
+    tikati: 15,
   },
 
   // ==========================================
@@ -296,27 +382,60 @@ export const SYNTAX_DICTIONARY = {
   // ==========================================
 
   tum: {
-    tum: 40, // Dotted crotchets comfortably repeat
-    tititi: 40, // Flow naturally into running quavers
+    tum: 30, // Dotted crotchets comfortably repeat
+    tititi: 35, // Flow naturally into running quavers
     tati: 15, // Move into a lilting long-short
     tumRest: 5,
+    toom: 10,
+    tikaTikaTi: 5,
   },
 
   tititi: {
-    tum: 50, // Running quavers want to land on a solid beat
-    tati: 30, // Shift into a lilt
-    tititi: 20, // Continuous running
+    tum: 45, // Running quavers want to land on a solid beat
+    tati: 25, // Shift into a lilt
+    tititi: 15, // Continuous running
+    toom: 10,
+    tikaTikaTi: 5,
   },
 
   tati: {
-    tititi: 50, // The short quaver acts as a springboard into running notes
-    tum: 40, // Or resolves safely
+    tititi: 40, // The short quaver acts as a springboard into running notes
+    tum: 35, // Or resolves safely
     tati: 10, // Skipping/galloping feel
+    tiTikaTi: 15,
   },
 
   tumRest: {
-    tum: 60, // Step out of the rest with a solid beat
-    tititi: 40, // Or a running beat
+    tum: 55, // Step out of the rest with a solid beat
+    tititi: 35, // Or a running beat
+    toom: 10,
+  },
+
+  tikaTikaTi: {
+    tum: 55, // The trailing quaver wants a clean landing
+    tititi: 25,
+    toom: 10,
+    tikaTikaTi: 10,
+  },
+
+  toom: {
+    tum: 40, // Full reset from the sustained dotted minim
+    tititi: 35,
+    tumRest: 15,
+    toom: 10,
+  },
+
+  toomRest: {
+    tum: 55,
+    tititi: 30,
+    toom: 15,
+  },
+
+  tiTikaTi: {
+    tum: 50,
+    tititi: 30,
+    tati: 10,
+    tiTikaTi: 10,
   },
 };
 
@@ -324,39 +443,81 @@ export const SYNTAX_DICTIONARY = {
  * ----------------------------------------------------------------------------
  * PROGRESSION MATRIX (levelRules)
  * Uses ES6 Spread Operators (...) to cumulatively inherit arrays from previous levels.
+ *
+ * New metres only enter at the levels the metre table specifies (Level 2 adds
+ * 6/8; nothing new for rhythm at Level 3/4 — those levels add motif
+ * vocabulary and pitch content on the existing metre/form set instead).
+ * `anacrusisMotifs` is the level-gated pool the anacrusis prepend step in
+ * engine.js draws from — empty/absent below Level 3 per the design doc's
+ * "Confirmed: rest-ti at Level 3, rest-tika at Level 4."
  * ----------------------------------------------------------------------------
  */
 export const levelRules = {
   1: {
     allowedMetres: ["2/4", "3/4", "4/4"],
     barOptions: [2],
-    simpleMotifs: [...MOTIF_POOLS.coreSimple],
+    simpleMotifs: [...MOTIF_POOLS.simpleL1],
     compoundMotifs: [],
     allowedForms: [...FORM_TEMPLATES.bars2],
     enforceCadence: false,
+    anacrusisMotifs: [],
   },
   2: {
     allowedMetres: ["2/4", "3/4", "4/4", "6/8"],
     barOptions: [4],
-    simpleMotifs: [...MOTIF_POOLS.coreSimple],
-    compoundMotifs: [...MOTIF_POOLS.coreCompound],
+    simpleMotifs: [...MOTIF_POOLS.simpleL1, ...MOTIF_POOLS.simpleL2],
+    compoundMotifs: [...MOTIF_POOLS.compoundL2],
     allowedForms: [...FORM_TEMPLATES.bars4],
     enforceCadence: true,
+    anacrusisMotifs: [],
   },
   3: {
     allowedMetres: ["2/4", "3/4", "4/4", "6/8"],
     barOptions: [4, 8],
-    // Level 3 inherits core simple motifs AND adds advanced ones:
-    simpleMotifs: [...MOTIF_POOLS.coreSimple, ...MOTIF_POOLS.advSimple],
-    compoundMotifs: [...MOTIF_POOLS.coreCompound],
-    // Level 3 inherits 4-bar forms AND adds 8-bar forms:
+    simpleMotifs: [
+      ...MOTIF_POOLS.simpleL1,
+      ...MOTIF_POOLS.simpleL2,
+      ...MOTIF_POOLS.simpleL3,
+    ],
+    compoundMotifs: [...MOTIF_POOLS.compoundL2, ...MOTIF_POOLS.compoundL3],
     allowedForms: [...FORM_TEMPLATES.bars4, ...FORM_TEMPLATES.bars8],
     enforceCadence: true,
+    anacrusisMotifs: ["restTi"],
+  },
+  4: {
+    allowedMetres: ["2/4", "3/4", "4/4", "6/8"],
+    barOptions: [4, 8],
+    simpleMotifs: [
+      ...MOTIF_POOLS.simpleL1,
+      ...MOTIF_POOLS.simpleL2,
+      ...MOTIF_POOLS.simpleL3,
+      ...MOTIF_POOLS.simpleL4,
+    ],
+    compoundMotifs: [
+      ...MOTIF_POOLS.compoundL2,
+      ...MOTIF_POOLS.compoundL3,
+      ...MOTIF_POOLS.compoundL4,
+    ],
+    allowedForms: [...FORM_TEMPLATES.bars4, ...FORM_TEMPLATES.bars8],
+    enforceCadence: true,
+    anacrusisMotifs: ["restTi", "restTika"],
   },
 };
 
 /**
  * Pedagogical Cadence Pool
- * These are the structurally stable blocks used to musically resolve phrases.
+ * These are the structurally stable blocks used to musically resolve phrases
+ * — sustained notes/rests in both simple and compound time, at both 1- and
+ * 2-tick lengths, so forceCadence always has an exact-fit option regardless
+ * of how many ticks remain in the final bar.
  */
-export const CADENCE_MOTIFS = ["ta", "too", "taRest", "tum", "tumRest"];
+export const CADENCE_MOTIFS = [
+  "ta",
+  "too",
+  "taRest",
+  "tooRest",
+  "tum",
+  "tumRest",
+  "toom",
+  "toomRest",
+];
