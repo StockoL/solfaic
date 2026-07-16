@@ -204,9 +204,19 @@
 }
 
 .solfege-card__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-inline-start: 1px dashed var(--color-border-subtle);
+  font-size: var(--size-step--1);
+  font-weight: 600;
+  color: var(--color-text-muted);
 }
 
 .solfege-card__cell:first-child {
   border-inline-start: none;
+}
+
+.solfege-card__cell.is-filled {
+  color: var(--color-text-base);
 }

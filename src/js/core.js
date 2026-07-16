@@ -14,6 +14,9 @@ import { sessionState } from "./state.js";
 import {
   renderRhythmSVG,
   getColumnTemplate,
+  getRestColumns,
+  getExtensionColumnTemplate,
+  getExtensionRestColumns,
   renderTieArcSVG,
 } from "./rhythm-notation.js";
 
@@ -278,15 +281,87 @@ export function renderSolfegeReel(toneset) {
   renderSolfegeReelInto(DOM.motifReel, toneset);
 }
 
-function renderSolfegeCard(solfegeCard, motifId) {
+/**
+ * Populates a solfege card with one cell per column, filling in whatever
+ * syllable pitchSubmission already has at that column's index (or leaving
+ * it empty, same convention as rhythm's placeholder state). columnTemplate/
+ * restColumns come from rhythm-notation.js — box A uses getColumnTemplate/
+ * getRestColumns, a tieContinuation extension box uses their
+ * getExtension*() counterparts — so this function itself doesn't need to
+ * know which box it's rendering.
+ */
+function renderSolfegeCard(
+  solfegeCard,
+  columnTemplate,
+  restColumns,
+  pitchSubmission,
+  startIndex,
+) {
   solfegeCard.innerHTML = "";
-  solfegeCard.style.gridTemplateColumns = getColumnTemplate(motifId);
-  const noteCount = getColumnTemplate(motifId).split(" ").length;
-  for (let i = 0; i < noteCount; i++) {
+  if (restColumns.length === 0) return;
+  solfegeCard.style.gridTemplateColumns = columnTemplate;
+
+  let pitchCursor = startIndex;
+  restColumns.forEach((isRest) => {
     const cell = document.createElement("div");
     cell.className = "solfege-card__cell";
+
+    if (!isRest) {
+      const syllable = pitchSubmission?.[pitchCursor];
+      if (syllable) {
+        cell.textContent = syllable;
+        cell.classList.add("is-filled");
+      }
+      pitchCursor++;
+    }
+
     solfegeCard.appendChild(cell);
+  });
+}
+
+function countMotifSoundingNotes(motifId) {
+  const motif = MOTIF_LIBRARY[motifId];
+  let count = 0;
+  (motif.playback || []).forEach((_, i) => {
+    if (!motif.restMask?.[i]) count++;
+  });
+  return count;
+}
+
+/**
+ * The pitchSubmission cursor at the start of a given onset tick's own
+ * (box A) content — walks userSubmission from the top, advancing by each
+ * prior motif's FULL sounding-note count (restMask-aware, same rule
+ * engine.js's countSoundingNotes uses) every time an onset tick is passed.
+ * Ticks holding an "_ext" token don't themselves advance anything here —
+ * their motif already did, at its own onset tick.
+ */
+function pitchOnsetStartIndex(userSubmission, tickIndex) {
+  let cursor = 0;
+  for (let i = 0; i < tickIndex; i++) {
+    const token = userSubmission[i];
+    if (!token || token.endsWith("_ext")) continue;
+    cursor += countMotifSoundingNotes(token);
   }
+  return cursor;
+}
+
+/**
+ * The pitchSubmission cursor at the start of an extension tick's OWN
+ * (post-box-A) content — right after however many syllables box A itself
+ * displayed. No motif in the current vocabulary spans more than 2 boxes,
+ * so the extension tick's own onset is always the immediately preceding
+ * tick.
+ */
+function pitchExtensionStartIndex(userSubmission, tickIndex) {
+  const onsetTickIndex = tickIndex - 1;
+  const onsetToken = userSubmission[onsetTickIndex];
+  const boxADisplayedCount = getRestColumns(onsetToken).filter(
+    (isRest) => !isRest,
+  ).length;
+  return (
+    pitchOnsetStartIndex(userSubmission, onsetTickIndex) + boxADisplayedCount
+  );
 }
 
 /**
@@ -339,11 +414,27 @@ function buildWorkspaceBox(state, tickIndex) {
     if (MOTIF_LIBRARY[baseMotifId]?.tieContinuation) {
       rhythmCard.classList.add("is-tie-arc");
       rhythmCard.innerHTML = renderTieArcSVG();
+      // The trailing note past box A's cutoff (e.g. syncopa v2's final
+      // quaver) still needs its own syllable slot - it's a real sounding
+      // note the student has to place, it just doesn't fit in box A.
+      renderSolfegeCard(
+        solfegeCard,
+        getExtensionColumnTemplate(baseMotifId),
+        getExtensionRestColumns(baseMotifId),
+        state.pitchSubmission,
+        pitchExtensionStartIndex(state.userSubmission, tickIndex),
+      );
     }
   } else if (isActive && token) {
     rhythmCard.innerHTML = renderRhythmSVG(token);
     rhythmCard.classList.add("is-filled");
-    renderSolfegeCard(solfegeCard, token);
+    renderSolfegeCard(
+      solfegeCard,
+      getColumnTemplate(token),
+      getRestColumns(token),
+      state.pitchSubmission,
+      pitchOnsetStartIndex(state.userSubmission, tickIndex),
+    );
   } else if (isActive) {
     rhythmCard.classList.add("is-placeholder");
   }
@@ -482,7 +573,13 @@ export function openVignette(tickIndex) {
   if (token) {
     rhythmCard.innerHTML = renderRhythmSVG(token);
     rhythmCard.classList.add("is-filled");
-    renderSolfegeCard(solfegeCard, token);
+    renderSolfegeCard(
+      solfegeCard,
+      getColumnTemplate(token),
+      getRestColumns(token),
+      sessionState.pitchSubmission,
+      pitchOnsetStartIndex(sessionState.userSubmission, tickIndex),
+    );
 
     // Clicking the focused card in the vignette clears it, mirroring how
     // the base workspace used to let a tap clear a filled card — that

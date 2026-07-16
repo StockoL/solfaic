@@ -55,7 +55,7 @@ const SEMIQUAVER_WEIGHT = 1;
 const SUSTAINED_DURATIONS = new Set(["2n", "2n."]);
 const DOTTED_DURATIONS = new Set(["8n.", "4n.", "2n."]);
 
-function getSegments(motifId) {
+function getAllRawSegments(motifId) {
   const motif = MOTIF_LIBRARY[motifId];
   const playback = motif.playback;
 
@@ -65,7 +65,7 @@ function getSegments(motifId) {
     return [{ duration: null, weight: 4, isRest: true }];
   }
 
-  const segments = playback.map((duration, i) => ({
+  return playback.map((duration, i) => ({
     duration,
     weight: NOTE_WEIGHTS[duration] || 4,
     // restMask (rest-ti, rest-tika) marks specific slots silent without the
@@ -73,6 +73,11 @@ function getSegments(motifId) {
     // never inferred from duration.
     isRest: motif.restMask?.[i] === true,
   }));
+}
+
+function getSegments(motifId) {
+  const motif = MOTIF_LIBRARY[motifId];
+  const segments = getAllRawSegments(motifId);
 
   if (motif.ticks <= 1) return segments;
 
@@ -81,7 +86,8 @@ function getSegments(motifId) {
   // segments that *start* within that first box's own beat-width belong
   // there. A note that starts later (because an earlier note in this same
   // motif is still sounding) belongs entirely to the extension box's own
-  // rendering instead (see renderTieArcSVG), not crammed in here too.
+  // rendering instead (see renderTieArcSVG/getExtensionSegments), not
+  // crammed in here too.
   const oneBoxWeight = motif.type === "compound" ? 6 : 4;
   const truncated = [];
   let cursor = 0;
@@ -91,6 +97,19 @@ function getSegments(motifId) {
     cursor += seg.weight;
   }
   return truncated;
+}
+
+/**
+ * The remainder of a multi-box motif's segments that box A's card doesn't
+ * show (see getSegments) — empty for a single-box motif, and also empty
+ * for a multi-box motif whose one segment already fully covers box A (too,
+ * toom: nothing left over). Non-empty only for tum-ti/syncopa v2, whose
+ * trailing note belongs entirely to the extension box.
+ */
+function getExtensionSegments(motifId) {
+  const motif = MOTIF_LIBRARY[motifId];
+  if (motif.ticks <= 1) return [];
+  return getAllRawSegments(motifId).slice(getSegments(motifId).length);
 }
 
 /**
@@ -104,6 +123,32 @@ function getSegments(motifId) {
 export function getColumnTemplate(motifId) {
   const segments = getSegments(motifId);
   return segments.map((seg) => `${seg.weight}fr`).join(" ");
+}
+
+/**
+ * Per-column rest flags for this motif's box-A solfege card, in the same
+ * order/count as getColumnTemplate() — true where that column has no
+ * sounding note (a restMask-true slot, or a whole-motif rest) and should
+ * stay an empty cell rather than receiving a syllable.
+ */
+export function getRestColumns(motifId) {
+  return getSegments(motifId).map((seg) => seg.isRest);
+}
+
+/**
+ * getColumnTemplate()'s counterpart for a tieContinuation extension box's
+ * OWN solfege card — the trailing note(s) that box A's card didn't have
+ * room for (see getExtensionSegments). Empty string for a motif with
+ * nothing left over there (everything that isn't tum-ti/syncopa v2).
+ */
+export function getExtensionColumnTemplate(motifId) {
+  return getExtensionSegments(motifId)
+    .map((seg) => `${seg.weight}fr`)
+    .join(" ");
+}
+
+export function getExtensionRestColumns(motifId) {
+  return getExtensionSegments(motifId).map((seg) => seg.isRest);
 }
 
 function noteGlyph(
