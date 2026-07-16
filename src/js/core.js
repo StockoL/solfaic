@@ -28,6 +28,7 @@ export const DOM = {
   levelBadge: document.getElementById("ui-level-badge"),
   streakTracker: document.getElementById("ui-streak-tracker"),
   replayBtn: document.getElementById("btn-replay"),
+  countdownIndicator: document.getElementById("ui-countdown-indicator"),
   playsRemaining: document.getElementById("ui-plays-remaining"),
   workspace: document.getElementById("ui-workspace"),
   workspaceDots: document.getElementById("ui-workspace-dots"),
@@ -140,6 +141,41 @@ export function renderMeta(state) {
     const remaining = Math.max(0, state.maxPlays - state.playCount);
     DOM.playsRemaining.textContent = `Plays remaining: ${remaining} / ${state.maxPlays}`;
   }
+}
+
+/**
+ * Count-in indicator (overlays the replay button, which is locked/
+ * unclickable during count-in anyway). audio.js has always dispatched
+ * "audio-countdown-beat"/"audio-countdown-finish" for exactly this, but
+ * nothing ever listened for them — the count-in itself was correctly
+ * timed, there was just no way to *see* it, only try to count raw chime
+ * sounds by ear. Wired up in initialiseCoreUI().
+ */
+function renderCountdownBeat(beat) {
+  if (!DOM.countdownIndicator) return;
+  DOM.countdownIndicator.textContent = beat;
+  DOM.countdownIndicator.setAttribute("data-state", "counting");
+
+  // Retrigger the pulse animation even if the same beat number repeats
+  // (won't happen in practice, but keeps this robust either way).
+  DOM.countdownIndicator.classList.remove("is-pulsing");
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      DOM.countdownIndicator.classList.add("is-pulsing");
+    });
+  });
+}
+
+const COUNTDOWN_GO_DISPLAY_MS = 500;
+
+function renderCountdownGo() {
+  if (!DOM.countdownIndicator) return;
+  DOM.countdownIndicator.textContent = "GO";
+  DOM.countdownIndicator.setAttribute("data-state", "go");
+
+  setTimeout(() => {
+    DOM.countdownIndicator.setAttribute("data-state", "hidden");
+  }, COUNTDOWN_GO_DISPLAY_MS);
 }
 
 /**
@@ -956,6 +992,16 @@ function triggerTourCompletionModal() {
 
 export function initialiseCoreUI() {
   initialiseWorkspacePager();
+
+  // Count-in indicator — purely reactive to audio.js's own events, no
+  // state/business logic involved, so it's self-contained here rather
+  // than routed through app.js.
+  document.addEventListener("audio-countdown-beat", (e) => {
+    renderCountdownBeat(e.detail.beat);
+  });
+  document.addEventListener("audio-countdown-finish", () => {
+    renderCountdownGo();
+  });
 
   // Primary Nav (mobile collapse toggle)
   const navToggle = document.getElementById("btn-toggle-nav");

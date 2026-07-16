@@ -52,3 +52,58 @@
   justify-content: center;
   padding-block-start: var(--space-s);
 }
+
+/*
+ * Wraps the replay button so the count-in indicator (below) can overlay it
+ * directly — that's exactly where the user's attention already is when
+ * they click play, and the button is locked (unclickable) during count-in
+ * anyway, so covering its label for a moment costs nothing.
+ */
+.playback-panel__replay-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.countdown-indicator {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background-color: var(--color-action-primary);
+  color: var(--color-surface-card);
+  font-family: var(--font-family-heading);
+  font-size: var(--size-step-2);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--dur-fast) ease,
+    visibility var(--dur-fast);
+}
+
+.countdown-indicator[data-state="counting"],
+.countdown-indicator[data-state="go"] {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* The one unambiguous "count-in has ended, real playback starts now"
+   signal — a distinct colour plus the word itself, not just a number. */
+.countdown-indicator[data-state="go"] {
+  background-color: var(--color-status-success);
+}
+
+.countdown-indicator.is-pulsing {
+  animation: countdown-pulse var(--dur-base) var(--spring-snappy);
+}
+
+@keyframes countdown-pulse {
+  0% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

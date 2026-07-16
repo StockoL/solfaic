@@ -76,9 +76,19 @@
 
       <main id="main-content" class="practice-main flow">
         <div class="playback-panel cluster">
-          <button id="btn-replay" class="button" data-variant="primary">
-            🔊 Play Rhythm
-          </button>
+          <div class="playback-panel__replay-wrap">
+            <button id="btn-replay" class="button" data-variant="primary">
+              🔊 Play Rhythm
+            </button>
+            <div
+              id="ui-countdown-indicator"
+              class="countdown-indicator"
+              data-state="hidden"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            ></div>
+          </div>
           <p id="ui-plays-remaining" class="plays-remaining" role="status"></p>
         </div>
 
