@@ -1015,8 +1015,40 @@ export function initialiseCoreUI() {
     });
   }
 
-  // Accordion (Classroom's Level Guides)
-  document.querySelectorAll(".accordion__trigger").forEach((trigger) => {
+  // Accordion (Classroom's Level Guides) — exclusive-open (opening one
+  // closes any other), and each level doubles as a filter for the Kodály
+  // Reference Matrix table below it. This replaces what used to be a
+  // separate, entirely unwired level-picker dropdown — clicking it never
+  // touched the table, so combining the two controls into one that
+  // actually works is strictly a functionality gain, not a feature cut.
+  const accordionTriggers = document.querySelectorAll(".accordion__trigger");
+  const matrixTable = document.querySelector(".curriculum-table");
+  const matrixEmptyState = document.getElementById("matrix-empty-state");
+  const matrixStatus = document.getElementById("matrix-filter-status");
+
+  const filterMatrixByLevel = (levelId) => {
+    if (!matrixTable) return;
+    const rows = matrixTable.querySelectorAll("tbody tr");
+    let visibleCount = 0;
+
+    rows.forEach((row) => {
+      const matches = !levelId || row.getAttribute("data-level") === levelId;
+      row.hidden = !matches;
+      if (matches) visibleCount++;
+    });
+
+    if (matrixStatus) {
+      matrixStatus.textContent = levelId
+        ? `Showing Level ${levelId} only.`
+        : "Showing all levels.";
+      matrixStatus.setAttribute("data-filtered", levelId ? "true" : "false");
+    }
+
+    if (matrixEmptyState) matrixEmptyState.hidden = visibleCount > 0;
+    matrixTable.hidden = visibleCount === 0;
+  };
+
+  accordionTriggers.forEach((trigger) => {
     const panel = document.getElementById(
       trigger.getAttribute("aria-controls"),
     );
@@ -1024,50 +1056,25 @@ export function initialiseCoreUI() {
 
     trigger.addEventListener("click", () => {
       const isOpen = trigger.getAttribute("aria-expanded") === "true";
+      const levelId = trigger.closest(".accordion")?.getAttribute("data-level");
+
+      // Exclusive: collapse every other level's accordion first, so
+      // "selecting a level" always has exactly one clear answer.
+      accordionTriggers.forEach((otherTrigger) => {
+        if (otherTrigger === trigger) return;
+        const otherPanel = document.getElementById(
+          otherTrigger.getAttribute("aria-controls"),
+        );
+        otherTrigger.setAttribute("aria-expanded", "false");
+        otherPanel?.setAttribute("data-state", "closed");
+      });
+
       trigger.setAttribute("aria-expanded", isOpen ? "false" : "true");
       panel.setAttribute("data-state", isOpen ? "closed" : "open");
+
+      filterMatrixByLevel(isOpen ? null : levelId);
     });
   });
-
-  // Level Select (Classroom's level-picker dropdown)
-  const levelSelectTrigger = document.getElementById("btn-level-dropdown");
-  const levelSelectMenu = document.getElementById("menu-level-dropdown");
-
-  if (levelSelectTrigger && levelSelectMenu) {
-    const levelSelectItems = levelSelectMenu.querySelectorAll(
-      ".level-select__item",
-    );
-
-    const closeLevelSelect = () => {
-      levelSelectMenu.setAttribute("data-state", "closed");
-      levelSelectTrigger.setAttribute("aria-expanded", "false");
-    };
-
-    levelSelectTrigger.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = levelSelectMenu.getAttribute("data-state") === "open";
-      levelSelectMenu.setAttribute("data-state", isOpen ? "closed" : "open");
-      levelSelectTrigger.setAttribute("aria-expanded", isOpen ? "false" : "true");
-    });
-
-    levelSelectItems.forEach((item) => {
-      item.addEventListener("click", () => {
-        levelSelectItems.forEach((i) => i.classList.remove("is-active"));
-        item.classList.add("is-active");
-
-        const labelNode = Array.from(levelSelectTrigger.childNodes).find(
-          (node) => node.nodeType === Node.TEXT_NODE,
-        );
-        if (labelNode) {
-          labelNode.textContent = `Level ${item.getAttribute("data-value")} `;
-        }
-
-        closeLevelSelect();
-      });
-    });
-
-    document.addEventListener("click", closeLevelSelect);
-  }
 
   // Focus Vignette (tap-and-hold a workspace box)
   const vignetteCloseBtn = document.querySelector(".vignette-overlay__close");

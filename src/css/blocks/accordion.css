@@ -16,6 +16,17 @@
   border-radius: 8px;
   background-color: var(--color-surface-card);
   overflow: hidden;
+  transition: border-color var(--dur-fast) ease;
+}
+
+/*
+ * On Classroom, an open accordion also drives the Kodály Reference Matrix
+ * filter below it — this highlight is what makes "this is the level
+ * currently selected" visually obvious at a glance, not just inferable
+ * from which panel happens to be expanded.
+ */
+.accordion:has(.accordion__trigger[aria-expanded="true"]) {
+  border-color: var(--color-action-primary);
 }
 
 .accordion__trigger {

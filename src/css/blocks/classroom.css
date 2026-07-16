@@ -1,0 +1,8 @@
+/* ==========================================================================
+   BLOCK: CLASSROOM (page-specific glue classes not covered by another block)
+   ========================================================================== */
+
+.classroom__levels-hint {
+  color: var(--color-text-muted);
+  font-size: var(--size-step--1);
+}

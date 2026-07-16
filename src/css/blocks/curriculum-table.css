@@ -16,6 +16,52 @@
   overflow: hidden;
 }
 
+/*
+ * Filter status pill — the Level Guides accordion above doubles as this
+ * table's level filter; this is the "state change is obvious" signal, both
+ * visually (colour swap the instant a level is selected) and to assistive
+ * tech (aria-live="polite" is set directly in the markup).
+ */
+.matrix-filter-status {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-3xs) var(--space-s);
+  border-radius: 999px;
+  background-color: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: var(--size-step--1);
+  font-weight: 600;
+  transition:
+    background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+
+.matrix-filter-status[data-filtered="true"] {
+  background-color: color-mix(
+    in srgb,
+    var(--color-action-primary) 15%,
+    transparent
+  );
+  color: var(--color-action-primary);
+}
+
+/*
+ * .curriculum-table-wrap itself is just .center (see classroom.html) —
+ * caps the table's width so its three columns stay comfortably close
+ * together on wide monitors instead of the Notation/Value columns
+ * stretching apart to fill the page's full 75rem container. Wider than
+ * .center's 60ch prose default (overridden inline via --center-max-width)
+ * since this is tabular data with an SVG preview column, not prose.
+ */
+.matrix-empty-state {
+  padding: var(--space-l);
+  text-align: center;
+  color: var(--color-text-muted);
+  background-color: var(--color-surface-card);
+  border: 1px dashed var(--color-border-subtle);
+  border-radius: 8px;
+}
+
 .curriculum-table th,
 .curriculum-table td {
   padding: var(--space-xs) var(--space-m);

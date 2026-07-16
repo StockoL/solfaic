@@ -95,308 +95,17 @@
         <h1 id="classroom-heading">Classroom</h1>
         <p>
           Learn the Kodály rhythm syllables and notation rules below, then test
-          what you've learned in the Practice Room.
+          what you've learned in the Practice Room. Open a level below to see
+          just its syllables in the reference matrix.
         </p>
-        <a href="practice.html" class="pushable">
-          <span class="shadow" aria-hidden="true"></span>
-          <span class="edge" aria-hidden="true"></span>
-          <span class="front">Go to Practice Room</span>
-        </a>
-      </section>
-
-      <section class="classroom__controls" aria-label="Level selection">
-        <div class="level-select" id="ui-level-selector">
-          <button
-            class="level-select__trigger"
-            id="btn-level-dropdown"
-            aria-haspopup="listbox"
-            aria-expanded="false"
-            aria-controls="menu-level-dropdown"
-          >
-            Level 1
-            <svg
-              class="level-select__icon"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="3"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-              />
-            </svg>
-          </button>
-
-          <ul
-            class="level-select__menu"
-            id="menu-level-dropdown"
-            role="listbox"
-            data-state="closed"
-          >
-            <li
-              class="level-select__item is-active"
-              data-value="1"
-              role="option"
-              tabindex="0"
-            >
-              Level 1: Core Simple
-            </li>
-            <li
-              class="level-select__item"
-              data-value="2"
-              role="option"
-              tabindex="0"
-            >
-              Level 2: Advanced Simple
-            </li>
-            <li
-              class="level-select__item"
-              data-value="3"
-              role="option"
-              tabindex="0"
-            >
-              Level 3: Compound Matrix
-            </li>
-            <li
-              class="level-select__item"
-              data-value="4"
-              role="option"
-              tabindex="0"
-            >
-              Level 4: Syncopation Matrix
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <section class="classroom__matrix flow" aria-labelledby="matrix-heading">
-        <h2 id="matrix-heading">Kodály Reference Matrix</h2>
-
-        <table class="curriculum-table">
-          <thead>
-            <tr>
-              <th scope="col">Syllable</th>
-              <th scope="col">Notation</th>
-              <th scope="col">Value &amp; Name</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><span class="syllable-token">ta</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="198" y="15" width="4" height="70" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                1 Beat Crotchet <br /><small class="text-muted"
-                  >(Single Sound)</small
-                >
-              </td>
-            </tr>
-            <tr>
-              <td><span class="syllable-token">ti-ti</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="98" y="15" width="4" height="70" />
-                    <rect x="298" y="15" width="4" height="70" />
-                    <rect x="98.5" y="15" width="203" height="8" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                1 Beat Pair of Quavers <br /><small class="text-muted"
-                  >(Dual Sounds)</small
-                >
-              </td>
-            </tr>
-            <tr>
-              <td><span class="syllable-token">ta-rest</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M 205 20 L 195 40 L 210 55 L 195 80"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="3"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                1 Beat Rest <br /><small class="text-muted"
-                  >(Silent Space)</small
-                >
-              </td>
-            </tr>
-            <tr>
-              <td><span class="syllable-token">too</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <ellipse
-                      cx="191"
-                      cy="85"
-                      rx="12"
-                      ry="8"
-                      transform="rotate(-20 191 85)"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="3"
-                    />
-                    <rect x="198.5" y="15" width="3" height="70" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                2 Beat Minim <br /><small class="text-muted"
-                  >(Sustained Tone)</small
-                >
-              </td>
-            </tr>
-            <tr>
-              <td><span class="syllable-token">ti-ka-ti-ka</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="48" y="15" width="4" height="70" />
-                    <rect x="148" y="15" width="4" height="70" />
-                    <rect x="248" y="15" width="4" height="70" />
-                    <rect x="348" y="15" width="4" height="70" />
-                    <rect x="48.5" y="15" width="303" height="8" />
-                    <rect x="48.5" y="27" width="303" height="8" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                1 Beat Semiquavers <br /><small class="text-muted"
-                  >(Quad Sounds)</small
-                >
-              </td>
-            </tr>
-            <tr>
-              <td><span class="syllable-token">ti-ti-ka</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="98" y="15" width="4" height="70" />
-                    <rect x="248" y="15" width="4" height="70" />
-                    <rect x="348" y="15" width="4" height="70" />
-                    <rect x="98.5" y="15" width="253" height="8" />
-                    <rect x="248.5" y="27" width="103" height="8" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                1 Beat Syncopation <br /><small class="text-muted"
-                  >(Quaver, 2 Semis)</small
-                >
-              </td>
-            </tr>
-            <tr>
-              <td><span class="syllable-token">ti-ka-ti</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="48" y="15" width="4" height="70" />
-                    <rect x="148" y="15" width="4" height="70" />
-                    <rect x="298" y="15" width="4" height="70" />
-                    <rect x="48.5" y="15" width="253" height="8" />
-                    <rect x="48.5" y="27" width="103" height="8" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                1 Beat Syncopation <br /><small class="text-muted"
-                  >(2 Semis, Quaver)</small
-                >
-              </td>
-            </tr>
-            <tr>
-              <td><span class="syllable-token">ti-ti-ti</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="64.67" y="15" width="4" height="70" />
-                    <rect x="198" y="15" width="4" height="70" />
-                    <rect x="331.33" y="15" width="4" height="70" />
-                    <rect x="65.17" y="15" width="269.66" height="8" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                Compound Beat <br /><small class="text-muted"
-                  >(Three Quavers)</small
-                >
-              </td>
-            </tr>
-            <tr>
-              <td><span class="syllable-token">tum</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="198" y="15" width="4" height="70" />
-                    <circle cx="210" cy="78" r="4" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                Dotted Crotchet <br /><small class="text-muted"
-                  >(Compound Single)</small
-                >
-              </td>
-            </tr>
-          </tbody>
-        </table>
       </section>
 
       <section class="classroom__levels" aria-label="Level guides">
         <h2>Level Guides</h2>
+        <p class="classroom__levels-hint">
+          Open a level to filter the reference matrix below to just its
+          syllables.
+        </p>
 
         <div class="classroom__levels-grid grid">
           <div class="accordion" data-level="1">
@@ -541,6 +250,254 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <section class="classroom__matrix flow" aria-labelledby="matrix-heading">
+        <h2 id="matrix-heading">Kodály Reference Matrix</h2>
+
+        <p
+          id="matrix-filter-status"
+          class="matrix-filter-status"
+          data-filtered="false"
+          role="status"
+          aria-live="polite"
+        >
+          Showing all levels.
+        </p>
+
+        <div class="curriculum-table-wrap center" style="--center-max-width: 50rem">
+          <table class="curriculum-table">
+          <thead>
+            <tr>
+              <th scope="col">Syllable</th>
+              <th scope="col">Notation</th>
+              <th scope="col">Value &amp; Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-level="1">
+              <td><span class="syllable-token">ta</span></td>
+              <td>
+                <div class="table-svg-preview">
+                  <svg
+                    viewBox="0 0 400 100"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <rect x="198" y="15" width="4" height="70" />
+                  </svg>
+                </div>
+              </td>
+              <td>
+                1 Beat Crotchet <br /><small class="text-muted"
+                  >(Single Sound)</small
+                >
+              </td>
+            </tr>
+            <tr data-level="1">
+              <td><span class="syllable-token">ti-ti</span></td>
+              <td>
+                <div class="table-svg-preview">
+                  <svg
+                    viewBox="0 0 400 100"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <rect x="98" y="15" width="4" height="70" />
+                    <rect x="298" y="15" width="4" height="70" />
+                    <rect x="98.5" y="15" width="203" height="8" />
+                  </svg>
+                </div>
+              </td>
+              <td>
+                1 Beat Pair of Quavers <br /><small class="text-muted"
+                  >(Dual Sounds)</small
+                >
+              </td>
+            </tr>
+            <tr data-level="1">
+              <td><span class="syllable-token">ta-rest</span></td>
+              <td>
+                <div class="table-svg-preview">
+                  <svg
+                    viewBox="0 0 400 100"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M 205 20 L 195 40 L 210 55 L 195 80"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="3"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </div>
+              </td>
+              <td>
+                1 Beat Rest <br /><small class="text-muted"
+                  >(Silent Space)</small
+                >
+              </td>
+            </tr>
+            <tr data-level="2">
+              <td><span class="syllable-token">too</span></td>
+              <td>
+                <div class="table-svg-preview">
+                  <svg
+                    viewBox="0 0 400 100"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <ellipse
+                      cx="191"
+                      cy="85"
+                      rx="12"
+                      ry="8"
+                      transform="rotate(-20 191 85)"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="3"
+                    />
+                    <rect x="198.5" y="15" width="3" height="70" />
+                  </svg>
+                </div>
+              </td>
+              <td>
+                2 Beat Minim <br /><small class="text-muted"
+                  >(Sustained Tone)</small
+                >
+              </td>
+            </tr>
+            <tr data-level="2">
+              <td><span class="syllable-token">ti-ka-ti-ka</span></td>
+              <td>
+                <div class="table-svg-preview">
+                  <svg
+                    viewBox="0 0 400 100"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <rect x="48" y="15" width="4" height="70" />
+                    <rect x="148" y="15" width="4" height="70" />
+                    <rect x="248" y="15" width="4" height="70" />
+                    <rect x="348" y="15" width="4" height="70" />
+                    <rect x="48.5" y="15" width="303" height="8" />
+                    <rect x="48.5" y="27" width="303" height="8" />
+                  </svg>
+                </div>
+              </td>
+              <td>
+                1 Beat Semiquavers <br /><small class="text-muted"
+                  >(Quad Sounds)</small
+                >
+              </td>
+            </tr>
+            <tr data-level="2">
+              <td><span class="syllable-token">ti-ti-ka</span></td>
+              <td>
+                <div class="table-svg-preview">
+                  <svg
+                    viewBox="0 0 400 100"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <rect x="98" y="15" width="4" height="70" />
+                    <rect x="248" y="15" width="4" height="70" />
+                    <rect x="348" y="15" width="4" height="70" />
+                    <rect x="98.5" y="15" width="253" height="8" />
+                    <rect x="248.5" y="27" width="103" height="8" />
+                  </svg>
+                </div>
+              </td>
+              <td>
+                1 Beat Syncopation <br /><small class="text-muted"
+                  >(Quaver, 2 Semis)</small
+                >
+              </td>
+            </tr>
+            <tr data-level="2">
+              <td><span class="syllable-token">ti-ka-ti</span></td>
+              <td>
+                <div class="table-svg-preview">
+                  <svg
+                    viewBox="0 0 400 100"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <rect x="48" y="15" width="4" height="70" />
+                    <rect x="148" y="15" width="4" height="70" />
+                    <rect x="298" y="15" width="4" height="70" />
+                    <rect x="48.5" y="15" width="253" height="8" />
+                    <rect x="48.5" y="27" width="103" height="8" />
+                  </svg>
+                </div>
+              </td>
+              <td>
+                1 Beat Syncopation <br /><small class="text-muted"
+                  >(2 Semis, Quaver)</small
+                >
+              </td>
+            </tr>
+            <tr data-level="2">
+              <td><span class="syllable-token">ti-ti-ti</span></td>
+              <td>
+                <div class="table-svg-preview">
+                  <svg
+                    viewBox="0 0 400 100"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <rect x="64.67" y="15" width="4" height="70" />
+                    <rect x="198" y="15" width="4" height="70" />
+                    <rect x="331.33" y="15" width="4" height="70" />
+                    <rect x="65.17" y="15" width="269.66" height="8" />
+                  </svg>
+                </div>
+              </td>
+              <td>
+                Compound Beat <br /><small class="text-muted"
+                  >(Three Quavers)</small
+                >
+              </td>
+            </tr>
+            <tr data-level="2">
+              <td><span class="syllable-token">tum</span></td>
+              <td>
+                <div class="table-svg-preview">
+                  <svg
+                    viewBox="0 0 400 100"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <rect x="198" y="15" width="4" height="70" />
+                    <circle cx="210" cy="78" r="4" />
+                  </svg>
+                </div>
+              </td>
+              <td>
+                Dotted Crotchet <br /><small class="text-muted"
+                  >(Compound Single)</small
+                >
+              </td>
+            </tr>
+          </tbody>
+          </table>
+
+          <p id="matrix-empty-state" class="matrix-empty-state" hidden>
+            No reference notation documented for this level yet — check back
+            soon.
+          </p>
+        </div>
+      </section>
+
+      <section class="classroom__cta center" data-and-text>
+        <a href="practice.html" class="pushable">
+          <span class="shadow" aria-hidden="true"></span>
+          <span class="edge" aria-hidden="true"></span>
+          <span class="front">Go to Practice Room</span>
+        </a>
       </section>
     </main>
 

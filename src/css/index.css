@@ -28,7 +28,7 @@
 @import url("./blocks/button.css") layer(blocks);
 @import url("./blocks/nav.css") layer(blocks);
 @import url("./blocks/accordion.css") layer(blocks);
-@import url("./blocks/level-select.css") layer(blocks);
+@import url("./blocks/classroom.css") layer(blocks);
 @import url("./blocks/modal.css") layer(blocks);
 @import url("./blocks/badge.css") layer(blocks);
 @import url("./blocks/curriculum-table.css") layer(blocks);
