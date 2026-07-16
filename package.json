@@ -7,7 +7,8 @@
     "doc": "docs"
   },
   "scripts": {
-    "build:tokens": "node build-tokens.js"
+    "build:tokens": "node build-tokens.js",
+    "verify:engine": "node tests/engine-verification.mjs"
   },
   "repository": {
     "type": "git",
