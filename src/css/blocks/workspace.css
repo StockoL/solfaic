@@ -1,0 +1,198 @@
+/* ==========================================================================
+   BLOCK: WORKSPACE
+   ========================================================================== */
+
+/*
+ * One box per beat (tick), not per bar — see practice.html's workspace
+ * comment. --grid-placement/--grid-min-item-size are Grid's own exposed
+ * custom properties (Compositions stay media-query-free by design), set
+ * here rather than as inline styles in JS-generated markup since they're
+ * fixed configuration for this specific component, not a per-instance value.
+ */
+.workspace-grid {
+  --grid-placement: 4;
+  --grid-min-item-size: 1px;
+}
+
+/*
+ * Pager: same horizontal scroll-snap technique as Compositions' .reel,
+ * declared here since paging (not layout) is the concern — each
+ * .workspace-page is one full-width "screen" of up to 16 boxes.
+ */
+.workspace-pager__track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.workspace-page {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  min-inline-size: 0;
+}
+
+.workspace-pager__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-s);
+  margin-block-start: var(--space-s);
+}
+
+.workspace-pager__nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 50%;
+  color: var(--color-text-base);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease;
+}
+
+.workspace-pager__nav-btn:hover,
+.workspace-pager__nav-btn:focus-visible {
+  background-color: var(--color-surface-sunken);
+}
+
+.workspace-pager__dots {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+}
+
+.workspace-pager__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: var(--color-border-subtle);
+  transition: background-color var(--dur-fast) ease;
+}
+
+.workspace-pager__dot[data-state="active"] {
+  background-color: var(--color-action-primary);
+}
+
+/* --- Box --- */
+
+.workspace-box {
+  transition:
+    opacity var(--dur-fast) ease,
+    transform var(--dur-fast) var(--spring-smooth);
+}
+
+.workspace-box[data-state="disabled"] {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.workspace-box:not([data-state="disabled"]) {
+  cursor: pointer;
+}
+
+.workspace-box.is-focused .workspace-card {
+  border-color: var(--color-action-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 30%, transparent);
+}
+
+.workspace-box[data-feedback="success"] .workspace-card {
+  border-color: var(--color-status-success);
+}
+
+.workspace-box[data-feedback="error"] .workspace-card {
+  border-color: var(--color-status-danger);
+}
+
+.workspace-box[data-feedback="corrected"] .workspace-card {
+  border-color: var(--color-action-secondary);
+  background-color: color-mix(in srgb, var(--color-action-secondary) 8%, var(--color-surface-card));
+}
+
+.workspace-box.is-shaking {
+  animation: workspace-box-shake var(--dur-base) var(--spring-snappy);
+}
+
+@keyframes workspace-box-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.workspace-box__container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+/* --- Cards --- */
+
+.workspace-card {
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
+  transition:
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+
+.workspace-card--rhythm {
+  aspect-ratio: 4 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xs);
+  color: var(--color-text-base);
+}
+
+.workspace-card--rhythm svg {
+  display: block;
+}
+
+.workspace-card--rhythm.is-placeholder {
+  border-style: dashed;
+}
+
+.workspace-card--rhythm.is-placeholder::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: var(--color-border-subtle);
+}
+
+.workspace-box[data-state="extension"] .workspace-card--rhythm.is-tied {
+  border-style: dashed;
+  color: var(--color-text-muted);
+}
+
+.workspace-box[data-state="extension"] .workspace-card--rhythm.is-tied::after {
+  content: "—";
+  font-weight: 700;
+}
+
+/*
+ * Solfege placeholder: column boundaries come from the rhythm card's own
+ * note weights (getColumnTemplate() in rhythm-notation.js), set as an
+ * inline grid-template-columns by core.js, so a cell's edges always land
+ * under its paired stick regardless of container width.
+ */
+.workspace-card--solfege {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  min-block-size: 2rem;
+  overflow: hidden;
+}
+
+.solfege-card__cell {
+  border-inline-start: 1px dashed var(--color-border-subtle);
+}
+
+.solfege-card__cell:first-child {
+  border-inline-start: none;
+}
