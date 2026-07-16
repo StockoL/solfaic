@@ -62,6 +62,69 @@ export const MOTIF_LIBRARY = {
     label: "too",
     playback: ["2n"],
   },
+  tooRest: {
+    type: "simple",
+    duration: "2n",
+    ticks: 2,
+    label: "too-rest",
+    playback: [],
+  },
+  timKa: {
+    type: "simple",
+    duration: "4n",
+    ticks: 1,
+    label: "tim-ka",
+    playback: ["8n.", "16n"],
+  },
+  tumTi: {
+    type: "simple",
+    duration: "2n",
+    ticks: 2,
+    label: "tum-ti",
+    playback: ["4n.", "8n"],
+  },
+  syncopaV2: {
+    type: "simple",
+    duration: "2n",
+    ticks: 2,
+    label: "syncopa",
+    playback: ["8n", "4n", "8n"],
+    // The middle note is tied across the box A / box B boundary — box B's
+    // extension slot needs a tie-arc mark rather than the default flat
+    // dash (see rhythm-notation.js's renderTieArcSVG). Only one extension
+    // slot exists for a 2-tick motif, so a boolean is unambiguous here.
+    tieContinuation: true,
+  },
+  trioLa: {
+    type: "simple",
+    duration: "4n",
+    ticks: 1,
+    label: "tri-o-la",
+    playback: ["8t", "8t", "8t"],
+  },
+  restTi: {
+    type: "simple",
+    duration: "4n",
+    ticks: 1,
+    label: "rest-ti",
+    playback: ["8n", "8n"],
+    restMask: [true, false],
+  },
+  syncopaV1: {
+    type: "simple",
+    duration: "4n",
+    ticks: 1,
+    label: "syncopa",
+    playback: ["16n", "8n", "16n"],
+  },
+  restTika: {
+    type: "simple",
+    duration: "4n",
+    ticks: 1,
+    label: "rest-tika",
+    playback: ["8n", "16n", "16n"],
+    restMask: [true, false, false],
+  },
   tum: {
     type: "compound",
     duration: "4n.",
@@ -89,6 +152,34 @@ export const MOTIF_LIBRARY = {
     ticks: 1,
     label: "tum-rest",
     playback: [],
+  },
+  tikaTikaTi: {
+    type: "compound",
+    duration: "4n.",
+    ticks: 1,
+    label: "tika-tika-ti",
+    playback: ["16n", "16n", "16n", "16n", "8n"],
+  },
+  toom: {
+    type: "compound",
+    duration: "2n.",
+    ticks: 2,
+    label: "toom",
+    playback: ["2n."],
+  },
+  toomRest: {
+    type: "compound",
+    duration: "2n.",
+    ticks: 2,
+    label: "toom-rest",
+    playback: [],
+  },
+  tiTikaTi: {
+    type: "compound",
+    duration: "4n.",
+    ticks: 1,
+    label: "ti-tika-ti",
+    playback: ["8n", "16n", "16n", "8n"],
   },
 };
 
