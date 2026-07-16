@@ -156,10 +156,16 @@ function initialiseEventListeners() {
 
       // Block submission early if the board still has empty holes —
       // shake the bars and halo-pulse the empty slots instead of evaluating.
-      // TODO(task 8): only ever checks userSubmission — during PITCH phase
-      // that array is already guaranteed full (rhythm was confirmed to get
-      // here), so this never actually guards an incomplete pitchSubmission.
-      if (sessionState.userSubmission.includes(null)) {
+      // Checks whichever submission is actually the active one for this
+      // phase: userSubmission is already guaranteed full by the time
+      // PITCH phase starts, so this has to look at pitchSubmission there
+      // instead or it'd never catch an incomplete solfège board.
+      const activeSubmission =
+        sessionState.exercisePhase === "PITCH"
+          ? sessionState.pitchSubmission
+          : sessionState.userSubmission;
+
+      if (activeSubmission.includes(null)) {
         triggerIncompleteBoardFeedback();
         sessionState.currentState = "IDLE";
         unlockUI();

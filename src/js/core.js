@@ -163,9 +163,16 @@ export function triggerIncompleteBoardFeedback() {
     });
   });
 
-  const missingSlots = DOM.workspace.querySelectorAll(
-    ".workspace-card--rhythm.is-placeholder",
-  );
+  // Which cells count as "missing" depends on which submission is
+  // currently active — rhythm's still-empty placeholder cards during
+  // RHYTHM phase, or genuinely-unfilled (not a rest, which is never
+  // fillable) solfège cells during PITCH phase.
+  const missingSlots =
+    sessionState.exercisePhase === "PITCH"
+      ? DOM.workspace.querySelectorAll(
+          ".solfege-card__cell:not(.is-filled):not(.is-rest)",
+        )
+      : DOM.workspace.querySelectorAll(".workspace-card--rhythm.is-placeholder");
   missingSlots.forEach((card) => card.classList.add("is-empty-panic"));
 
   setTimeout(() => {
@@ -306,7 +313,13 @@ function renderSolfegeCard(
     const cell = document.createElement("div");
     cell.className = "solfege-card__cell";
 
-    if (!isRest) {
+    if (isRest) {
+      // Distinguishes "empty because this column is never fillable" from
+      // "empty because the student hasn't placed a syllable here yet" —
+      // triggerIncompleteBoardFeedback needs that distinction so it doesn't
+      // flag a rest column as a missing answer.
+      cell.classList.add("is-rest");
+    } else {
       const cellIndex = pitchCursor;
       const syllable = pitchSubmission?.[cellIndex];
       if (syllable) {
