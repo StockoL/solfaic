@@ -12,6 +12,8 @@
 import { sessionState } from "./state.js";
 import {
   generateRhythmTimeline,
+  generatePitchLine,
+  countSoundingNotes,
   evaluateSubmission,
   insertMotif,
   clearMotif,
@@ -43,16 +45,26 @@ export function startLevel(levelId) {
   sessionState.playCount = 0;
   sessionState.currentState = "IDLE";
   sessionState.selectedSlotIndex = null;
+  sessionState.exercisePhase = "RHYTHM";
 
   // 1. The Conductor asks the Engine to calculate the new musical timeline
   const { timeline, config } = generateRhythmTimeline(levelId);
   sessionState.targetTimeline = timeline;
   sessionState.activeConfig = config;
 
+  // 1b. ...and the matching solfège line, sung over that same timeline.
+  const noteCount = countSoundingNotes(timeline);
+  sessionState.targetPitchLine = generatePitchLine(levelId, noteCount);
+
   // 2. Reset submission arrays to empty nulls matching the level's total ticks
   const totalSlots = config.bars * config.ticksPerBar;
   sessionState.userSubmission = Array(totalSlots).fill(null);
   sessionState.slotStates = Array(totalSlots).fill("idle");
+
+  // 2b. Same reset for the solfège submission, sized to the pitch line
+  // instead of ticks — one slot per sounding note, not per beat.
+  sessionState.pitchSubmission = Array(noteCount).fill(null);
+  sessionState.pitchSlotStates = Array(noteCount).fill("idle");
 
   // 3. The Conductor tells the View to paint the stage
   unlockUI();
