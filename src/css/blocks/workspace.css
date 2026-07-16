@@ -180,6 +180,16 @@
 }
 
 /*
+ * Tie-arc variant: the box's sounding note is still ringing from the
+ * previous box (syncopa v2's box B, first half) rather than the box being
+ * fully silent — renderTieArcSVG() draws the arc + trailing stem directly,
+ * so the plain "—" dash text is suppressed here to avoid doubling up.
+ */
+.workspace-box[data-state="extension"] .workspace-card--rhythm.is-tie-arc::after {
+  content: none;
+}
+
+/*
  * Solfege placeholder: column boundaries come from the rhythm card's own
  * note weights (getColumnTemplate() in rhythm-notation.js), set as an
  * inline grid-template-columns by core.js, so a cell's edges always land

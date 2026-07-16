@@ -11,7 +11,11 @@
 
 import { MOTIF_LIBRARY } from "./data.js";
 import { sessionState } from "./state.js";
-import { renderRhythmSVG, getColumnTemplate } from "./rhythm-notation.js";
+import {
+  renderRhythmSVG,
+  getColumnTemplate,
+  renderTieArcSVG,
+} from "./rhythm-notation.js";
 
 // ============================================================================
 // 1. DOM CACHE
@@ -288,6 +292,14 @@ function buildWorkspaceBox(state, tickIndex) {
 
   if (isActive && isExtension) {
     rhythmCard.classList.add("is-tied");
+    // A motif's sustained note can still be ringing into this extension
+    // box (syncopa v2's box B, first half) rather than the box being fully
+    // silent — that gets a tie-arc mark instead of the default flat dash.
+    const baseMotifId = token.slice(0, -"_ext".length);
+    if (MOTIF_LIBRARY[baseMotifId]?.tieContinuation) {
+      rhythmCard.classList.add("is-tie-arc");
+      rhythmCard.innerHTML = renderTieArcSVG();
+    }
   } else if (isActive && token) {
     rhythmCard.innerHTML = renderRhythmSVG(token);
     rhythmCard.classList.add("is-filled");
