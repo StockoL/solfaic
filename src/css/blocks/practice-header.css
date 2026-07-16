@@ -1,0 +1,54 @@
+/* ==========================================================================
+   BLOCK: PRACTICE HEADER & SHELL
+   ========================================================================== */
+
+.practice-header {
+  padding-block: var(--space-s);
+  border-block-end: 1px solid var(--color-border-subtle);
+}
+
+.practice-header__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3xs);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.practice-header__back:hover,
+.practice-header__back:focus-visible {
+  color: var(--color-action-primary);
+}
+
+.streak-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background-color: var(--color-border-subtle);
+  transition: background-color var(--dur-fast) ease;
+}
+
+.streak-dot.is-success {
+  background-color: var(--color-status-success);
+}
+
+.meta-chip {
+  padding: var(--space-3xs) var(--space-xs);
+  background-color: var(--color-surface-sunken);
+  border-radius: 4px;
+  color: var(--color-text-muted);
+  font-size: var(--size-step--1);
+  font-weight: 600;
+}
+
+.plays-remaining {
+  color: var(--color-text-muted);
+  font-size: var(--size-step--1);
+}
+
+.action-panel {
+  display: flex;
+  justify-content: center;
+  padding-block-start: var(--space-s);
+}
