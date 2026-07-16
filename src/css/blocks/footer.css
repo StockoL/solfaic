@@ -8,3 +8,14 @@
   color: var(--color-text-muted);
   font-size: var(--size-step--1);
 }
+
+/*
+ * .site-footer__inner uses the Spread composition (space-between by
+ * design, for nav-style start/end groups) but the footer wants its
+ * copyright + links centered as one block instead of pushed to opposite
+ * edges — override here rather than touching spread.css, which other
+ * pages rely on for its default.
+ */
+.site-footer__inner {
+  justify-content: center;
+}
