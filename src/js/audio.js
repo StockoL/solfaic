@@ -98,10 +98,16 @@ export const AudioEngine = {
   },
 
   /**
-   * Schedules and plays the rhythm sequence.
+   * Schedules and plays the rhythm sequence, singing `pitches` over it when
+   * given — one solfège syllable per SOUNDING SUB-NOTE in timeline order
+   * (restMask-aware), not one per rhythm event. A motif like "titi" is a
+   * single timeline event but two sounding notes needing two different
+   * syllables, so pitchCursor walks in lockstep with the same rule
+   * engine.js's countSoundingNotes uses, advancing once per non-restMask
+   * playback slot regardless of which event it's inside.
    * Returns a Promise that resolves when playback completes.
    */
-  async playSequence(targetTimeline, activeConfig, tonic = null) {
+  async playSequence(targetTimeline, activeConfig, tonic = null, pitches = null) {
     await this.init();
 
     Tone.Transport.cancel();
@@ -112,6 +118,7 @@ export const AudioEngine = {
 
     const playableEvents = [];
     let currentTime = Tone.Time("1m").toSeconds();
+    let pitchCursor = 0;
 
     targetTimeline.forEach((event) => {
       const motifData = MOTIF_LIBRARY[event.motifId];
@@ -121,16 +128,18 @@ export const AudioEngine = {
         // restMask slots still consume their share of the beat but never
         // trigger a note — advance the cursor and skip scheduling.
         if (!motifData.restMask?.[i]) {
+          const syllable = pitches?.[pitchCursor];
           const resolvedPitch =
-            tonic && event.pitch && SOLFEGE_DEGREES[event.pitch] !== undefined
-              ? resolveSolfegeToNote(event.pitch, tonic)
-              : event.pitch || "G3";
+            tonic && syllable && SOLFEGE_DEGREES[syllable] !== undefined
+              ? resolveSolfegeToNote(syllable, tonic)
+              : "G3";
 
           playableEvents.push({
             time: subTime,
             duration: subDuration,
             pitch: resolvedPitch,
           });
+          pitchCursor++;
         }
         subTime += Tone.Time(subDuration).toSeconds();
       });

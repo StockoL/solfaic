@@ -242,6 +242,7 @@ function initialiseEventListeners() {
         sessionState.targetTimeline,
         sessionState.activeConfig,
         sessionState.targetPitchLine?.tonic,
+        sessionState.targetPitchLine?.pitches,
       );
 
       sessionState.currentState = "IDLE";
