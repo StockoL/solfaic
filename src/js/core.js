@@ -203,15 +203,24 @@ export function renderStreakTracker(streakCount) {
 }
 
 /**
+ * Clears a reel track element and appends one pad per item, built by
+ * `buildPad`. Shared by the rhythm and solfège reels so the DOM setup
+ * (clearing, appending, nothing else) lives in exactly one place even
+ * though the two pad shapes (SVG+label vs. plain syllable text) don't.
+ */
+function renderReelTrack(trackEl, items, buildPad) {
+  if (!trackEl) return;
+  trackEl.innerHTML = "";
+  items.forEach((item) => trackEl.appendChild(buildPad(item)));
+}
+
+/**
  * Renders one .motif-pad button per allowed motif into a given reel track
  * element. Used for both the main practice reel and the vignette's mirrored
  * reel, so both stay visually and behaviourally identical.
  */
 function renderReelInto(trackEl, allowedMotifs) {
-  if (!trackEl) return;
-  trackEl.innerHTML = "";
-
-  allowedMotifs.forEach((motifId) => {
+  renderReelTrack(trackEl, allowedMotifs, (motifId) => {
     const motifData = MOTIF_LIBRARY[motifId];
     const btn = document.createElement("button");
     btn.className = "motif-pad";
@@ -229,13 +238,44 @@ function renderReelInto(trackEl, allowedMotifs) {
       );
     });
 
-    trackEl.appendChild(btn);
+    return btn;
   });
 }
 
 export function renderMotifReel(allowedMotifs) {
   renderReelInto(DOM.motifReel, allowedMotifs);
   sessionState.allowedMotifs = allowedMotifs;
+}
+
+/**
+ * Renders one .solfege-pad button per syllable in the exercise's active
+ * toneset into a given reel track element — the solfège-phase counterpart
+ * to renderReelInto, sharing its DOM setup via renderReelTrack but with no
+ * SVG (a solfège pad is just its syllable, rendered as text).
+ */
+function renderSolfegeReelInto(trackEl, toneset) {
+  renderReelTrack(trackEl, toneset, (syllable) => {
+    const btn = document.createElement("button");
+    btn.className = "solfege-pad";
+    btn.setAttribute("role", "option");
+    btn.setAttribute("aria-label", syllable);
+    btn.innerHTML = `<span class="solfege-pad__label">${syllable}</span>`;
+
+    btn.addEventListener("click", () => {
+      btn.dispatchEvent(
+        new CustomEvent("action-select-pitch", {
+          bubbles: true,
+          detail: { syllable },
+        }),
+      );
+    });
+
+    return btn;
+  });
+}
+
+export function renderSolfegeReel(toneset) {
+  renderSolfegeReelInto(DOM.motifReel, toneset);
 }
 
 function renderSolfegeCard(solfegeCard, motifId) {

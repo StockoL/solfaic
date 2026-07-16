@@ -74,3 +74,42 @@
   font-weight: 600;
   color: var(--color-text-muted);
 }
+
+/*
+ * Solfège pad: same reel-card shell as .motif-pad, but there's no SVG slot
+ * to fill - the syllable itself is the content, so it's sized up and
+ * centered instead of sitting below a stick-notation graphic.
+ */
+.solfege-pad {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 6rem;
+  aspect-ratio: 4 / 1;
+  padding: var(--space-xs);
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
+  color: var(--color-text-base);
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition:
+    background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    transform var(--dur-fast) var(--spring-smooth);
+}
+
+.solfege-pad:hover,
+.solfege-pad:focus-visible {
+  background-color: var(--color-surface-sunken);
+  border-color: var(--color-action-primary);
+}
+
+.solfege-pad:active {
+  transform: scale(0.96);
+}
+
+.solfege-pad__label {
+  font-size: var(--size-step-1);
+  font-weight: 700;
+}
