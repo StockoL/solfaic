@@ -240,20 +240,17 @@ export function renderRhythmSVG(motifId) {
 /**
  * The tie-continuation mark for an extension box whose sounding note is
  * still ringing from the previous box, rather than that box being fully
- * silent — needed specifically by syncopa v2's box B (see its
+ * silent — needed by syncopa v2 and tum-ti's box B (see their
  * `tieContinuation` field). A curved arc across the first half in place of
- * the default flat dash, followed by the trailing note's own plain stem in
- * the second half of the same card, reusing the extension mechanism rather
- * than inventing a parallel one.
- *
- * Standalone and testable on its own; not yet wired into the live
- * extension-box rendering (core.js's buildWorkspaceBox still applies the
- * CSS "is-tied" dash to every extension box regardless of motif) — that
- * wiring is a workspace-grid interaction change, out of scope for this
- * pass.
+ * the default flat dash, followed by the trailing note's own quaver stem
+ * (both motifs' trailing note is an "8n") in the second half of the same
+ * card, reusing the extension mechanism rather than inventing a parallel
+ * one. Wired into the live extension-box rendering in core.js's
+ * buildWorkspaceBox.
  */
 export function renderTieArcSVG() {
   const arc = `<path d="M 20 55 Q 100 20 180 55" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>`;
   const trailingStem = noteGlyph(300, { showNotehead: false }).markup;
-  return `<svg viewBox="0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}" width="100%" height="100%" fill="currentColor" aria-hidden="true">${arc}${trailingStem}</svg>`;
+  const trailingFlag = flagGlyph(298, 1);
+  return `<svg viewBox="0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}" width="100%" height="100%" fill="currentColor" aria-hidden="true">${arc}${trailingStem}${trailingFlag}</svg>`;
 }
