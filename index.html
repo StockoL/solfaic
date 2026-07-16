@@ -42,63 +42,62 @@
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <header class="site-header">
-      <nav class="nav spread" aria-label="Primary">
-        <div class="nav__brand cluster">
-          <button
-            id="btn-toggle-nav"
-            class="nav__toggle"
-            aria-expanded="false"
-            aria-controls="site-nav-menu"
-            aria-label="Open menu"
+      <nav class="nav" aria-label="Primary">
+        <div class="nav__inner container spread">
+          <div class="nav__brand cluster">
+            <button
+              id="btn-toggle-nav"
+              class="nav__toggle"
+              aria-expanded="false"
+              aria-controls="site-nav-menu"
+              aria-label="Open menu"
+            >
+              <span class="nav__toggle-icon" aria-hidden="true"></span>
+            </button>
+
+            <a href="index.html" class="nav__logo">
+              <!-- Logo "drawn on" animation mount point (Flair phase) -->
+              <span class="nav__logo-mark" aria-hidden="true"></span>
+              <span class="nav__logo-text">Solfaic</span>
+            </a>
+          </div>
+
+          <ul
+            id="site-nav-menu"
+            class="nav__menu cluster"
+            role="list"
+            data-state="closed"
           >
-            <span class="nav__toggle-icon" aria-hidden="true"></span>
-          </button>
-
-          <a href="index.html" class="nav__logo">
-            <!-- Logo "drawn on" animation mount point (Flair phase) -->
-            <span class="nav__logo-mark" aria-hidden="true"></span>
-            <span class="nav__logo-text">Solfaic</span>
-          </a>
+            <li>
+              <a href="index.html" class="nav__link" aria-current="page"
+                >Home</a
+              >
+            </li>
+            <li><a href="classroom.html" class="nav__link">Classroom</a></li>
+            <li>
+              <a href="practice.html" class="nav__link">Practice Room</a>
+            </li>
+          </ul>
         </div>
-
-        <ul
-          id="site-nav-menu"
-          class="nav__menu cluster"
-          role="list"
-          data-state="closed"
-        >
-          <li>
-            <a href="index.html" class="nav__link" aria-current="page">Home</a>
-          </li>
-          <li><a href="classroom.html" class="nav__link">Classroom</a></li>
-          <li>
-            <a href="practice.html" class="nav__link">Practice Room</a>
-          </li>
-        </ul>
       </nav>
     </header>
 
     <main id="main-content">
       <section class="hero" aria-labelledby="hero-heading">
         <!--
-          Background animation mount point. Your plan doc includes a
-          reference implementation (Louis Hoebregts, CodePen BxMQYQ) using
-          20 ambient floating particles. Structure is ready; motion + color
-          land in the Flair pass.
+          20-particle ambient drift (Louis Hoebregts, CodePen BxMQYQ). Full-
+          bleed behind .hero__layout - see hero.css for the per-particle
+          nth-child variety and the float keyframe.
         -->
-        <div class="hero__background" aria-hidden="true">
+        <div class="hero__media" aria-hidden="true">
           <span></span><span></span><span></span><span></span><span></span>
           <span></span><span></span><span></span><span></span><span></span>
           <span></span><span></span><span></span><span></span><span></span>
           <span></span><span></span><span></span><span></span><span></span>
         </div>
 
-        <div class="hero__layout switcher container">
-          <div class="hero__media" aria-hidden="true">
-            <!-- Animated hero image mount point -->
-          </div>
-
-          <div class="hero__content center flow" data-and-text>
+        <div class="hero__layout center" data-and-text>
+          <div class="hero__content flow">
             <h1 id="hero-heading" class="hero__title">
               Train your ear, one motif at a time.
             </h1>

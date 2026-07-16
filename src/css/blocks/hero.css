@@ -3,6 +3,8 @@
    ========================================================================== */
 
 .hero {
+  position: relative;
+  overflow: hidden;
   padding-block: var(--space-3xl);
   background: linear-gradient(
     180deg,
@@ -12,20 +14,190 @@
 }
 
 /*
- * Both mounts are reserved for the Flair pass (ambient particle animation,
- * hero illustration) — no assets/motion exist yet, so they stay hidden
- * rather than rendering as empty holes. display: none also drops
- * .hero__media out of .hero__layout's switcher flow entirely, so
- * .hero__content takes the full width instead of sharing it with a blank
- * column.
+ * 20-particle ambient drift (Louis Hoebregts, CodePen BxMQYQ) — full-bleed
+ * behind .hero__layout, clipped to .hero's own bounds by its overflow:
+ * hidden above, so each particle can safely rise well past the section's
+ * actual height without affecting page layout or causing a scrollbar.
+ * prefers-reduced-motion is handled globally (reset.css), not repeated here.
  */
-.hero__background,
 .hero__media {
-  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero__media span {
+  position: absolute;
+  bottom: -10%;
+  left: var(--particle-left, 50%);
+  width: var(--particle-size, 24px);
+  height: var(--particle-size, 24px);
+  background-color: color-mix(
+    in srgb,
+    var(--particle-color, var(--color-action-primary)) 18%,
+    transparent
+  );
+  border-radius: 50%;
+  animation: hero-particle-float var(--particle-duration, 20s) ease-in infinite;
+  animation-delay: var(--particle-delay, 0s);
+}
+
+/* Hand-tuned left position/size/duration/delay per particle, alternating
+   the primary/secondary action colour, so the field reads as organic
+   drift rather than a visibly repeating tile. */
+.hero__media span:nth-child(1) {
+  --particle-left: 4%;
+  --particle-size: 90px;
+  --particle-duration: 28s;
+  --particle-delay: 0s;
+}
+.hero__media span:nth-child(2) {
+  --particle-left: 12%;
+  --particle-size: 18px;
+  --particle-duration: 16s;
+  --particle-delay: 3s;
+  --particle-color: var(--color-action-secondary);
+}
+.hero__media span:nth-child(3) {
+  --particle-left: 19%;
+  --particle-size: 34px;
+  --particle-duration: 22s;
+  --particle-delay: 8s;
+}
+.hero__media span:nth-child(4) {
+  --particle-left: 26%;
+  --particle-size: 14px;
+  --particle-duration: 14s;
+  --particle-delay: 1s;
+  --particle-color: var(--color-action-secondary);
+}
+.hero__media span:nth-child(5) {
+  --particle-left: 33%;
+  --particle-size: 60px;
+  --particle-duration: 25s;
+  --particle-delay: 6s;
+}
+.hero__media span:nth-child(6) {
+  --particle-left: 40%;
+  --particle-size: 22px;
+  --particle-duration: 18s;
+  --particle-delay: 11s;
+  --particle-color: var(--color-action-secondary);
+}
+.hero__media span:nth-child(7) {
+  --particle-left: 47%;
+  --particle-size: 46px;
+  --particle-duration: 30s;
+  --particle-delay: 4s;
+}
+.hero__media span:nth-child(8) {
+  --particle-left: 54%;
+  --particle-size: 16px;
+  --particle-duration: 15s;
+  --particle-delay: 14s;
+  --particle-color: var(--color-action-secondary);
+}
+.hero__media span:nth-child(9) {
+  --particle-left: 61%;
+  --particle-size: 70px;
+  --particle-duration: 26s;
+  --particle-delay: 2s;
+}
+.hero__media span:nth-child(10) {
+  --particle-left: 68%;
+  --particle-size: 20px;
+  --particle-duration: 17s;
+  --particle-delay: 9s;
+  --particle-color: var(--color-action-secondary);
+}
+.hero__media span:nth-child(11) {
+  --particle-left: 75%;
+  --particle-size: 38px;
+  --particle-duration: 21s;
+  --particle-delay: 13s;
+}
+.hero__media span:nth-child(12) {
+  --particle-left: 82%;
+  --particle-size: 12px;
+  --particle-duration: 13s;
+  --particle-delay: 5s;
+  --particle-color: var(--color-action-secondary);
+}
+.hero__media span:nth-child(13) {
+  --particle-left: 8%;
+  --particle-size: 26px;
+  --particle-duration: 19s;
+  --particle-delay: 16s;
+}
+.hero__media span:nth-child(14) {
+  --particle-left: 88%;
+  --particle-size: 54px;
+  --particle-duration: 27s;
+  --particle-delay: 7s;
+  --particle-color: var(--color-action-secondary);
+}
+.hero__media span:nth-child(15) {
+  --particle-left: 95%;
+  --particle-size: 18px;
+  --particle-duration: 16s;
+  --particle-delay: 0s;
+}
+.hero__media span:nth-child(16) {
+  --particle-left: 44%;
+  --particle-size: 30px;
+  --particle-duration: 23s;
+  --particle-delay: 18s;
+  --particle-color: var(--color-action-secondary);
+}
+.hero__media span:nth-child(17) {
+  --particle-left: 58%;
+  --particle-size: 16px;
+  --particle-duration: 14s;
+  --particle-delay: 10s;
+}
+.hero__media span:nth-child(18) {
+  --particle-left: 30%;
+  --particle-size: 42px;
+  --particle-duration: 24s;
+  --particle-delay: 15s;
+  --particle-color: var(--color-action-secondary);
+}
+.hero__media span:nth-child(19) {
+  --particle-left: 71%;
+  --particle-size: 24px;
+  --particle-duration: 18s;
+  --particle-delay: 12s;
+}
+.hero__media span:nth-child(20) {
+  --particle-left: 16%;
+  --particle-size: 64px;
+  --particle-duration: 29s;
+  --particle-delay: 19s;
+  --particle-color: var(--color-action-secondary);
+}
+
+@keyframes hero-particle-float {
+  0% {
+    transform: translateY(0) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+    transform: translateY(-10vh) scale(1);
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-110vh) scale(0.4);
+    opacity: 0;
+  }
 }
 
 .hero__layout {
-  align-items: center;
+  position: relative;
+  z-index: 1;
 }
 
 .hero__title {
