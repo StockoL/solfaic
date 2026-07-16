@@ -11,8 +11,14 @@
  * them (and the matching solfege-card column layout) directly from each
  * motif's `playback` array, so the two stay in sync by construction instead
  * of being two hand-authored assets that can drift apart.
+ *
+ * `restMask` is an optional parallel array to `playback` — when present,
+ * `restMask[i] === true` means that playback slot is silent (still consumes
+ * its share of the beat, but audio.js must not trigger a note for it).
+ * Undefined for every motif that has no silent subdivisions.
  */
 export const MOTIF_LIBRARY = {
+  // ---- Simple time ----
   ta: {
     type: "simple",
     duration: "4n",
@@ -125,6 +131,8 @@ export const MOTIF_LIBRARY = {
     playback: ["8n", "16n", "16n"],
     restMask: [true, false, false],
   },
+
+  // ---- Compound time ----
   tum: {
     type: "compound",
     duration: "4n.",
