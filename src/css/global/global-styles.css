@@ -103,3 +103,19 @@ a:not([class]):hover {
   background-color: var(--color-action-primary);
   color: var(--color-surface-card);
 }
+
+/* Visually hide the skip link until it receives focus */
+.skip-link {
+  position: absolute;
+  top: -auto;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.skip-link:focus-visible {
+  position: static;
+  width: auto;
+  height: auto;
+}
