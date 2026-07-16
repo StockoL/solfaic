@@ -41,6 +41,10 @@
   margin-block-start: var(--space-s);
 }
 
+.workspace-pager__nav[data-state="hidden"] {
+  display: none;
+}
+
 .workspace-pager__nav-btn {
   display: inline-flex;
   align-items: center;
