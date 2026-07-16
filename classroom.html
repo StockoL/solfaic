@@ -42,42 +42,44 @@
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <header class="site-header">
-      <nav class="nav spread" aria-label="Primary">
-        <div class="nav__brand cluster">
-          <button
-            id="btn-toggle-nav"
-            class="nav__toggle"
-            aria-expanded="false"
-            aria-controls="site-nav-menu"
-            aria-label="Open menu"
-          >
-            <span class="nav__toggle-icon" aria-hidden="true"></span>
-          </button>
-
-          <a href="index.html" class="nav__logo">
-            <span class="nav__logo-mark" aria-hidden="true"></span>
-            <span class="nav__logo-text">Solfaic</span>
-            <!-- Secondary typography label per pattern library spec -->
-            <span class="nav__logo-subtitle">Classroom</span>
-          </a>
-        </div>
-
-        <ul
-          id="site-nav-menu"
-          class="nav__menu cluster"
-          role="list"
-          data-state="closed"
-        >
-          <li><a href="index.html" class="nav__link">Home</a></li>
-          <li>
-            <a href="classroom.html" class="nav__link" aria-current="page"
-              >Classroom</a
+      <nav class="nav" aria-label="Primary">
+        <div class="nav__inner container spread">
+          <div class="nav__brand cluster">
+            <button
+              id="btn-toggle-nav"
+              class="nav__toggle"
+              aria-expanded="false"
+              aria-controls="site-nav-menu"
+              aria-label="Open menu"
             >
-          </li>
-          <li>
-            <a href="practice.html" class="nav__link">Practice Room</a>
-          </li>
-        </ul>
+              <span class="nav__toggle-icon" aria-hidden="true"></span>
+            </button>
+
+            <a href="index.html" class="nav__logo">
+              <span class="nav__logo-mark" aria-hidden="true"></span>
+              <span class="nav__logo-text">Solfaic</span>
+              <!-- Secondary typography label per pattern library spec -->
+              <span class="nav__logo-subtitle">Classroom</span>
+            </a>
+          </div>
+
+          <ul
+            id="site-nav-menu"
+            class="nav__menu cluster"
+            role="list"
+            data-state="closed"
+          >
+            <li><a href="index.html" class="nav__link">Home</a></li>
+            <li>
+              <a href="classroom.html" class="nav__link" aria-current="page"
+                >Classroom</a
+              >
+            </li>
+            <li>
+              <a href="practice.html" class="nav__link">Practice Room</a>
+            </li>
+          </ul>
+        </div>
       </nav>
     </header>
 
