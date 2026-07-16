@@ -63,6 +63,9 @@
   },
   "_comment_layout": "Bare layout primitives that don't belong to color/type/space scales. --measure is consumed directly by global-styles.css's typographic-measure rule.",
   "layout": {
-    "measure": "60ch"
+    "measure": "60ch",
+    "gutter": "var(--space-s-m)",
+    "flow-space": "var(--space-m-l)",
+    "center-gutters": "var(--space-s)"
   }
 }

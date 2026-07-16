@@ -65,4 +65,7 @@
 
   /* -- LAYOUT -------------------------------------------------------------- */
   --measure: 60ch;
+  --gutter: var(--space-s-m);
+  --flow-space: var(--space-m-l);
+  --center-gutters: var(--space-s);
 }
