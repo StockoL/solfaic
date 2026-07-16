@@ -1,0 +1,76 @@
+/* ==========================================================================
+   BLOCK: VIGNETTE OVERLAY (tap-and-hold card editor)
+   ========================================================================== */
+
+body.has-open-vignette {
+  overflow: hidden;
+}
+
+.vignette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-l);
+  background-color: color-mix(in srgb, var(--color-graphite) 75%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--dur-base) var(--spring-smooth),
+    visibility var(--dur-base);
+}
+
+.vignette-overlay[data-state="open"] {
+  opacity: 1;
+  visibility: visible;
+}
+
+.vignette-overlay__close {
+  position: absolute;
+  top: var(--space-m);
+  right: var(--space-m);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: var(--color-surface-card);
+  border: none;
+  border-radius: 50%;
+  color: var(--color-text-base);
+  font-size: var(--size-step-1);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease;
+}
+
+.vignette-overlay__close:hover,
+.vignette-overlay__close:focus-visible {
+  background-color: var(--color-surface-sunken);
+}
+
+/*
+ * The spotlighted card — scaled up to fill most of the viewport width.
+ * Reuses .workspace-card/.workspace-card--rhythm/.workspace-card--solfege
+ * styling (core.js builds the same elements here as in the workspace), so
+ * only sizing needs overriding — the aspect-ratio on the rhythm card keeps
+ * it scaling cleanly at any width.
+ */
+.vignette-overlay__focused-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  inline-size: min(90vw, 40rem);
+  transform: scale(0.96);
+  transition: transform var(--dur-base) var(--spring-smooth);
+}
+
+.vignette-overlay[data-state="open"] .vignette-overlay__focused-card {
+  transform: scale(1);
+}
+
+.vignette-overlay__reel {
+  max-inline-size: 100%;
+}
