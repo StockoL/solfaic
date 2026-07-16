@@ -1,0 +1,76 @@
+/* ==========================================================================
+   BLOCK: MOTIF PAD & PRACTICE REEL
+   ========================================================================== */
+
+.practice-reel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+}
+
+.practice-reel__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 50%;
+  color: var(--color-text-base);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease;
+}
+
+.practice-reel__nav:hover,
+.practice-reel__nav:focus-visible {
+  background-color: var(--color-surface-sunken);
+}
+
+.practice-reel__track {
+  padding-block: var(--space-2xs);
+}
+
+.motif-pad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2xs);
+  inline-size: 6rem;
+  padding: var(--space-xs);
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
+  color: var(--color-text-base);
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition:
+    background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    transform var(--dur-fast) var(--spring-smooth);
+}
+
+.motif-pad:hover,
+.motif-pad:focus-visible {
+  background-color: var(--color-surface-sunken);
+  border-color: var(--color-action-primary);
+}
+
+.motif-pad:active {
+  transform: scale(0.96);
+}
+
+.motif-pad__svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  aspect-ratio: 4 / 1;
+}
+
+.motif-pad__label {
+  font-size: var(--size-step--1);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
