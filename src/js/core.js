@@ -9,7 +9,7 @@
  * ============================================================================
  */
 
-import { MOTIF_LIBRARY } from "./data.js";
+import { MOTIF_LIBRARY, MAX_LEVEL } from "./data.js";
 import { sessionState } from "./state.js";
 import {
   renderRhythmSVG,
@@ -696,7 +696,7 @@ export function triggerCelebrationModal(targetLevelId, startLevelCallback) {
   let subText = `Sensational ear tracking.<br>Ready to unlock Level ${targetLevelId}?`;
   let actionText = "Onwards! →";
 
-  if (targetLevelId > 3) {
+  if (targetLevelId > MAX_LEVEL) {
     titleText = "Grand Masterpiece! 🏆";
     subText =
       "Incredible! You have officially conquered all levels of the rhythmic matrix.";
@@ -717,7 +717,7 @@ export function triggerCelebrationModal(targetLevelId, startLevelCallback) {
     overlay.classList.remove("is-active");
     setTimeout(() => {
       overlay.remove();
-      startLevelCallback(targetLevelId <= 3 ? targetLevelId : 1);
+      startLevelCallback(targetLevelId <= MAX_LEVEL ? targetLevelId : 1);
     }, 300);
   });
 

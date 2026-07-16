@@ -517,6 +517,14 @@ export const levelRules = {
 };
 
 /**
+ * The highest level with real content — derived from levelRules itself
+ * rather than hardcoded, so a UI ceiling (e.g. "you've mastered
+ * everything") never drifts out of sync with the data the way the
+ * Classroom reference table did.
+ */
+export const MAX_LEVEL = Math.max(...Object.keys(levelRules).map(Number));
+
+/**
  * Pedagogical Cadence Pool
  * These are the structurally stable blocks used to musically resolve phrases
  * — sustained notes/rests in both simple and compound time, at both 1- and
