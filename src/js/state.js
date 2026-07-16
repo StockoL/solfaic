@@ -18,4 +18,5 @@ export const sessionState = {
   slotStates: [], // Validation feedback memory ('idle', 'success', 'error')
   selectedSlotIndex: null, // Tracks mobile tap-to-target logic
   currentState: "IDLE", // 'IDLE' or 'PLAYING' (locks UI during audio)
+  allowedMotifs: [], // Current level's reel contents, cached for the vignette's mirrored reel
 };

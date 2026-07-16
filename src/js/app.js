@@ -19,7 +19,7 @@ import {
 import {
   DOM,
   renderWorkspace,
-  renderMotifSelector,
+  renderMotifReel,
   renderStreakTracker,
   renderMeta,
   syncLevelDropdown,
@@ -28,6 +28,7 @@ import {
   triggerCelebrationModal,
   triggerIncompleteBoardFeedback,
   initialiseCoreUI,
+  closeVignette,
   startGuidedTour,
   terminateTourImmediately,
 } from "./core.js";
@@ -56,7 +57,7 @@ export function startLevel(levelId) {
   // 3. The Conductor tells the View to paint the stage
   unlockUI();
   renderWorkspace(sessionState);
-  renderMotifSelector(config.allowedMotifs);
+  renderMotifReel(config.allowedMotifs);
   renderStreakTracker(sessionState.streak);
   renderMeta(sessionState);
   syncLevelDropdown(levelId);
@@ -129,12 +130,11 @@ function initialiseEventListeners() {
             );
             renderWorkspace(sessionState);
 
-            // Remedial visual override
-            const correctedCards = document.querySelectorAll(".workspace-card");
-            correctedCards.forEach((card) => {
-              card.style.borderColor = "#3b82f6";
-              card.style.backgroundColor = "#eff6ff";
-            });
+            // Remedial highlight — data-state driven so workspace.css can
+            // style it with real tokens instead of hardcoded inline colours.
+            document
+              .querySelectorAll(".workspace-box:not([data-state='disabled'])")
+              .forEach((box) => box.setAttribute("data-feedback", "corrected"));
 
             setTimeout(() => startLevel(sessionState.currentLevel), 4000);
           }, 1500);
@@ -195,8 +195,9 @@ function initialiseEventListeners() {
   document.addEventListener("action-select-motif", (e) => {
     const { motifId } = e.detail;
 
-    // Mobile tap-to-place: use the targeted slot if one is selected,
-    // otherwise fall back to the first open placeholder.
+    // Tap-to-place: use the focused slot if one is selected (base workspace
+    // tap, or editing via the vignette), otherwise fall back to the first
+    // open slot so reel selection auto-populates left to right.
     let targetIndex = sessionState.selectedSlotIndex;
     if (targetIndex === null) {
       targetIndex = sessionState.userSubmission.findIndex(
@@ -205,9 +206,26 @@ function initialiseEventListeners() {
     }
     if (targetIndex === null || targetIndex === -1) return;
 
+    let submission = sessionState.userSubmission;
+    let states = sessionState.slotStates;
+
+    // Replacing an already-filled slot: clear its old extension tokens
+    // first, so a shorter motif (e.g. ta replacing ta-a) doesn't leave a
+    // stale tied box behind.
+    if (submission[targetIndex] !== null) {
+      const cleared = clearMotif(
+        submission,
+        states,
+        targetIndex,
+        submission[targetIndex],
+      );
+      submission = cleared.newSubmission;
+      states = cleared.newStates;
+    }
+
     const { newSubmission, newStates } = insertMotif(
-      sessionState.userSubmission,
-      sessionState.slotStates,
+      submission,
+      states,
       targetIndex,
       motifId,
     );
@@ -215,20 +233,7 @@ function initialiseEventListeners() {
     sessionState.slotStates = newStates;
     sessionState.selectedSlotIndex = null;
     renderWorkspace(sessionState);
-  });
-
-  document.addEventListener("action-insert-motif", (e) => {
-    const { index, motifId } = e.detail;
-    const { newSubmission, newStates } = insertMotif(
-      sessionState.userSubmission,
-      sessionState.slotStates,
-      index,
-      motifId,
-    );
-    sessionState.userSubmission = newSubmission;
-    sessionState.slotStates = newStates;
-    sessionState.selectedSlotIndex = null;
-    renderWorkspace(sessionState);
+    closeVignette();
   });
 
   document.addEventListener("action-clear-note", (e) => {
@@ -244,28 +249,6 @@ function initialiseEventListeners() {
     sessionState.selectedSlotIndex = null;
     renderWorkspace(sessionState);
   });
-
-  // --- LEVEL DROPDOWN (Practice Room only) ---
-  // core.js's initialiseCoreUI() handles the shared open/close/active-item
-  // chrome for this control on every page. Practice Room additionally needs
-  // picking a level to actually restart the engine, so it layers that on
-  // top by listening for the same clicks here.
-  if (DOM.levelItems.length) {
-    DOM.levelItems.forEach((item) => {
-      item.addEventListener("click", () => {
-        const levelId = parseInt(item.getAttribute("data-value"), 10);
-
-        // Jumping levels manually mid-exercise should cut any in-flight
-        // audio and not let an old streak carry over into the new level.
-        if (typeof Tone !== "undefined" && Tone.Transport) {
-          Tone.Transport.cancel();
-          Tone.Transport.stop();
-        }
-        sessionState.streak = 0;
-        startLevel(levelId);
-      });
-    });
-  }
 
   // --- ONBOARDING TOUR ---
   const tourTriggerBtn = document.getElementById("btn-trigger-onboarding");

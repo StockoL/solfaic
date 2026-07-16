@@ -3,28 +3,14 @@
 // ============================================================================
 
 /**
- * SVG Vector Graphics Library
- * Storing SVGs as strings allows us to inject them dynamically into the DOM.
- * Using 'currentColor' allows the CSS to control the stroke/fill colors natively.
- */
-export const SVG_ICONS = {
-  ta: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/></svg>`,
-  titi: `<svg viewBox="0 0 80 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="64" cy="85" rx="12" ry="8" transform="rotate(-20 64 85)"/><rect x="72" y="15" width="3" height="70"/><rect x="22" y="15" width="53" height="8"/></svg>`,
-  taRest: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M 25 20 L 15 40 L 30 55 L 15 80" fill="none"/></svg>`,
-  taa: `<svg viewBox="0 0 40 100" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="3"><ellipse cx="14" cy="85" rx="10" ry="7" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70" fill="currentColor" stroke="none"/></svg>`,
-  tikatika: `<svg viewBox="0 0 160 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><ellipse cx="134" cy="85" rx="12" ry="8" transform="rotate(-20 134 85)"/><rect x="142" y="15" width="3" height="70"/><rect x="22" y="15" width="123" height="8"/><rect x="22" y="27" width="123" height="8"/></svg>`,
-  tikati: `<svg viewBox="0 0 120 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><rect x="22" y="15" width="83" height="8"/><rect x="22" y="27" width="43" height="8"/></svg>`,
-  titika: `<svg viewBox="0 0 120 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><rect x="22" y="15" width="83" height="8"/><rect x="62" y="27" width="43" height="8"/></svg>`,
-  tai: `<svg viewBox="0 0 50 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><circle cx="40" cy="80" r="4"/></svg>`,
-  tititi: `<svg viewBox="0 0 120 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="54" cy="85" rx="12" ry="8" transform="rotate(-20 54 85)"/><rect x="62" y="15" width="3" height="70"/><ellipse cx="94" cy="85" rx="12" ry="8" transform="rotate(-20 94 85)"/><rect x="102" y="15" width="3" height="70"/><rect x="22" y="15" width="83" height="8"/></svg>`,
-  tati: `<svg viewBox="0 0 90 100" width="100%" height="100%" fill="currentColor"><ellipse cx="14" cy="85" rx="12" ry="8" transform="rotate(-20 14 85)"/><rect x="22" y="15" width="3" height="70"/><ellipse cx="64" cy="85" rx="12" ry="8" transform="rotate(-20 64 85)"/><rect x="72" y="15" width="3" height="70"/><path d="M 72 15 C 85 15 85 40 72 45 C 80 40 80 25 72 25 Z"/></svg>`,
-  taiRest: `<svg viewBox="0 0 50 100" width="100%" height="100%" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M 20 20 L 10 40 L 25 55 L 10 80" fill="none"/><circle cx="40" cy="55" r="3" stroke="none" fill="currentColor"/></svg>`,
-};
-
-/**
  * Master Motif Engine Configuration
  * Maps visual tokens to mathematical time representations required by Tone.js.
  * 'ticks' represent spatial cost (e.g., taa requires 2 empty layout slots).
+ *
+ * Rhythm-card SVGs are no longer stored here — rhythm-notation.js generates
+ * them (and the matching solfege-card column layout) directly from each
+ * motif's `playback` array, so the two stay in sync by construction instead
+ * of being two hand-authored assets that can drift apart.
  */
 export const MOTIF_LIBRARY = {
   ta: {
@@ -32,7 +18,6 @@ export const MOTIF_LIBRARY = {
     duration: "4n",
     ticks: 1,
     label: "ta",
-    svg: SVG_ICONS.ta,
     playback: ["4n"],
   },
   titi: {
@@ -40,7 +25,6 @@ export const MOTIF_LIBRARY = {
     duration: "4n",
     ticks: 1,
     label: "ti-ti",
-    svg: SVG_ICONS.titi,
     playback: ["8n", "8n"],
   },
   taRest: {
@@ -48,7 +32,6 @@ export const MOTIF_LIBRARY = {
     duration: "4n",
     ticks: 1,
     label: "ta rest",
-    svg: SVG_ICONS.taRest,
     playback: [],
   },
   tikatika: {
@@ -56,7 +39,6 @@ export const MOTIF_LIBRARY = {
     duration: "4n",
     ticks: 1,
     label: "tika-tika",
-    svg: SVG_ICONS.tikatika,
     playback: ["16n", "16n", "16n", "16n"],
   },
   tikati: {
@@ -64,7 +46,6 @@ export const MOTIF_LIBRARY = {
     duration: "4n",
     ticks: 1,
     label: "tika-ti",
-    svg: SVG_ICONS.tikati,
     playback: ["16n", "16n", "8n"],
   },
   titika: {
@@ -72,7 +53,6 @@ export const MOTIF_LIBRARY = {
     duration: "4n",
     ticks: 1,
     label: "ti-tika",
-    svg: SVG_ICONS.titika,
     playback: ["8n", "16n", "16n"],
   },
   taa: {
@@ -80,7 +60,6 @@ export const MOTIF_LIBRARY = {
     duration: "2n",
     ticks: 2,
     label: "ta-a",
-    svg: SVG_ICONS.taa,
     playback: ["2n"],
   },
   tai: {
@@ -88,7 +67,6 @@ export const MOTIF_LIBRARY = {
     duration: "4n.",
     ticks: 1,
     label: "tai",
-    svg: SVG_ICONS.tai,
     playback: ["4n."],
   },
   tititi: {
@@ -96,7 +74,6 @@ export const MOTIF_LIBRARY = {
     duration: "4n.",
     ticks: 1,
     label: "ti-ti-ti",
-    svg: SVG_ICONS.tititi,
     playback: ["8n", "8n", "8n"],
   },
   tati: {
@@ -104,7 +81,6 @@ export const MOTIF_LIBRARY = {
     duration: "4n.",
     ticks: 1,
     label: "ta ti",
-    svg: SVG_ICONS.tati,
     playback: ["4n", "8n"],
   },
   taiRest: {
@@ -112,7 +88,6 @@ export const MOTIF_LIBRARY = {
     duration: "4n.",
     ticks: 1,
     label: "tai rest",
-    svg: SVG_ICONS.taiRest,
     playback: [],
   },
 };

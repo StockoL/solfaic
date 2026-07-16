@@ -11,6 +11,7 @@
 
 import { MOTIF_LIBRARY } from "./data.js";
 import { sessionState } from "./state.js";
+import { renderRhythmSVG, getColumnTemplate } from "./rhythm-notation.js";
 
 // ============================================================================
 // 1. DOM CACHE
@@ -22,7 +23,8 @@ export const DOM = {
   replayBtn: document.getElementById("btn-replay"),
   playsRemaining: document.getElementById("ui-plays-remaining"),
   workspace: document.getElementById("ui-workspace"),
-  motifSelector: document.getElementById("ui-motif-selector"),
+  workspaceDots: document.getElementById("ui-workspace-dots"),
+  motifReel: document.getElementById("ui-motif-reel"),
   submitBtn: document.getElementById("btn-submit"),
   metreDisplay: document.getElementById("ui-metre-display"),
   barsDisplay: document.getElementById("ui-bars-display"),
@@ -30,7 +32,67 @@ export const DOM = {
   levelBtn: document.getElementById("btn-level-dropdown"),
   levelMenu: document.getElementById("menu-level-dropdown"),
   levelItems: document.querySelectorAll(".level-select__item"),
+  vignette: document.getElementById("ui-card-vignette"),
+  vignetteFocusedCard: document.getElementById("vignette-focused-card"),
+  vignetteReel: document.getElementById("vignette-reel"),
 };
+
+const TICKS_PER_PAGE = 16;
+
+// ============================================================================
+// LONG-PRESS HELPER
+// ============================================================================
+
+/**
+ * Tap-and-hold detection. Pointer-based (not a native event) so it works
+ * uniformly for mouse and touch. A press that moves more than a few pixels
+ * before the hold threshold is treated as a scroll/drag, not a long-press.
+ */
+function attachLongPress(el, onLongPress, { threshold = 500 } = {}) {
+  let timer = null;
+  let startX = 0;
+  let startY = 0;
+  let firedLongPress = false;
+
+  const cancel = () => {
+    clearTimeout(timer);
+    timer = null;
+  };
+
+  el.addEventListener("pointerdown", (e) => {
+    firedLongPress = false;
+    startX = e.clientX;
+    startY = e.clientY;
+    timer = setTimeout(() => {
+      firedLongPress = true;
+      onLongPress();
+    }, threshold);
+  });
+
+  el.addEventListener("pointermove", (e) => {
+    if (!timer) return;
+    if (Math.abs(e.clientX - startX) > 10 || Math.abs(e.clientY - startY) > 10) {
+      cancel();
+    }
+  });
+
+  el.addEventListener("pointerup", cancel);
+  el.addEventListener("pointerleave", cancel);
+  el.addEventListener("pointercancel", cancel);
+
+  // Suppress the click that follows a long-press so it doesn't also fire
+  // the tap-to-focus handler.
+  el.addEventListener(
+    "click",
+    (e) => {
+      if (firedLongPress) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    },
+    true,
+  );
+}
 
 // ============================================================================
 // 2. UI LOCKERS
@@ -83,24 +145,24 @@ export function renderMeta(state) {
  */
 export function triggerIncompleteBoardFeedback() {
   if (!DOM.workspace) return;
-  const bars = DOM.workspace.querySelectorAll(".workspace-bar");
-  bars.forEach((bar) => {
-    bar.classList.remove("is-shaking");
+  const boxes = DOM.workspace.querySelectorAll(".workspace-box:not([data-state='disabled'])");
+  boxes.forEach((box) => {
+    box.classList.remove("is-shaking");
     // Double rAF avoids a forced synchronous reflow when re-triggering the animation.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        bar.classList.add("is-shaking");
+        box.classList.add("is-shaking");
       });
     });
   });
 
   const missingSlots = DOM.workspace.querySelectorAll(
-    ".workspace-card.is-placeholder",
+    ".workspace-card--rhythm.is-placeholder",
   );
   missingSlots.forEach((card) => card.classList.add("is-empty-panic"));
 
   setTimeout(() => {
-    bars.forEach((bar) => bar.classList.remove("is-shaking"));
+    boxes.forEach((box) => box.classList.remove("is-shaking"));
     missingSlots.forEach((card) => card.classList.remove("is-empty-panic"));
   }, 500);
 }
@@ -136,29 +198,25 @@ export function renderStreakTracker(streakCount) {
   }
 }
 
-export function renderMotifSelector(allowedMotifs) {
-  if (!DOM.motifSelector) return;
-  DOM.motifSelector.innerHTML = "";
+/**
+ * Renders one .motif-pad button per allowed motif into a given reel track
+ * element. Used for both the main practice reel and the vignette's mirrored
+ * reel, so both stay visually and behaviourally identical.
+ */
+function renderReelInto(trackEl, allowedMotifs) {
+  if (!trackEl) return;
+  trackEl.innerHTML = "";
 
   allowedMotifs.forEach((motifId) => {
     const motifData = MOTIF_LIBRARY[motifId];
     const btn = document.createElement("button");
     btn.className = "motif-pad";
+    btn.setAttribute("role", "option");
+    btn.setAttribute("aria-label", motifData.label);
+    btn.innerHTML = `<div class="motif-pad__svg">${renderRhythmSVG(motifId)}</div><span class="motif-pad__label">${motifData.label}</span>`;
 
-    btn.innerHTML = motifData.svg
-      ? `<div class="svg-container">${motifData.svg}</div> ${motifData.label}`
-      : `<span class="music-font">${motifData.symbol}</span> ${motifData.label}`;
-
-    // Desktop Drag Engine hooks
-    btn.setAttribute("draggable", "true");
-    btn.addEventListener("dragstart", (e) => {
-      if (sessionState.currentState === "PLAYING") return e.preventDefault();
-      e.dataTransfer.setData("text/plain", motifId);
-    });
-
-    // Mobile / Click Engine hooks
+    // No PLAYING guard — selecting from the reel during playback is allowed.
     btn.addEventListener("click", () => {
-      if (sessionState.currentState === "PLAYING") return;
       btn.dispatchEvent(
         new CustomEvent("action-select-motif", {
           bubbles: true,
@@ -167,115 +225,239 @@ export function renderMotifSelector(allowedMotifs) {
       );
     });
 
-    DOM.motifSelector.appendChild(btn);
+    trackEl.appendChild(btn);
   });
+}
+
+export function renderMotifReel(allowedMotifs) {
+  renderReelInto(DOM.motifReel, allowedMotifs);
+  sessionState.allowedMotifs = allowedMotifs;
+}
+
+function renderSolfegeCard(solfegeCard, motifId) {
+  solfegeCard.innerHTML = "";
+  solfegeCard.style.gridTemplateColumns = getColumnTemplate(motifId);
+  const noteCount = getColumnTemplate(motifId).split(" ").length;
+  for (let i = 0; i < noteCount; i++) {
+    const cell = document.createElement("div");
+    cell.className = "solfege-card__cell";
+    solfegeCard.appendChild(cell);
+  }
+}
+
+/**
+ * Builds one workspace box (rhythm card + solfege placeholder card) for a
+ * given tick index. tickIndex maps 1:1 onto state.userSubmission — each box
+ * is one beat, not one bar, so a 4/4 exercise needs 4 boxes per bar.
+ */
+function buildWorkspaceBox(state, tickIndex) {
+  const box = document.createElement("div");
+  box.className = "workspace-box";
+  box.setAttribute("data-tick-index", tickIndex);
+
+  const isActive = tickIndex < state.activeConfig.totalTicks;
+  const token = isActive ? state.userSubmission[tickIndex] : null;
+  const isExtension = typeof token === "string" && token.endsWith("_ext");
+
+  if (!isActive) {
+    box.setAttribute("data-state", "disabled");
+  } else if (isExtension) {
+    box.setAttribute("data-state", "extension");
+  }
+
+  if (isActive && state.slotStates[tickIndex] === "success") {
+    box.setAttribute("data-feedback", "success");
+  } else if (isActive && state.slotStates[tickIndex] === "error") {
+    box.setAttribute("data-feedback", "error");
+  }
+
+  if (isActive && tickIndex === state.selectedSlotIndex) {
+    box.classList.add("is-focused");
+  }
+
+  const container = document.createElement("div");
+  container.className = "workspace-box__container";
+
+  const rhythmCard = document.createElement("div");
+  rhythmCard.className = "workspace-card workspace-card--rhythm";
+  rhythmCard.setAttribute("aria-label", `Beat ${tickIndex + 1} rhythm slot`);
+
+  const solfegeCard = document.createElement("div");
+  solfegeCard.className = "workspace-card workspace-card--solfege";
+  solfegeCard.setAttribute("aria-label", `Beat ${tickIndex + 1} solfege slot`);
+
+  if (isActive && isExtension) {
+    rhythmCard.classList.add("is-tied");
+  } else if (isActive && token) {
+    rhythmCard.innerHTML = renderRhythmSVG(token);
+    rhythmCard.classList.add("is-filled");
+    renderSolfegeCard(solfegeCard, token);
+  } else if (isActive) {
+    rhythmCard.classList.add("is-placeholder");
+  }
+
+  container.appendChild(rhythmCard);
+  container.appendChild(solfegeCard);
+  box.appendChild(container);
+
+  if (isActive && !isExtension) {
+    box.addEventListener("click", () => {
+      box.dispatchEvent(
+        new CustomEvent("action-target-slot", {
+          bubbles: true,
+          detail: { index: tickIndex },
+        }),
+      );
+    });
+    attachLongPress(box, () => openVignette(tickIndex));
+  }
+
+  return box;
+}
+
+function renderWorkspacePagerDots(pageCount) {
+  const navEl = document.getElementById("ui-workspace-pager-nav");
+  if (!DOM.workspaceDots || !navEl) return;
+
+  DOM.workspaceDots.innerHTML = "";
+  navEl.hidden = pageCount <= 1;
+  if (pageCount <= 1) return;
+
+  for (let i = 0; i < pageCount; i++) {
+    const dot = document.createElement("span");
+    dot.className = "workspace-pager__dot";
+    if (i === 0) dot.setAttribute("data-state", "active");
+    DOM.workspaceDots.appendChild(dot);
+  }
+}
+
+/**
+ * Scrolls the workspace pager by one page and keeps the dots in sync.
+ * IntersectionObserver (rather than a scroll listener) tracks which page is
+ * actually centred, so swipe gestures update the dots too, not just the
+ * prev/next buttons.
+ */
+function initialiseWorkspacePager() {
+  const prevBtn = document.getElementById("btn-workspace-page-prev");
+  const nextBtn = document.getElementById("btn-workspace-page-next");
+  if (!DOM.workspace || !prevBtn || !nextBtn) return;
+
+  const scrollByPage = (direction) => {
+    DOM.workspace.scrollBy({
+      left: direction * DOM.workspace.clientWidth,
+      behavior: "smooth",
+    });
+  };
+
+  prevBtn.addEventListener("click", () => scrollByPage(-1));
+  nextBtn.addEventListener("click", () => scrollByPage(1));
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const pages = Array.from(DOM.workspace.querySelectorAll(".workspace-page"));
+        const activeIndex = pages.indexOf(entry.target);
+        DOM.workspaceDots
+          ?.querySelectorAll(".workspace-pager__dot")
+          .forEach((dot, i) => {
+            if (i === activeIndex) dot.setAttribute("data-state", "active");
+            else dot.removeAttribute("data-state");
+          });
+      });
+    },
+    { root: DOM.workspace, threshold: 0.6 },
+  );
+
+  // Re-observe on every render since renderWorkspace() replaces the pages.
+  const mutationObserver = new MutationObserver(() => {
+    observer.disconnect();
+    DOM.workspace
+      .querySelectorAll(".workspace-page")
+      .forEach((page) => observer.observe(page));
+  });
+  mutationObserver.observe(DOM.workspace, { childList: true });
 }
 
 export function renderWorkspace(state) {
   if (!DOM.workspace) return;
-  DOM.workspace.innerHTML = "";
   const config = state.activeConfig;
+  if (!config) return;
 
-  // Render the inner scrolling track to hold the dashed border
-  const scrollTrack = document.createElement("div");
-  scrollTrack.className = "workspace-scroll-track";
+  DOM.workspace.innerHTML = "";
 
-  const bars = [];
-  for (let i = 0; i < config.bars; i++) {
-    const barDiv = document.createElement("div");
-    barDiv.className = "workspace-bar";
-    bars.push(barDiv);
-    scrollTrack.appendChild(barDiv);
+  const pageCount = Math.max(1, Math.ceil(config.totalTicks / TICKS_PER_PAGE));
+
+  for (let page = 0; page < pageCount; page++) {
+    const pageEl = document.createElement("div");
+    pageEl.className = "workspace-page";
+
+    const gridEl = document.createElement("div");
+    gridEl.className = "workspace-grid grid";
+
+    for (let i = 0; i < TICKS_PER_PAGE; i++) {
+      const tickIndex = page * TICKS_PER_PAGE + i;
+      gridEl.appendChild(buildWorkspaceBox(state, tickIndex));
+    }
+
+    pageEl.appendChild(gridEl);
+    DOM.workspace.appendChild(pageEl);
   }
 
-  DOM.workspace.appendChild(scrollTrack);
+  renderWorkspacePagerDots(pageCount);
+}
 
-  // Iterate through state data and append structural DOM cards to bars
-  state.userSubmission.forEach((token, index) => {
-    const currentBarIndex = Math.floor(index / config.ticksPerBar);
+// ============================================================================
+// FOCUS VIGNETTE (tap-and-hold a workspace box to edit it full-width)
+// ============================================================================
 
-    if (currentBarIndex < bars.length) {
-      const card = document.createElement("div");
+export function openVignette(tickIndex) {
+  if (!DOM.vignette) return;
 
-      if (state.slotStates[index] === "success")
-        card.classList.add("is-success");
-      else if (state.slotStates[index] === "error")
-        card.classList.add("is-error");
+  sessionState.selectedSlotIndex = tickIndex;
 
-      card.addEventListener("dragover", (e) => {
-        if (sessionState.currentState === "PLAYING") return;
-        e.preventDefault();
-      });
-      card.addEventListener("drop", (e) => {
-        if (sessionState.currentState === "PLAYING") return;
-        e.preventDefault();
-        const motifId = e.dataTransfer.getData("text/plain");
-        card.dispatchEvent(
-          new CustomEvent("action-insert-motif", {
-            bubbles: true,
-            detail: { index, motifId },
-          }),
-        );
-      });
+  const token = sessionState.userSubmission[tickIndex];
+  DOM.vignetteFocusedCard.innerHTML = "";
 
-      // Condition A: Empty Hole
-      if (token === null) {
-        card.className += " workspace-card is-placeholder";
-        card.innerHTML = `<div class="svg-container">•</div>`;
-        card.title = "Tap to highlight target, or drag note here";
+  const rhythmCard = document.createElement("div");
+  rhythmCard.className = "workspace-card workspace-card--rhythm";
+  const solfegeCard = document.createElement("div");
+  solfegeCard.className = "workspace-card workspace-card--solfege";
 
-        if (index === state.selectedSlotIndex)
-          card.classList.add("is-targeted");
+  if (token) {
+    rhythmCard.innerHTML = renderRhythmSVG(token);
+    rhythmCard.classList.add("is-filled");
+    renderSolfegeCard(solfegeCard, token);
 
-        card.addEventListener("click", () => {
-          if (sessionState.currentState === "PLAYING") return;
-          card.dispatchEvent(
-            new CustomEvent("action-target-slot", {
-              bubbles: true,
-              detail: { index },
-            }),
-          );
-        });
-      }
-      // Condition B: Extension Spacer
-      else if (token.endsWith("_ext")) {
-        const rootId = token.replace("_ext", "");
-        card.className += " workspace-card is-extension";
-        card.innerHTML = `<div class="svg-container" style="font-size: 1.5rem; color: var(--color-text-muted); font-weight:800;">—</div>`;
+    // Clicking the focused card in the vignette clears it, mirroring how
+    // the base workspace used to let a tap clear a filled card — that
+    // gesture now lives here since a bare tap is "focus", not "clear".
+    rhythmCard.addEventListener("click", () => {
+      rhythmCard.dispatchEvent(
+        new CustomEvent("action-clear-note", {
+          bubbles: true,
+          detail: { index: tickIndex, motifId: token },
+        }),
+      );
+      closeVignette();
+    });
+  } else {
+    rhythmCard.classList.add("is-placeholder");
+  }
 
-        card.addEventListener("click", () => {
-          if (sessionState.currentState === "PLAYING") return;
-          card.dispatchEvent(
-            new CustomEvent("action-clear-note", {
-              bubbles: true,
-              detail: { index, motifId: rootId },
-            }),
-          );
-        });
-      }
-      // Condition C: Placed Musical Note
-      else {
-        const motifData = MOTIF_LIBRARY[token];
-        card.className += " workspace-card";
-        card.innerHTML =
-          motifData && motifData.svg
-            ? `<div class="svg-container">${motifData.svg}</div>`
-            : `<div class="svg-container">${token}</div>`;
+  DOM.vignetteFocusedCard.appendChild(rhythmCard);
+  DOM.vignetteFocusedCard.appendChild(solfegeCard);
 
-        card.addEventListener("click", () => {
-          if (sessionState.currentState === "PLAYING") return;
-          card.dispatchEvent(
-            new CustomEvent("action-clear-note", {
-              bubbles: true,
-              detail: { index, motifId: token },
-            }),
-          );
-        });
-      }
+  renderReelInto(DOM.vignetteReel, sessionState.allowedMotifs || []);
 
-      bars[currentBarIndex].appendChild(card);
-    }
-  });
+  DOM.vignette.setAttribute("data-state", "open");
+  document.body.classList.add("has-open-vignette");
+}
+
+export function closeVignette() {
+  if (!DOM.vignette) return;
+  DOM.vignette.setAttribute("data-state", "closed");
+  document.body.classList.remove("has-open-vignette");
 }
 
 // ============================================================================
@@ -586,6 +768,8 @@ function triggerTourCompletionModal() {
 // ============================================================================
 
 export function initialiseCoreUI() {
+  initialiseWorkspacePager();
+
   // Primary Nav (mobile collapse toggle)
   const navToggle = document.getElementById("btn-toggle-nav");
   const navMenu = document.getElementById("site-nav-menu");
@@ -652,6 +836,22 @@ export function initialiseCoreUI() {
     document.addEventListener("click", closeLevelSelect);
   }
 
+  // Focus Vignette (tap-and-hold a workspace box)
+  const vignetteCloseBtn = document.querySelector(".vignette-overlay__close");
+  if (vignetteCloseBtn) {
+    vignetteCloseBtn.addEventListener("click", closeVignette);
+  }
+  if (DOM.vignette) {
+    DOM.vignette.addEventListener("click", (e) => {
+      if (e.target === DOM.vignette) closeVignette();
+    });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.code === "Escape" && DOM.vignette?.getAttribute("data-state") === "open") {
+      closeVignette();
+    }
+  });
+
   // Compliance Modals (native <dialog> — migrated from manual div show/hide)
   const openTriggers = document.querySelectorAll("[data-open-target]");
   openTriggers.forEach((trigger) => {
@@ -709,12 +909,22 @@ export function initialiseCoreUI() {
         break;
       case "Backspace": {
         e.preventDefault();
-        const workspaceCards = document.querySelectorAll(
-          "#ui-workspace .workspace-card",
+        // Clears the last filled box directly (Backspace means "undo the
+        // last placement", not "focus it") — active boxes carry no
+        // data-state at all, only disabled/extension ones do.
+        const boxes = document.querySelectorAll(
+          "#ui-workspace .workspace-box:not([data-state])",
         );
-        for (let i = workspaceCards.length - 1; i >= 0; i--) {
-          if (!workspaceCards[i].classList.contains("is-placeholder")) {
-            workspaceCards[i].click();
+        for (let i = boxes.length - 1; i >= 0; i--) {
+          const tickIndex = parseInt(boxes[i].getAttribute("data-tick-index"), 10);
+          const token = sessionState.userSubmission[tickIndex];
+          if (token) {
+            boxes[i].dispatchEvent(
+              new CustomEvent("action-clear-note", {
+                bubbles: true,
+                detail: { index: tickIndex, motifId: token },
+              }),
+            );
             break;
           }
         }
@@ -725,7 +935,7 @@ export function initialiseCoreUI() {
     if (e.key >= "1" && e.key <= "9") {
       const motifIndex = parseInt(e.key) - 1;
       const motifPads = document.querySelectorAll(
-        "#ui-motif-selector .motif-pad",
+        "#ui-motif-reel .motif-pad",
       );
       if (motifPads[motifIndex]) {
         motifPads[motifIndex].click();

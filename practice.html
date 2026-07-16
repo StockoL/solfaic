@@ -74,7 +74,7 @@
         </div>
       </header>
 
-      <main id="main-content" class="practice-main">
+      <main id="main-content" class="practice-main flow">
         <div class="playback-panel cluster">
           <button id="btn-replay" class="button" data-variant="primary">
             🔊 Play Rhythm
@@ -83,321 +83,44 @@
         </div>
 
         <!--
-          WORKSPACE GRID: fixed 4x4 per plan doc (16 bars maximum). Each box
-          holds a container with two variable-state cards — rhythm (top) and
-          solfege (bottom) — which must align columns, since the rhythm
-          card's stick placement determines the solfege card's column count.
-          Bar count beyond the current exercise is marked data-state="disabled"
-          by JS; Level 1 defaults to 2 active bars below as a static baseline.
+          WORKSPACE: one box per beat (tick), not per bar — a 4/4 exercise
+          needs 4 boxes per bar, so higher levels (up to 8 bars x 4 ticks)
+          can need up to 32 boxes total. Rendered entirely by JS
+          (renderWorkspace in core.js) since box count, page count, and
+          disabled/active state all depend on the generated exercise.
+          Beyond 16 boxes, a second swipeable page is added — .workspace-pager
+          reuses the same horizontal scroll-snap technique as Compositions'
+          .reel, just declared here in Blocks since paging behaviour (not
+          layout) is what's being added.
         -->
         <section class="workspace" aria-label="Your answer workspace">
-          <!--
-            NOTE: --grid-placement/--grid-min-item-size force exactly 4
-            equal columns here, reusing Grid's exposed custom properties
-            rather than its default auto-fit reflow behaviour. A mobile
-            breakpoint override (likely --grid-placement: 2) belongs in
-            blocks/workspace.css once that phase starts — not here, since
-            Compositions stay media-query-free by design.
-          -->
-          <div
-            id="ui-workspace"
-            class="workspace-grid grid"
-            style="--grid-placement: 4; --grid-min-item-size: 1px"
-          >
-            <div class="workspace-box" data-bar-index="0">
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 1 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 1 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div class="workspace-box" data-bar-index="1">
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 2 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 2 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div class="workspace-box" data-state="disabled" data-bar-index="2">
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 3 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 3 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div class="workspace-box" data-state="disabled" data-bar-index="3">
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 4 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 4 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div class="workspace-box" data-state="disabled" data-bar-index="4">
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 5 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 5 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div class="workspace-box" data-state="disabled" data-bar-index="5">
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 6 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 6 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div class="workspace-box" data-state="disabled" data-bar-index="6">
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 7 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 7 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div class="workspace-box" data-state="disabled" data-bar-index="7">
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 8 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 8 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div class="workspace-box" data-state="disabled" data-bar-index="8">
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 9 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 9 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div class="workspace-box" data-state="disabled" data-bar-index="9">
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 10 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 10 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
+          <div class="workspace-pager">
             <div
-              class="workspace-box"
-              data-state="disabled"
-              data-bar-index="10"
-            >
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 11 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 11 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
+              id="ui-workspace"
+              class="workspace-pager__track"
+              role="group"
+              aria-label="Rhythm workspace"
+            ></div>
             <div
-              class="workspace-box"
-              data-state="disabled"
-              data-bar-index="11"
+              id="ui-workspace-pager-nav"
+              class="workspace-pager__nav"
+              hidden
             >
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 12 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 12 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="workspace-box"
-              data-state="disabled"
-              data-bar-index="12"
-            >
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 13 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 13 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="workspace-box"
-              data-state="disabled"
-              data-bar-index="13"
-            >
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 14 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 14 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="workspace-box"
-              data-state="disabled"
-              data-bar-index="14"
-            >
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 15 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 15 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="workspace-box"
-              data-state="disabled"
-              data-bar-index="15"
-            >
-              <div class="workspace-box__container">
-                <div
-                  class="workspace-card workspace-card--rhythm"
-                  aria-label="Bar 16 rhythm slot"
-                >
-                  <!-- Rhythm motif SVG rendered here by JS -->
-                </div>
-                <div
-                  class="workspace-card workspace-card--solfege"
-                  aria-label="Bar 16 solfege slot"
-                >
-                  <!-- Solfege letter column(s) rendered here by JS, count driven by the chosen rhythm card -->
-                </div>
-              </div>
+              <button
+                id="btn-workspace-page-prev"
+                class="workspace-pager__nav-btn"
+                aria-label="Previous bars"
+              >
+                <span aria-hidden="true">‹</span>
+              </button>
+              <div id="ui-workspace-dots" class="workspace-pager__dots"></div>
+              <button
+                id="btn-workspace-page-next"
+                class="workspace-pager__nav-btn"
+                aria-label="Next bars"
+              >
+                <span aria-hidden="true">›</span>
+              </button>
             </div>
           </div>
         </section>
@@ -446,7 +169,8 @@
     -->
     <div
       id="ui-card-vignette"
-      class="vignette-overlay is-hidden flow"
+      class="vignette-overlay flow"
+      data-state="closed"
       aria-modal="true"
       role="dialog"
       aria-label="Edit card"
