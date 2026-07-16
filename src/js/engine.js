@@ -4,6 +4,9 @@ import {
   levelRules,
   CADENCE_MOTIFS,
   IRREGULAR_METRE_GROUPINGS,
+  PITCH_LEVEL_RULES,
+  PITCH_SYNTAX_DICTIONARY,
+  allowedTonics,
 } from "./data.js";
 
 /**
@@ -300,4 +303,179 @@ export function clearMotif(currentSubmission, currentStates, index, motifId) {
   }
 
   return { newSubmission, newStates };
+}
+
+// ============================================================================
+// PITCH (SOLFÈGE) GENERATION
+// ============================================================================
+
+/**
+ * Counts the sounding (non-rest) notes across a rhythm timeline — this is
+ * the pitch line's required length, since the melodic engine assigns one
+ * solfège syllable per sounding note (one per stem/column), not one per
+ * rhythm motif. A restMask-true playback slot, or a whole-motif rest
+ * (empty playback), contributes zero.
+ */
+export function countSoundingNotes(rhythmTimeline) {
+  let count = 0;
+  rhythmTimeline.forEach((event) => {
+    const motif = MOTIF_LIBRARY[event.motifId];
+    const playback = motif.playback;
+    if (!playback || playback.length === 0) return;
+    playback.forEach((_, i) => {
+      if (!motif.restMask?.[i]) count++;
+    });
+  });
+  return count;
+}
+
+function weightedChoice(weights) {
+  const total = Object.values(weights).reduce((sum, w) => sum + w, 0);
+  if (total <= 0) return null;
+
+  let draw = Math.random() * total;
+  for (const key in weights) {
+    draw -= weights[key];
+    if (draw <= 0) return key;
+  }
+  return null;
+}
+
+/**
+ * Filters a Markov transition row down to only the syllables in the active
+ * toneset/subset, same "viableIds" filter+renormalize pattern
+ * generateBarSequence already uses for rhythm, applied to pitch — this is
+ * both how Level 1's random subsets work and how Level 4 reuses Level 3's
+ * doMode/laMode tables after fa drops out of the toneset.
+ */
+function filterTransitionRow(row, toneset) {
+  const filtered = {};
+  toneset.forEach((syllable) => {
+    if (row[syllable] !== undefined) filtered[syllable] = row[syllable];
+  });
+  return filtered;
+}
+
+/**
+ * Walks the Markov table for `length` steps within `toneset`, falling back
+ * to uniform-random among the toneset whenever the weighted draw has
+ * nothing viable left (mirrors generateBarSequence's fallback). When
+ * `cadenceTarget` is given, only the final syllable is overridden — every
+ * other position is genuinely unforced.
+ */
+function generateSolfegeSequence(table, toneset, length, cadenceTarget) {
+  const sequence = [];
+  let previous = null;
+
+  for (let i = 0; i < length; i++) {
+    let chosen = null;
+
+    if (previous && table[previous]) {
+      const candidateWeights = filterTransitionRow(table[previous], toneset);
+      if (Object.keys(candidateWeights).length > 0) {
+        chosen = weightedChoice(candidateWeights);
+      }
+    }
+
+    if (!chosen) {
+      chosen = toneset[Math.floor(Math.random() * toneset.length)];
+    }
+
+    sequence.push(chosen);
+    previous = chosen;
+  }
+
+  if (cadenceTarget && length > 0) {
+    sequence[length - 1] = cadenceTarget;
+  }
+
+  return sequence;
+}
+
+/**
+ * Generates the pitch line for one exercise. `noteCount` is the number of
+ * solfège syllables needed (see countSoundingNotes) — the caller pairs this
+ * with whatever rhythm timeline it's being sung against.
+ *
+ * cadenceRequired: false (Level 1) means no forcing at all, not weak/
+ * low-weight forcing — sparse 2-note tonesets genuinely have no "correct"
+ * ending, so the Markov chain's natural landing spot stands.
+ */
+export function generatePitchLine(levelId, noteCount) {
+  const rules = PITCH_LEVEL_RULES[levelId];
+  const tonic = allowedTonics[Math.floor(Math.random() * allowedTonics.length)];
+
+  if (!rules) return { pitches: [], tonic };
+
+  if (levelId === 1) {
+    const groupKeys = Object.keys(rules.melodicGroups);
+    const chosenGroupKey =
+      groupKeys[Math.floor(Math.random() * groupKeys.length)];
+    const group = rules.melodicGroups[chosenGroupKey];
+
+    // Random non-empty subset of the group's toneset — real early
+    // repertoire progressively adds notes rather than always using all 3.
+    let subset = [];
+    while (subset.length === 0) {
+      subset = group.toneset.filter(() => Math.random() < 0.7);
+    }
+
+    const table = PITCH_SYNTAX_DICTIONARY[1][chosenGroupKey];
+    const pitches = generateSolfegeSequence(table, subset, noteCount, null);
+
+    return { pitches, tonic, group: chosenGroupKey, toneset: subset };
+  }
+
+  if (levelId === 2) {
+    const table = PITCH_SYNTAX_DICTIONARY[2].unified;
+    const cadenceTarget = rules.cadenceRequired ? rules.cadenceTarget : null;
+    const pitches = generateSolfegeSequence(
+      table,
+      rules.toneset,
+      noteCount,
+      cadenceTarget,
+    );
+
+    return { pitches, tonic, toneset: rules.toneset };
+  }
+
+  // Level 3 & 4: pick a cadence target, which selects the mode/table.
+  const targets = Object.keys(rules.modes);
+  const chosenTarget = targets[Math.floor(Math.random() * targets.length)];
+  const modeInfo = rules.modes[chosenTarget];
+  const table = PITCH_SYNTAX_DICTIONARY[modeInfo.level][modeInfo.mode];
+  const pitches = generateSolfegeSequence(
+    table,
+    rules.toneset,
+    noteCount,
+    chosenTarget,
+  );
+
+  return {
+    pitches,
+    tonic,
+    toneset: rules.toneset,
+    mode: modeInfo.mode,
+    cadenceTarget: chosenTarget,
+  };
+}
+
+/**
+ * Mirrors evaluateSubmission's shape for the pitch line — a flat
+ * per-syllable comparison, no ticks/extension accounting needed since
+ * pitch positions map 1:1 onto sounding notes rather than workspace ticks.
+ */
+export function evaluatePitchSubmission(userPitchSubmission, targetPitches) {
+  let isCorrect = true;
+
+  const newPitchSlotStates = userPitchSubmission.map((token, index) => {
+    if (token === targetPitches[index]) {
+      return "success";
+    } else {
+      isCorrect = false;
+      return "error";
+    }
+  });
+
+  return { isCorrect, newPitchSlotStates };
 }
