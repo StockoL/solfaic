@@ -40,8 +40,6 @@ import {
   showPitchPracticeModal,
   initialiseCoreUI,
   closeVignette,
-  startGuidedTour,
-  terminateTourImmediately,
 } from "./core.js";
 import { AudioEngine } from "./audio.js";
 

@@ -9,12 +9,6 @@ test.describe("Solfaic Interactive Application Suite", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the app root (Base URL is handled by Playwright config)
     await page.goto("/");
-
-    // Optional: Dismiss the tour modal if it auto-triggers on load
-    const skipTourBtn = page.locator("#btn-tour-no");
-    if (await skipTourBtn.isVisible()) {
-      await skipTourBtn.click();
-    }
   });
 
   test.describe("1. Initialization & UI Routing", () => {

@@ -1,7 +1,6 @@
 /* ==========================================================================
-   BLOCK: CELEBRATION MODAL (streak-complete / level-up overlay, and the
-   tour-completion "You're Ready!" modal — both built from the same
-   .celebration-* elements in core.js, so one block covers both)
+   BLOCK: CELEBRATION MODAL (streak-complete / level-up overlay), built from
+   the .celebration-* elements in core.js
    ========================================================================== */
 
 /*
