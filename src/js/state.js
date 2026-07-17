@@ -29,4 +29,12 @@ export const sessionState = {
   targetPitchLine: null, // generatePitchLine()'s output for the current exercise
   pitchSubmission: [], // What the user has placed on the solfège reel, one slot per sounding note
   pitchSlotStates: [], // Solfège validation feedback memory ('idle', 'success', 'error')
+
+  // How many times the student has SUBMITTED a wrong answer in the current
+  // exercise/phase. Deliberately not playCount: that counts listens, this
+  // counts submissions, and they reset at different points — playCount also
+  // resets per phase, but a listen and a wrong guess are different events and
+  // conflating them is what the old "streak dies the instant you're wrong"
+  // behaviour did. Resets in startLevel() and enterPitchPhase().
+  wrongAttemptCount: 0,
 };

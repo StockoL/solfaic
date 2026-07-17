@@ -222,6 +222,22 @@
       </button>
     </dialog>
 
+    <!--
+      TRY AGAIN: first wrong submission of an exercise/phase. The streak
+      survives this one — it's a nudge to listen again, not a failure.
+    -->
+    <dialog
+      id="modal-try-again"
+      class="modal feedback-modal"
+      aria-labelledby="try-again-title"
+    >
+      <h2 id="try-again-title">Not quite!</h2>
+      <p class="feedback-modal__text">Listen and try one more time.</p>
+      <button id="btn-try-again-continue" class="button" data-variant="primary">
+        Try Again
+      </button>
+    </dialog>
+
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"
       defer

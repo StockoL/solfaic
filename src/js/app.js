@@ -35,6 +35,7 @@ import {
   triggerIncompleteBoardFeedback,
   triggerWrongAnswerShake,
   showStartingNoteModal,
+  showTryAgainModal,
   initialiseCoreUI,
   closeVignette,
   startGuidedTour,
@@ -49,6 +50,7 @@ import { AudioEngine } from "./audio.js";
 export function startLevel(levelId) {
   sessionState.currentLevel = levelId;
   sessionState.playCount = 0;
+  sessionState.wrongAttemptCount = 0;
   sessionState.currentState = "IDLE";
   sessionState.selectedSlotIndex = null;
   sessionState.exercisePhase = "RHYTHM";
@@ -94,6 +96,9 @@ export function startLevel(levelId) {
 export async function enterPitchPhase() {
   sessionState.exercisePhase = "PITCH";
   sessionState.playCount = 0;
+  // A phase change is a fresh start for wrong-attempt purposes — nailing the
+  // rhythm on the second try shouldn't leave the solfege pass one strike down.
+  sessionState.wrongAttemptCount = 0;
   sessionState.currentState = "IDLE";
   sessionState.selectedSlotIndex = null;
 
@@ -134,38 +139,49 @@ function findErrorIndices(slotStates) {
 }
 
 /**
- * Shared failure tail for both phases' submit handling — wipes the streak,
- * then either shows the correct answer once plays run out (applying it via
- * `applyCorrectAnswer`, phase-specific) before restarting the level, or
- * unlocks the UI for another attempt. Identical timing/DOM-marking either
- * way, only which submission array gets corrected differs.
+ * Shows the correct answer on the board (via `applyCorrectAnswer`, which is
+ * phase-specific), holds it there long enough to read, then rolls a fresh
+ * exercise. startLevel() resets wrongAttemptCount, so the new exercise
+ * always begins with a clean slate.
+ */
+function showAnswerThenRestart(applyCorrectAnswer) {
+  applyCorrectAnswer();
+  renderWorkspace(sessionState);
+
+  // Remedial highlight — data-state driven so workspace.css can
+  // style it with real tokens instead of hardcoded inline colours.
+  document
+    .querySelectorAll(".workspace-box:not([data-state='disabled'])")
+    .forEach((box) => box.setAttribute("data-feedback", "corrected"));
+
+  setTimeout(() => startLevel(sessionState.currentLevel), 4000);
+}
+
+/**
+ * Shared failure tail for both phases' submit handling. Driven by how many
+ * times the student has submitted a wrong answer this exercise/phase, NOT by
+ * how many listens they have left — a wrong guess and a replay are different
+ * events, and the streak now survives the first wrong answer either way.
+ *
+ * First wrong: shake the wrong slots, say "not quite", let them try again
+ * with the streak intact. Second wrong: the streak goes, and the exercise is
+ * reset with the answer shown (what running out of plays used to trigger).
  */
 function handleFailedAttempt(applyCorrectAnswer, errorIndices) {
   triggerWrongAnswerShake(errorIndices);
-  sessionState.streak = 0;
-  renderStreakTracker(sessionState.streak);
+  sessionState.wrongAttemptCount++;
 
-  if (sessionState.playCount >= sessionState.maxPlays) {
-    // Out of plays: Show the correction sequence automatically
-    setTimeout(() => {
-      applyCorrectAnswer();
-      renderWorkspace(sessionState);
-
-      // Remedial highlight — data-state driven so workspace.css can
-      // style it with real tokens instead of hardcoded inline colours.
-      document
-        .querySelectorAll(".workspace-box:not([data-state='disabled'])")
-        .forEach((box) => box.setAttribute("data-feedback", "corrected"));
-
-      setTimeout(() => startLevel(sessionState.currentLevel), 4000);
-    }, 1500);
-  } else {
-    // Plays remaining: Unlock UI for another attempt
-    setTimeout(() => {
-      sessionState.currentState = "IDLE";
-      unlockUI();
-    }, 2000);
+  if (sessionState.wrongAttemptCount >= 2) {
+    sessionState.streak = 0;
+    renderStreakTracker(sessionState.streak);
+    setTimeout(() => showAnswerThenRestart(applyCorrectAnswer), 1500);
+    return;
   }
+
+  // Let the shake finish before a dialog covers the board — the shake is what
+  // says WHICH slots were wrong, so burying it immediately would waste it.
+  // 500ms matches the window triggerWrongAnswerShake keeps .is-shaking for.
+  setTimeout(() => showTryAgainModal(), 500);
 }
 
 /**
@@ -301,6 +317,14 @@ function initialiseEventListeners() {
   // same action as clicking Play.
   document.addEventListener("action-starting-note-continue", () => {
     triggerReplay();
+  });
+
+  // Try Again modal's button — hands the board back for another attempt.
+  // Gated on the student dismissing the dialog rather than a timer, so they
+  // set their own pace (same reasoning as the starting-note modal).
+  document.addEventListener("action-try-again-continue", () => {
+    sessionState.currentState = "IDLE";
+    unlockUI();
   });
 
   // --- WORKSPACE INTERACTIONS: Placing, targeting, and clearing notes ---

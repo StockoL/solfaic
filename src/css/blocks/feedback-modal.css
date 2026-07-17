@@ -1,0 +1,78 @@
+/* ==========================================================================
+   BLOCK: FEEDBACK MODAL (wrong-answer response — try-again and practice)
+   ========================================================================== */
+
+/*
+ * The two modals a wrong submission can raise: "Not quite!" on the first
+ * wrong attempt of an exercise/phase, and the phase-dependent practice
+ * modal on the second. Both sit on .modal (modal.css) for their shell —
+ * this block only adds the centred stack and the practice cards.
+ *
+ * display is scoped to [open] deliberately: an unconditional display rule
+ * beats the UA stylesheet's dialog:not([open]) { display: none } no matter
+ * the specificity, which renders the dialog at all times even though its
+ * .open property is correct. Same trap the starting-note modal hit.
+ */
+.feedback-modal[open] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-m);
+  text-align: center;
+}
+
+.feedback-modal__text {
+  color: var(--color-text-muted);
+}
+
+/*
+ * The card row: one rhythm motif (rhythm phase), or the two syllables of an
+ * interval (pitch phase). Wraps rather than scrolls — there are only ever
+ * one or two cards, so a reel's affordances would be misleading here.
+ */
+.feedback-modal__cards {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: center;
+  gap: var(--space-s);
+}
+
+/*
+ * Same visual shell as .motif-pad/.solfege-pad (motif-pad.css) minus every
+ * interactive affordance — these are read-only illustrations of what to go
+ * practise, so they deliberately don't inherit the reel pads' pointer
+ * cursor, hover highlight, or press transform.
+ */
+.feedback-modal__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  inline-size: 7rem;
+  padding: var(--space-s);
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
+  color: var(--color-text-base);
+}
+
+.feedback-modal__card-svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  aspect-ratio: 4 / 1;
+}
+
+.feedback-modal__card-label {
+  font-size: var(--size-step--1);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.feedback-modal__card-syllable {
+  font-size: var(--size-step-2);
+  font-weight: 700;
+}
