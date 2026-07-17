@@ -231,8 +231,16 @@ body.practice-room {
  * dialog, so it gets a per-instance size override rather than badge.css's
  * default (sized for a small inline label like the level pill or the
  * plays-remaining count). .modal itself stays untouched.
+ *
+ * display:flex is scoped to [open] deliberately — an unconditional
+ * display rule here would beat the UA stylesheet's dialog:not([open])
+ * { display: none }, since author styles always win over UA defaults
+ * regardless of specificity. That would make the dialog render at all
+ * times (visible from page load, and still visible after .close() sets
+ * open=false) even though the DOM's own .open property correctly
+ * tracked its state the whole time — exactly what happened here.
  */
-.starting-note-modal {
+.starting-note-modal[open] {
   display: flex;
   flex-direction: column;
   align-items: center;
