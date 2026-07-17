@@ -216,6 +216,16 @@
   font-size: var(--size-step-5);
 }
 
+/*
+ * The global p { max-width: var(--measure) } rule caps this box at 60ch —
+ * fine normally, since it usually matches its container's width, but the
+ * hero's widened --center-max-width (52rem) is bigger than that at body
+ * font-size, leaving the box narrower than .hero__layout with no auto
+ * margins to re-center it. margin-inline: auto centers the box itself;
+ * text-align: center (inherited from [data-and-text]) only centers the
+ * text within it.
+ */
 .hero__subtitle {
   color: var(--color-text-muted);
+  margin-inline: auto;
 }
