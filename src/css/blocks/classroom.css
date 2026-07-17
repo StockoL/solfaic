@@ -6,3 +6,17 @@
   color: var(--color-text-muted);
   font-size: var(--size-step--1);
 }
+
+/*
+ * Section-level rhythm for the page's major blocks (intro, level guides,
+ * reference matrix, CTA) — Flow's inherited --flow-space is too tight for
+ * that job even though it's right for heading-to-paragraph spacing within
+ * a section. Targets .classroom's direct children specifically (blocks
+ * layer beats compositions layer, so this wins over Flow's own rule)
+ * rather than overriding --flow-space itself, which would cascade into
+ * every nested .flow (e.g. .classroom__intro's own heading/paragraph
+ * spacing) and enlarge those too.
+ */
+.classroom.flow > * + * {
+  margin-block-start: var(--space-2xl);
+}
