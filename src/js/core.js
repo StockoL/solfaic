@@ -826,6 +826,7 @@ export function openVignette(tickIndex) {
       getColumnTemplate(token),
       getRestColumns(token),
       sessionState.pitchSubmission,
+      sessionState.pitchSlotStates,
       pitchOnsetStartIndex(sessionState.userSubmission, tickIndex),
     );
 
