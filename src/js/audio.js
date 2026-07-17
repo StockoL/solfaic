@@ -178,7 +178,8 @@ export const AudioEngine = {
       }, time);
     }, Tone.Time("1m").toSeconds());
 
-    // 3. Broadcast Heartbeat Pulses for Workspace Bars
+    // 3. Broadcast Heartbeat Pulses for Workspace Boxes (one per beat, not
+    // per bar - tickIndex maps 1:1 onto each box's data-tick-index).
     const totalBars = activeConfig.bars;
     for (let bar = 0; bar < totalBars; bar++) {
       for (let beat = 0; beat < ticks; beat++) {
@@ -189,8 +190,8 @@ export const AudioEngine = {
         Tone.Transport.schedule((time) => {
           Tone.Draw.schedule(() => {
             document.dispatchEvent(
-              new CustomEvent("audio-pulse-bar", {
-                detail: { barIndex: bar },
+              new CustomEvent("audio-pulse-beat", {
+                detail: { barIndex: bar, tickIndex: absoluteTick },
               }),
             );
           }, time);

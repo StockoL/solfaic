@@ -143,6 +143,21 @@
   75% { transform: translateX(4px); }
 }
 
+/*
+ * Beat-pulse: a gentle scale, not the shake above — this means "this beat
+ * is playing now", not "this is wrong". Deliberately mild (1.06 max) since
+ * it's box-level, not card-level, and CSS transforms render over sibling
+ * grid cells rather than affecting layout.
+ */
+.workspace-box.is-pulsing {
+  animation: workspace-box-pulse var(--dur-base) var(--spring-snappy);
+}
+
+@keyframes workspace-box-pulse {
+  0% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
 .workspace-box__container {
   display: flex;
   flex-direction: column;

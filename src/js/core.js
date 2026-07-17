@@ -194,6 +194,30 @@ function hideCountdownIndicator() {
 }
 
 /**
+ * V1's beat-pulse: a gentle scale pulse on whichever box is currently
+ * sounding during playback, so the user can visually track which beat
+ * they're on (especially useful for an ambiguous rest, which is silent
+ * either way). audio.js has always dispatched a per-beat event during
+ * playback, but its payload never included which tick it was for, so
+ * nothing could target a specific box — wired up in initialiseCoreUI().
+ */
+function renderBeatPulse(tickIndex) {
+  const box = DOM.workspace?.querySelector(
+    `.workspace-box[data-tick-index="${tickIndex}"]`,
+  );
+  if (!box) return;
+
+  // Retrigger cleanly even if the box pulsed very recently (double rAF
+  // avoids a forced synchronous reflow, same pattern as the countdown).
+  box.classList.remove("is-pulsing");
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      box.classList.add("is-pulsing");
+    });
+  });
+}
+
+/**
  * NEW: Restores the V1 "incomplete board" feedback pass — a horizontal
  * frustration shake on every bar, plus a crimson halo pulse on every
  * still-empty slot. This existed in the monolith's evaluateSubmission()
@@ -1066,6 +1090,9 @@ export function initialiseCoreUI() {
   });
   document.addEventListener("audio-countdown-finish", () => {
     hideCountdownIndicator();
+  });
+  document.addEventListener("audio-pulse-beat", (e) => {
+    renderBeatPulse(e.detail.tickIndex);
   });
 
   // Primary Nav (mobile collapse toggle)
