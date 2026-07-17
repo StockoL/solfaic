@@ -313,10 +313,17 @@
  * [data-feedback] gives a whole workspace-box for the rhythm pass. It has to
  * be per-cell rather than per-box: a box can hold two syllables (titi) and
  * only one of them may be wrong, the same reason the shake targets cells in
- * this phase. A cell's only edge is the dashed divider between columns, so
- * there's no border to recolour the way the rhythm cards do — the tint
- * carries it instead, and the text darkens against its own background the
- * way Badge's danger variant does.
+ * this phase.
+ *
+ * The outline is what makes it readable on a split beat. A tint alone left
+ * the only hard edge between two adjacent syllables as the dashed column
+ * divider they already share, so a wrong note read as "something around
+ * here is wrong" rather than pointing at itself. Ringing the cell draws the
+ * boundary around the offending note specifically. It's an outline rather
+ * than a border because a border would take part in the grid's column
+ * sizing and shift the syllables off their sticks; outline is drawn outside
+ * the box without reserving space. The -1px offset pulls it just inside the
+ * cell so the parent card's overflow: hidden can't clip the outer edges.
  *
  * These must stay AFTER .is-filled above: identical specificity (0,2,0), so
  * source order is the only reason they win over its text colour.
@@ -333,10 +340,13 @@
 .solfege-card__cell[data-feedback="error"] {
   background-color: color-mix(
     in srgb,
-    var(--color-status-danger) 15%,
+    var(--color-status-danger) 18%,
     transparent
   );
   color: color-mix(in srgb, var(--color-status-danger) 70%, var(--color-graphite));
+  outline: 2px solid var(--color-status-danger);
+  outline-offset: -1px;
+  border-radius: 3px;
 }
 
 /*
