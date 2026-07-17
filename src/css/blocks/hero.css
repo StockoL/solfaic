@@ -44,9 +44,18 @@
   left: var(--particle-left, 50%);
   width: var(--particle-size, 24px);
   height: var(--particle-size, 24px);
+  /*
+   * accent-vivid-primary, not action-primary — a particle carries no text,
+   * so it's exactly the decorative case the vivid tokens exist for. Left
+   * on the semantic action token, particles silently inherited the
+   * palette fix's darkened colour and read as dusty/muted instead of the
+   * bright, playful field they're meant to be — nothing here was ever
+   * failing contrast (there's no text on a particle), so nothing here
+   * needed darkening in the first place.
+   */
   background-color: color-mix(
     in srgb,
-    var(--particle-color, var(--color-action-primary)) 45%,
+    var(--particle-color, var(--color-accent-vivid-primary)) 45%,
     transparent
   );
   border-radius: 50%;
@@ -54,30 +63,35 @@
   animation-delay: var(--particle-delay, 0s);
 }
 
-/* Hand-tuned left position/size/duration/delay per particle, rotating
-   through the four brand accent tokens (primary, secondary, success,
-   danger) so the field reads as organic drift rather than a visibly
-   repeating tile. */
+/*
+ * Hand-tuned left position/size/duration/delay per particle, rotating
+ * through four brand accent hues so the field reads as organic drift
+ * rather than a visibly repeating tile: the three vivid decorative tokens
+ * for primary/secondary/tertiary, plus status-danger — amaranth-red never
+ * got a "deep" variant (it already passed contrast at full brightness, see
+ * the audit doc), so it has no separate vivid form to switch to here; the
+ * one token IS already the bright hue.
+ */
 .hero__media span:nth-child(1) {
   --particle-left: 4%;
   --particle-size: 90px;
   --particle-duration: 21s;
   --particle-delay: 0s;
-  --particle-color: var(--color-action-primary);
+  --particle-color: var(--color-accent-vivid-primary);
 }
 .hero__media span:nth-child(2) {
   --particle-left: 12%;
   --particle-size: 18px;
   --particle-duration: 12s;
   --particle-delay: 0.6s;
-  --particle-color: var(--color-action-secondary);
+  --particle-color: var(--color-accent-vivid-secondary);
 }
 .hero__media span:nth-child(3) {
   --particle-left: 19%;
   --particle-size: 34px;
   --particle-duration: 16s;
   --particle-delay: 1.6s;
-  --particle-color: var(--color-status-success);
+  --particle-color: var(--color-accent-vivid-tertiary);
 }
 .hero__media span:nth-child(4) {
   --particle-left: 26%;
@@ -91,21 +105,21 @@
   --particle-size: 60px;
   --particle-duration: 19s;
   --particle-delay: 1.2s;
-  --particle-color: var(--color-action-primary);
+  --particle-color: var(--color-accent-vivid-primary);
 }
 .hero__media span:nth-child(6) {
   --particle-left: 40%;
   --particle-size: 22px;
   --particle-duration: 13s;
   --particle-delay: 2.2s;
-  --particle-color: var(--color-action-secondary);
+  --particle-color: var(--color-accent-vivid-secondary);
 }
 .hero__media span:nth-child(7) {
   --particle-left: 47%;
   --particle-size: 46px;
   --particle-duration: 22s;
   --particle-delay: 0.8s;
-  --particle-color: var(--color-status-success);
+  --particle-color: var(--color-accent-vivid-tertiary);
 }
 .hero__media span:nth-child(8) {
   --particle-left: 54%;
@@ -119,21 +133,21 @@
   --particle-size: 70px;
   --particle-duration: 19s;
   --particle-delay: 0.4s;
-  --particle-color: var(--color-action-primary);
+  --particle-color: var(--color-accent-vivid-primary);
 }
 .hero__media span:nth-child(10) {
   --particle-left: 68%;
   --particle-size: 20px;
   --particle-duration: 13s;
   --particle-delay: 1.8s;
-  --particle-color: var(--color-action-secondary);
+  --particle-color: var(--color-accent-vivid-secondary);
 }
 .hero__media span:nth-child(11) {
   --particle-left: 75%;
   --particle-size: 38px;
   --particle-duration: 16s;
   --particle-delay: 2.6s;
-  --particle-color: var(--color-status-success);
+  --particle-color: var(--color-accent-vivid-tertiary);
 }
 .hero__media span:nth-child(12) {
   --particle-left: 82%;
@@ -147,21 +161,21 @@
   --particle-size: 26px;
   --particle-duration: 14s;
   --particle-delay: 3.2s;
-  --particle-color: var(--color-action-primary);
+  --particle-color: var(--color-accent-vivid-primary);
 }
 .hero__media span:nth-child(14) {
   --particle-left: 88%;
   --particle-size: 54px;
   --particle-duration: 20s;
   --particle-delay: 1.4s;
-  --particle-color: var(--color-action-secondary);
+  --particle-color: var(--color-accent-vivid-secondary);
 }
 .hero__media span:nth-child(15) {
   --particle-left: 95%;
   --particle-size: 18px;
   --particle-duration: 12s;
   --particle-delay: 0s;
-  --particle-color: var(--color-status-success);
+  --particle-color: var(--color-accent-vivid-tertiary);
 }
 .hero__media span:nth-child(16) {
   --particle-left: 44%;
@@ -175,21 +189,21 @@
   --particle-size: 16px;
   --particle-duration: 10s;
   --particle-delay: 2s;
-  --particle-color: var(--color-action-primary);
+  --particle-color: var(--color-accent-vivid-primary);
 }
 .hero__media span:nth-child(18) {
   --particle-left: 30%;
   --particle-size: 42px;
   --particle-duration: 18s;
   --particle-delay: 3s;
-  --particle-color: var(--color-action-secondary);
+  --particle-color: var(--color-accent-vivid-secondary);
 }
 .hero__media span:nth-child(19) {
   --particle-left: 71%;
   --particle-size: 24px;
   --particle-duration: 13s;
   --particle-delay: 2.4s;
-  --particle-color: var(--color-status-success);
+  --particle-color: var(--color-accent-vivid-tertiary);
 }
 .hero__media span:nth-child(20) {
   --particle-left: 16%;
