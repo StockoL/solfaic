@@ -75,41 +75,82 @@ function getAllRawSegments(motifId) {
   }));
 }
 
-function getSegments(motifId) {
-  const motif = MOTIF_LIBRARY[motifId];
-  const segments = getAllRawSegments(motifId);
-
-  if (motif.ticks <= 1) return segments;
-
-  // A motif spanning more than one box (too/toom/tum-ti/syncopa v2) is
-  // still rendered as a single card for its first box — but only the
-  // segments that *start* within that first box's own beat-width belong
-  // there. A note that starts later (because an earlier note in this same
-  // motif is still sounding) belongs entirely to the extension box's own
-  // rendering instead (see renderTieArcSVG/getExtensionSegments), not
-  // crammed in here too.
-  const oneBoxWeight = motif.type === "compound" ? 6 : 4;
-  const truncated = [];
-  let cursor = 0;
-  for (const seg of segments) {
-    if (cursor >= oneBoxWeight) break;
-    truncated.push(seg);
-    cursor += seg.weight;
-  }
-  return truncated;
+/**
+ * The weight of a single box — one beat. A simple beat is a crotchet (4), a
+ * compound beat a dotted crotchet (6). For every well-formed motif this
+ * equals (total playback weight / ticks), but it's derived from the motif's
+ * own metre rather than by dividing the playback sum, so the whole-motif
+ * rests (too-rest/toom-rest, whose synthetic fallback segment deliberately
+ * doesn't sum to their real duration) still get a correct box width.
+ */
+function oneBoxWeight(motif) {
+  return motif.type === "compound" ? 6 : 4;
 }
 
 /**
- * The remainder of a multi-box motif's segments that box A's card doesn't
- * show (see getSegments) — empty for a single-box motif, and also empty
- * for a multi-box motif whose one segment already fully covers box A (too,
- * toom: nothing left over). Non-empty only for tum-ti/syncopa v2, whose
- * trailing note belongs entirely to the extension box.
+ * The regions of `motifId` that fall inside box `tickIndex`, left to right.
+ * This is the tick-aware split that lets a multi-box motif (too, toom,
+ * tum-ti, syncopa v2) render each of its boxes correctly — box A is
+ * tickIndex 0, its extension box is tickIndex 1.
+ *
+ * Each region carries two different weights, because once a motif spans more
+ * than one box a note's duration and the space it takes up in a given box
+ * stop being the same number:
+ *
+ *   weight    — the note's true duration. Drives glyph choice (beaming,
+ *               flagging, dotting, notehead) and is never clipped: a
+ *               crotchet clipped to a quaver's weight would be drawn as a
+ *               quaver.
+ *   boxWeight — how much of that duration lands inside THIS box. Drives
+ *               column widths and SVG x-positions, so both stay in
+ *               proportion to the box's own beat rather than to a duration
+ *               that spills past its edge.
+ *
+ * A note that started in an earlier box but is still sounding into this one
+ * is marked isTieContinuation: it occupies space, but it isn't a fresh
+ * entry, so it takes no solfege column of its own.
+ */
+function getBoxRegions(motifId, tickIndex) {
+  const motif = MOTIF_LIBRARY[motifId];
+  const boxWidth = oneBoxWeight(motif);
+  const boxStart = tickIndex * boxWidth;
+  const boxEnd = boxStart + boxWidth;
+
+  const regions = [];
+  let cursor = 0;
+
+  for (const seg of getAllRawSegments(motifId)) {
+    const start = cursor;
+    const end = cursor + seg.weight;
+    cursor = end;
+
+    // Entirely before or entirely after this box.
+    if (end <= boxStart || start >= boxEnd) continue;
+
+    regions.push({
+      ...seg,
+      boxWeight: Math.min(end, boxEnd) - Math.max(start, boxStart),
+      isTieContinuation: start < boxStart,
+    });
+  }
+
+  return regions;
+}
+
+function getSegments(motifId) {
+  return getBoxRegions(motifId, 0);
+}
+
+/**
+ * A tieContinuation extension box's own regions (see getBoxRegions) — empty
+ * for a single-box motif. For too/toom this is a single continuation region
+ * with no enterable column (the held note fills the whole box and never
+ * restarts); for tum-ti/syncopa v2 it's that continuation followed by the
+ * trailing note's own real column.
  */
 function getExtensionSegments(motifId) {
-  const motif = MOTIF_LIBRARY[motifId];
-  if (motif.ticks <= 1) return [];
-  return getAllRawSegments(motifId).slice(getSegments(motifId).length);
+  if (MOTIF_LIBRARY[motifId].ticks <= 1) return [];
+  return getBoxRegions(motifId, 1);
 }
 
 /**
@@ -121,34 +162,45 @@ function getExtensionSegments(motifId) {
  * any index where MOTIF_LIBRARY[motifId].restMask[i] is true.
  */
 export function getColumnTemplate(motifId) {
-  const segments = getSegments(motifId);
-  return segments.map((seg) => `${seg.weight}fr`).join(" ");
+  return columnTemplateFor(getSegments(motifId));
 }
 
 /**
- * Per-column rest flags for this motif's box-A solfege card, in the same
- * order/count as getColumnTemplate() — true where that column has no
- * sounding note (a restMask-true slot, or a whole-motif rest) and should
- * stay an empty cell rather than receiving a syllable.
+ * Per-column "takes no syllable" flags for this motif's box-A solfege card,
+ * in the same order/count as getColumnTemplate() — true where that column
+ * should stay an empty, non-enterable cell. That covers both a genuinely
+ * silent slot (a restMask-true slot, or a whole-motif rest) and a note still
+ * sounding from an earlier box, which is audible but isn't a new entry the
+ * student has to name.
  */
 export function getRestColumns(motifId) {
-  return getSegments(motifId).map((seg) => seg.isRest);
+  return restColumnsFor(getSegments(motifId));
 }
 
 /**
  * getColumnTemplate()'s counterpart for a tieContinuation extension box's
- * OWN solfege card — the trailing note(s) that box A's card didn't have
- * room for (see getExtensionSegments). Empty string for a motif with
- * nothing left over there (everything that isn't tum-ti/syncopa v2).
+ * OWN solfege card. Unlike box A, this can lead with a non-enterable region:
+ * the held note from box A occupies the start of this box before the
+ * trailing note's real column begins (see getBoxRegions).
  */
 export function getExtensionColumnTemplate(motifId) {
-  return getExtensionSegments(motifId)
-    .map((seg) => `${seg.weight}fr`)
-    .join(" ");
+  return columnTemplateFor(getExtensionSegments(motifId));
 }
 
 export function getExtensionRestColumns(motifId) {
-  return getExtensionSegments(motifId).map((seg) => seg.isRest);
+  return restColumnsFor(getExtensionSegments(motifId));
+}
+
+// Column widths come from boxWeight, not weight — a note that spills past
+// this box's edge only gets the share of the card its sounding portion
+// actually occupies here, so every column boundary lands under the stick
+// (or tie arc) drawn above it.
+function columnTemplateFor(segments) {
+  return segments.map((seg) => `${seg.boxWeight}fr`).join(" ");
+}
+
+function restColumnsFor(segments) {
+  return segments.map((seg) => seg.isRest || seg.isTieContinuation);
 }
 
 function noteGlyph(
@@ -198,13 +250,22 @@ function restGlyph(centerX) {
  */
 export function renderRhythmSVG(motifId) {
   const segments = getSegments(motifId);
-  const totalWeight = segments.reduce((sum, seg) => sum + seg.weight, 0);
+  // boxWeight, matching columnTemplateFor — the card spans one box, so a
+  // note that sustains past this box's edge is laid out by the portion that
+  // sounds here. Normalising by the notes' full durations instead would drag
+  // every stick left of the beat position it actually falls on (syncopa v2's
+  // crotchet lands on the half-beat, not a third of the way in) and pull the
+  // sticks out from over their own solfege columns.
+  const totalWeight = segments.reduce((sum, seg) => sum + seg.boxWeight, 0);
 
   let cursor = 0;
   const notes = segments.map((seg) => {
     const start = (cursor / totalWeight) * VIEWBOX_WIDTH;
-    cursor += seg.weight;
+    cursor += seg.boxWeight;
     const end = (cursor / totalWeight) * VIEWBOX_WIDTH;
+    // centerX is positional only — every glyph decision below still reads
+    // seg.weight, the note's true duration, so a clipped crotchet is still
+    // drawn as a crotchet rather than beamed like a quaver.
     return { ...seg, centerX: (start + end) / 2 };
   });
 
