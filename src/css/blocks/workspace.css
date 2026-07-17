@@ -29,15 +29,33 @@
 .workspace-pager__track {
   display: flex;
   overflow-x: auto;
+  /* Explicit, not left to the spec's auto-linkage from overflow-x — this
+     axis never scrolls, so it should never be able to show a scrollbar
+     either, however briefly. */
+  overflow-y: hidden;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
 
+/*
+ * padding-inline covers workspace-box-shake's max translateX (4px) plus a
+ * 2px safety margin — an exact 4px match let a 1px sub-pixel rounding
+ * error (grid tracks are fractional px at some viewport widths) tip
+ * scrollWidth 1px past clientWidth mid-shake, flashing the track's
+ * horizontal scrollbar in and out for a frame. padding-block covers the
+ * empty-panic glow's max reach (10px blur + 3px spread) the same way.
+ * Without this, edge boxes sit flush against the track's own boundary and
+ * get clipped by its overflow. Padding lives here on the page rather than
+ * on .workspace-pager__track itself so the track's own scroll/clientWidth
+ * arithmetic (used by initialiseWorkspacePager()'s scrollByPage) stays
+ * untouched.
+ */
 .workspace-page {
   flex: 0 0 100%;
   scroll-snap-align: start;
   min-inline-size: 0;
+  padding: 13px 6px;
 }
 
 .workspace-pager__nav {
@@ -228,6 +246,33 @@
  */
 .workspace-box[data-state="extension"] .workspace-card--rhythm.is-tie-arc::after {
   content: none;
+}
+
+/*
+ * Crimson halo pulse — flags exactly which slots are still empty when a
+ * submit attempt is blocked for an incomplete board (triggerIncomplete-
+ * BoardFeedback() in core.js adds/removes this class on both the rhythm
+ * placeholder cards and unfilled solfège cells). Duration matches the
+ * 500ms the class stays applied for exactly, rather than --dur-base, so
+ * the ping completes cleanly instead of being cut off mid-animation.
+ * Pulses the border colour itself (not just a shadow) so it reads as an
+ * actual colour change, peaking at the midpoint rather than immediately
+ * fading from frame 0.
+ */
+.is-empty-panic {
+  animation: empty-panic-pulse 500ms ease-in-out;
+}
+
+@keyframes empty-panic-pulse {
+  0%,
+  100% {
+    border-color: var(--color-border-subtle);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    border-color: var(--color-status-danger);
+    box-shadow: 0 0 10px 3px color-mix(in srgb, var(--color-status-danger) 60%, transparent);
+  }
 }
 
 /*
