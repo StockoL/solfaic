@@ -30,7 +30,17 @@
 
 .hero__media span {
   position: absolute;
-  bottom: -10%;
+  /*
+   * -18%, not -10% — enough clearance (~100px on this section's ~550px
+   * height) that a particle is still below .hero's own overflow: hidden
+   * boundary while its opacity/scale are ramping in, so it enters
+   * already-formed rather than popping in mid-flight. Kept modest
+   * (rather than a much larger offset) together with an early entry
+   * keyframe below so the rise into view stays fast in real time — 20s+
+   * duration particles shouldn't need several seconds of travel just to
+   * clear the starting offset before anything is visible at all.
+   */
+  bottom: -18%;
   left: var(--particle-left, 50%);
   width: var(--particle-size, 24px);
   height: var(--particle-size, 24px);
@@ -194,9 +204,17 @@
     transform: translateY(0) scale(0);
     opacity: 0;
   }
-  10% {
+  /*
+   * 6%, not 10% — the rise-into-view needs to read as fast in real time
+   * regardless of a particle's own total duration (10-22s). 6% of even
+   * the slowest (22s) particle is ~1.3s of travel once its own stagger
+   * delay (0-3.8s) has elapsed, rather than several seconds of climbing
+   * before anything is visible at all. -14vh comfortably clears the
+   * -18% starting offset at typical viewport heights.
+   */
+  6% {
     opacity: 0.8;
-    transform: translateY(-10vh) scale(1);
+    transform: translateY(-14vh) scale(1);
   }
   90% {
     opacity: 0.8;
