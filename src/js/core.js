@@ -1417,46 +1417,43 @@ export function initialiseCoreUI() {
     }
   });
 
-  // Starting Note modal — Continue closes the dialog and dispatches a
-  // bubbling event; app.js owns triggering the actual count-in/playback
-  // (business logic), same "core.js dispatches, app.js decides" split as
-  // every other workspace interaction.
-  const startingNoteContinueBtn = document.getElementById(
+  /*
+   * Each of these dialogs gates something the Conductor has to do once it's
+   * dismissed — start the count-in, hand the board back, reset the exercise.
+   * The announcement is bound to the dialog's own `close` event rather than
+   * its button's click, because a native <dialog> has dismissal routes the
+   * button never sees: Escape, and the click-outside handler further down.
+   * Wiring only the button meant those routes closed the dialog while the
+   * Conductor sat waiting for a signal that never came, stranding the board
+   * in its locked PLAYING state with submit silently doing nothing forever.
+   *
+   * `close` fires exactly once per dismissal however it happened (including
+   * the button, which now only calls close()), so this can't double-fire.
+   * core.js still just announces; app.js still decides what it means.
+   */
+  const announceOnClose = (modal, buttonId, actionName) => {
+    if (!modal) return;
+    document.getElementById(buttonId)?.addEventListener("click", () => modal.close());
+    modal.addEventListener("close", () => {
+      document.dispatchEvent(new CustomEvent(actionName, { bubbles: true }));
+    });
+  };
+
+  announceOnClose(
+    DOM.startingNoteModal,
     "btn-starting-note-continue",
+    "action-starting-note-continue",
   );
-  if (startingNoteContinueBtn) {
-    startingNoteContinueBtn.addEventListener("click", () => {
-      DOM.startingNoteModal?.close();
-      document.dispatchEvent(
-        new CustomEvent("action-starting-note-continue", { bubbles: true }),
-      );
-    });
-  }
-
-  // Try Again modal — same core.js-dispatches/app.js-decides split as the
-  // starting-note modal above: closing the dialog is a view concern, but
-  // unlocking the board for another attempt is the Conductor's call.
-  const tryAgainContinueBtn = document.getElementById("btn-try-again-continue");
-  if (tryAgainContinueBtn) {
-    tryAgainContinueBtn.addEventListener("click", () => {
-      DOM.tryAgainModal?.close();
-      document.dispatchEvent(
-        new CustomEvent("action-try-again-continue", { bubbles: true }),
-      );
-    });
-  }
-
-  // Practice modal — the reset it leads into is the Conductor's business, so
-  // this only closes the dialog and announces the dismissal.
-  const practiceContinueBtn = document.getElementById("btn-practice-continue");
-  if (practiceContinueBtn) {
-    practiceContinueBtn.addEventListener("click", () => {
-      DOM.practiceModal?.close();
-      document.dispatchEvent(
-        new CustomEvent("action-practice-continue", { bubbles: true }),
-      );
-    });
-  }
+  announceOnClose(
+    DOM.tryAgainModal,
+    "btn-try-again-continue",
+    "action-try-again-continue",
+  );
+  announceOnClose(
+    DOM.practiceModal,
+    "btn-practice-continue",
+    "action-practice-continue",
+  );
 
   // Compliance Modals (native <dialog> — migrated from manual div show/hide)
   const openTriggers = document.querySelectorAll("[data-open-target]");
