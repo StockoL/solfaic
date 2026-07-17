@@ -9,7 +9,7 @@
  * ============================================================================
  */
 
-import { MOTIF_LIBRARY, MAX_LEVEL } from "./data.js";
+import { MOTIF_LIBRARY, MAX_LEVEL, SOLFEGE_DEGREES } from "./data.js";
 import { sessionState } from "./state.js";
 import {
   renderRhythmSVG,
@@ -411,9 +411,19 @@ export function renderMotifReel(allowedMotifs) {
  * toneset into a given reel track element — the solfège-phase counterpart
  * to renderReelInto, sharing its DOM setup via renderReelTrack but with no
  * SVG (a solfège pad is just its syllable, rendered as text).
+ *
+ * Pads are sorted low-to-high by their degree, because a toneset's authored
+ * order is about pedagogy, not pitch: Level 1's so-mi-la group is listed in
+ * the order its name says, which would put mi (4) after so (7) on the reel.
+ * Sorting here rather than reordering the data keeps the reel ascending for
+ * any toneset, including the random subsets Level 1 draws. Sorts a copy —
+ * the toneset arrays are shared module-level data, and sort() mutates.
  */
 function renderSolfegeReelInto(trackEl, toneset) {
-  renderReelTrack(trackEl, toneset, (syllable) => {
+  const ascending = [...toneset].sort(
+    (a, b) => (SOLFEGE_DEGREES[a] ?? 0) - (SOLFEGE_DEGREES[b] ?? 0),
+  );
+  renderReelTrack(trackEl, ascending, (syllable) => {
     const btn = document.createElement("button");
     btn.className = "solfege-pad";
     btn.setAttribute("role", "option");
