@@ -98,7 +98,10 @@ function attachLongPress(el, onLongPress, { threshold = 500 } = {}) {
 
   el.addEventListener("pointermove", (e) => {
     if (!timer) return;
-    if (Math.abs(e.clientX - startX) > 10 || Math.abs(e.clientY - startY) > 10) {
+    if (
+      Math.abs(e.clientX - startX) > 10 ||
+      Math.abs(e.clientY - startY) > 10
+    ) {
       cancel();
     }
   });
@@ -233,7 +236,9 @@ function renderBeatPulse(tickIndex) {
  */
 export function triggerIncompleteBoardFeedback() {
   if (!DOM.workspace) return;
-  const boxes = DOM.workspace.querySelectorAll(".workspace-box:not([data-state='disabled'])");
+  const boxes = DOM.workspace.querySelectorAll(
+    ".workspace-box:not([data-state='disabled'])",
+  );
   boxes.forEach((box) => {
     box.classList.remove("is-shaking");
     // Double rAF avoids a forced synchronous reflow when re-triggering the animation.
@@ -253,7 +258,9 @@ export function triggerIncompleteBoardFeedback() {
       ? DOM.workspace.querySelectorAll(
           ".solfege-card__cell:not(.is-filled):not(.is-rest)",
         )
-      : DOM.workspace.querySelectorAll(".workspace-card--rhythm.is-placeholder");
+      : DOM.workspace.querySelectorAll(
+          ".workspace-card--rhythm.is-placeholder",
+        );
   missingSlots.forEach((card) => card.classList.add("is-empty-panic"));
 
   setTimeout(() => {
@@ -333,7 +340,7 @@ function updatePagerErrorDots() {
 /**
  * NEW: Keeps the custom level dropdown's active item + button label in sync
  * with sessionState.currentLevel, regardless of *how* the level changed
- * (manual dropdown click, celebration modal auto-advance, or tour).
+ * (manual dropdown click, celebration modal auto-advance).
  */
 export function syncLevelDropdown(levelId) {
   if (!DOM.levelBtn || !DOM.levelItems) return;
@@ -773,7 +780,9 @@ function initialiseWorkspacePager() {
     (entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
-        const pages = Array.from(DOM.workspace.querySelectorAll(".workspace-page"));
+        const pages = Array.from(
+          DOM.workspace.querySelectorAll(".workspace-page"),
+        );
         const activeIndex = pages.indexOf(entry.target);
         DOM.workspaceDots
           ?.querySelectorAll(".workspace-pager__dot")
@@ -943,7 +952,10 @@ export function closeVignette() {
  * etc. have to do manually.
  */
 export function showStartingNoteModal(syllable) {
-  if (!DOM.startingNoteModal || typeof DOM.startingNoteModal.showModal !== "function") {
+  if (
+    !DOM.startingNoteModal ||
+    typeof DOM.startingNoteModal.showModal !== "function"
+  ) {
     return;
   }
   if (DOM.startingNoteSyllable) {
@@ -961,9 +973,7 @@ export function showStartingNoteModal(syllable) {
  * regardless of z-index), so as long as the backdrop's dimming and the
  * modal shared one element, raising that element above confetti to fix
  * "confetti in front of the modal" would always also dim the confetti,
- * with no way to separate the two. Both triggerCelebrationModal() and
- * triggerTourCompletionModal() use this, so the tour-completion modal
- * (which has no confetti) keeps its identical dimmed-backdrop look.
+ * with no way to separate the two.
  */
 function createCelebrationBackdrop() {
   const backdrop = document.createElement("div");
@@ -1131,228 +1141,6 @@ function fireMasteryConfetti() {
 }
 
 // ============================================================================
-// 5. ONBOARDING TOUR WIZARD
-// ============================================================================
-
-let tourCurrentStepIndex = 0;
-let activeTourSteps = [];
-
-function compileTourSequence() {
-  const isMobileViewport = window.innerWidth < 1024;
-  return [
-    {
-      elementId: isMobileViewport ? "btn-toggle-sidebar" : "ui-sidebar",
-      text: isMobileViewport
-        ? "Welcome! Tap this hamburger menu button at any time to open up your Kodály reference table."
-        : "Welcome to Solfaic! This is your reference guide. Check your rhythmic solfege and notation rules here.",
-      mobilePosition: "bottom",
-    },
-    {
-      elementId: "btn-replay",
-      text: "Step 1: Hit this 'play' button to listen to your next phrase. Be sure to listen carefully, you only get 3 attempts!",
-      mobilePosition: "bottom",
-    },
-    {
-      elementId: "ui-workspace",
-      text: "Step 2: This is your workspace. Your chosen rhythm cards will assemble here. Tap a card to remove it, or tap an empty slot to prepare it for a new card.",
-      mobilePosition: "bottom",
-    },
-    {
-      elementId: "ui-motif-selector",
-      text: "Step 3: Choose your rhythm cards from this menu. Drag 'em, click 'em, or tap a highlighted slot to place 'em. Remember, some cards are more than one beat long!",
-      mobilePosition: "top",
-    },
-    {
-      elementId: "btn-submit",
-      text: "Step 4: Once you're done, smash this button here to see if you got it right. Three successive correct answers will take you to the next level. Good luck!",
-      mobilePosition: "top",
-    },
-  ];
-}
-
-export function startGuidedTour() {
-  const promptEl = document.getElementById("ui-tour-prompt");
-  const tooltipEl = document.getElementById("ui-tour-tooltip");
-  if (promptEl) promptEl.classList.add("is-hidden");
-  if (tooltipEl) tooltipEl.classList.remove("is-hidden");
-
-  activeTourSteps = compileTourSequence();
-  tourCurrentStepIndex = 0;
-
-  window.addEventListener("click", handleGlobalTourProgression);
-  window.addEventListener("keydown", handleGlobalTourKeydown);
-
-  executeTourStepPass();
-}
-
-function executeTourStepPass() {
-  const tourOverlayElement = document.getElementById("ui-tour");
-  const tooltipBox = document.getElementById("ui-tour-tooltip");
-  const textBox = document.getElementById("ui-tour-text");
-
-  if (tooltipBox) tooltipBox.style.opacity = "0";
-
-  document.querySelectorAll(".tour-highlight-active").forEach((el) => {
-    el.classList.remove("tour-highlight-active");
-  });
-
-  if (tourCurrentStepIndex >= activeTourSteps.length) {
-    setTimeout(() => {
-      if (tooltipBox) tooltipBox.classList.add("is-hidden");
-      if (tourOverlayElement) tourOverlayElement.classList.add("is-hidden");
-    }, 200);
-
-    window.removeEventListener("click", handleGlobalTourProgression);
-    window.removeEventListener("keydown", handleGlobalTourKeydown);
-    localStorage.setItem("solfaic_onboarded_matrix", "true");
-    triggerTourCompletionModal();
-    return;
-  }
-
-  const currentStep = activeTourSteps[tourCurrentStepIndex];
-  const targetElement = document.getElementById(currentStep.elementId);
-
-  if (targetElement) {
-    targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
-
-    setTimeout(() => {
-      targetElement.classList.add("tour-highlight-active");
-      if (textBox) textBox.innerHTML = currentStep.text;
-
-      const targetRect = targetElement.getBoundingClientRect();
-      const tooltipWidth = window.innerWidth < 1024 ? 280 : 320;
-
-      if (tooltipBox) {
-        tooltipBox.classList.remove("is-mobile-top", "is-mobile-bottom");
-        tooltipBox.style.display = "block";
-        const tooltipHeight = tooltipBox.offsetHeight;
-
-        let computedLeft;
-        let computedTop;
-
-        if (window.innerWidth < 1024) {
-          if (currentStep.mobilePosition === "top")
-            tooltipBox.classList.add("is-mobile-top");
-          else tooltipBox.classList.add("is-mobile-bottom");
-
-          tooltipBox.style.left = "50%";
-          tooltipBox.style.top = "auto";
-        } else {
-          if (currentStep.elementId === "ui-sidebar") {
-            computedLeft = targetRect.right + 24;
-            computedTop = targetRect.top + window.scrollY + 120;
-          } else {
-            computedLeft =
-              targetRect.left + targetRect.width / 2 - tooltipWidth / 2;
-            computedLeft = Math.max(
-              10,
-              Math.min(computedLeft, window.innerWidth - tooltipWidth - 10),
-            );
-            computedTop =
-              targetRect.top + window.scrollY + targetRect.height + 16;
-
-            if (targetRect.bottom + tooltipHeight + 30 > window.innerHeight) {
-              computedTop =
-                targetRect.top + window.scrollY - tooltipHeight - 16;
-            }
-          }
-          tooltipBox.style.left = `${computedLeft}px`;
-          tooltipBox.style.top = `${computedTop}px`;
-        }
-      }
-
-      if (tourOverlayElement) {
-        tourOverlayElement.style.alignItems = "flex-start";
-        tourOverlayElement.style.justifyContent = "flex-start";
-      }
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (tooltipBox) tooltipBox.style.opacity = "1";
-        });
-      });
-    }, 320);
-  } else {
-    setTimeout(() => {
-      if (textBox) textBox.innerHTML = currentStep.text;
-      if (tourOverlayElement) {
-        tourOverlayElement.style.alignItems = "center";
-        tourOverlayElement.style.justifyContent = "center";
-      }
-      if (tooltipBox) {
-        tooltipBox.style.position = "static";
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            tooltipBox.style.opacity = "1";
-          });
-        });
-      }
-    }, 200);
-  }
-}
-
-function handleGlobalTourProgression() {
-  tourCurrentStepIndex++;
-  executeTourStepPass();
-}
-
-function handleGlobalTourKeydown(e) {
-  if (e.code === "Space" || e.code === "Enter") {
-    e.preventDefault();
-    tourCurrentStepIndex++;
-    executeTourStepPass();
-  }
-}
-
-export function terminateTourImmediately() {
-  const tourOverlay = document.getElementById("ui-tour");
-  const tooltipBox = document.getElementById("ui-tour-tooltip");
-  if (tourOverlay) tourOverlay.classList.add("is-hidden");
-  if (tooltipBox) tooltipBox.classList.add("is-hidden");
-  localStorage.setItem("solfaic_onboarded_matrix", "true");
-}
-
-function triggerTourCompletionModal() {
-  const backdrop = createCelebrationBackdrop();
-
-  const overlay = document.createElement("div");
-  overlay.className = "celebration-overlay";
-
-  const modal = document.createElement("div");
-  modal.className = "celebration-modal";
-
-  modal.innerHTML = `
-    <div class="celebration-title">You're Ready!</div>
-    <div class="celebration-subtext">Your interactive dictation workspace is fully unlocked and ready for practice.<br><br>Good luck, Maestro! 🎻</div>
-  `;
-
-  const btn = document.createElement("button");
-  btn.className = "button celebration-btn";
-  btn.setAttribute("data-variant", "primary");
-  btn.innerText = "Let's Begin! 🚀";
-
-  btn.addEventListener("click", () => {
-    overlay.classList.remove("is-active");
-    backdrop.classList.remove("is-active");
-    setTimeout(() => {
-      overlay.remove();
-      backdrop.remove();
-    }, 300);
-  });
-
-  modal.appendChild(btn);
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      overlay.classList.add("is-active");
-      backdrop.classList.add("is-active");
-    });
-  });
-}
-
-// ============================================================================
 // 6. GLOBAL UI INITIALISATION (Sidebar & Overlays)
 // ============================================================================
 
@@ -1466,8 +1254,11 @@ export function initialiseCoreUI() {
 
     // Sync the table to whichever level is active by default (Level 1)
     // instead of only filtering after the first selection.
-    const initialItem = levelSelectMenu.querySelector(".level-select__item.is-active");
-    if (initialItem) filterMatrixByLevel(initialItem.getAttribute("data-value"));
+    const initialItem = levelSelectMenu.querySelector(
+      ".level-select__item.is-active",
+    );
+    if (initialItem)
+      filterMatrixByLevel(initialItem.getAttribute("data-value"));
   }
 
   // Focus Vignette (tap-and-hold a workspace box)
@@ -1481,7 +1272,10 @@ export function initialiseCoreUI() {
     });
   }
   document.addEventListener("keydown", (e) => {
-    if (e.code === "Escape" && DOM.vignette?.getAttribute("data-state") === "open") {
+    if (
+      e.code === "Escape" &&
+      DOM.vignette?.getAttribute("data-state") === "open"
+    ) {
       closeVignette();
     }
   });
@@ -1502,7 +1296,9 @@ export function initialiseCoreUI() {
    */
   const announceOnClose = (modal, buttonId, actionName) => {
     if (!modal) return;
-    document.getElementById(buttonId)?.addEventListener("click", () => modal.close());
+    document
+      .getElementById(buttonId)
+      ?.addEventListener("click", () => modal.close());
     modal.addEventListener("close", () => {
       document.dispatchEvent(new CustomEvent(actionName, { bubbles: true }));
     });
@@ -1588,7 +1384,10 @@ export function initialiseCoreUI() {
           "#ui-workspace .workspace-box:not([data-state])",
         );
         for (let i = boxes.length - 1; i >= 0; i--) {
-          const tickIndex = parseInt(boxes[i].getAttribute("data-tick-index"), 10);
+          const tickIndex = parseInt(
+            boxes[i].getAttribute("data-tick-index"),
+            10,
+          );
           const token = sessionState.userSubmission[tickIndex];
           if (token) {
             boxes[i].dispatchEvent(
@@ -1606,9 +1405,7 @@ export function initialiseCoreUI() {
 
     if (e.key >= "1" && e.key <= "9") {
       const motifIndex = parseInt(e.key) - 1;
-      const motifPads = document.querySelectorAll(
-        "#ui-motif-reel .motif-pad",
-      );
+      const motifPads = document.querySelectorAll("#ui-motif-reel .motif-pad");
       if (motifPads[motifIndex]) {
         motifPads[motifIndex].click();
         motifPads[motifIndex].classList.add("is-active");

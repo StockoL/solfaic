@@ -5,13 +5,6 @@
    ========================================================================== */
 
 /*
- * These elements have existed in core.js since the V1 monolith split but
- * never had any CSS at all — an unstyled, unpositioned div just sits in
- * normal document flow whenever triggerCelebrationModal()/
- * triggerTourCompletionModal() fires, off-screen below the fold with no
- * backdrop. is-active is a plain class (not [data-state], unlike the
- * vignette overlay) because that's what the existing JS already toggles.
- *
  * The dimming backdrop is its own element (.celebration-backdrop, created
  * by createCelebrationBackdrop() in core.js) rather than this overlay's
  * own background — that's what lets it sit BELOW confetti while this

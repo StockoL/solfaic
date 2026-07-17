@@ -119,7 +119,10 @@ export async function enterPitchPhase() {
   // waiting on Tone's one-time init.
   const firstPitch = sessionState.targetPitchLine.pitches[0];
   showStartingNoteModal(firstPitch);
-  await AudioEngine.playStartingNote(firstPitch, sessionState.targetPitchLine.tonic);
+  await AudioEngine.playStartingNote(
+    firstPitch,
+    sessionState.targetPitchLine.tonic,
+  );
 
   console.log(
     `[Conductor] Entered PITCH phase. Streak: ${sessionState.streak}/3`,
@@ -191,7 +194,11 @@ function showAnswerThenRestart(applyCorrectAnswer) {
  * answer" and "the thing to practise" mean differ per phase, but the
  * attempt-counting around them doesn't.
  */
-function handleFailedAttempt({ applyCorrectAnswer, errorIndices, showPractice }) {
+function handleFailedAttempt({
+  applyCorrectAnswer,
+  errorIndices,
+  showPractice,
+}) {
   triggerWrongAnswerShake(errorIndices);
   sessionState.wrongAttemptCount++;
 
@@ -325,7 +332,10 @@ function initialiseEventListeners() {
             if (sessionState.streak >= 3) {
               sessionState.streak = 0;
               // Pass startLevel as a callback to prevent circular imports in core.js
-              triggerCelebrationModal(sessionState.currentLevel + 1, startLevel);
+              triggerCelebrationModal(
+                sessionState.currentLevel + 1,
+                startLevel,
+              );
             } else {
               startLevel(sessionState.currentLevel); // Load next round (fresh rhythm + pitch)
             }
@@ -489,24 +499,6 @@ function initialiseEventListeners() {
     sessionState.pitchSlotStates = newPitchSlotStates;
     renderWorkspace(sessionState);
   });
-
-  // --- ONBOARDING TOUR ---
-  const tourTriggerBtn = document.getElementById("btn-trigger-onboarding");
-  const tourYesBtn = document.getElementById("btn-tour-yes");
-  const tourNoBtn = document.getElementById("btn-tour-no");
-  const tourOverlay = document.getElementById("ui-tour");
-  const tourPromptCard = document.getElementById("ui-tour-prompt");
-
-  if (tourTriggerBtn) {
-    tourTriggerBtn.addEventListener("click", () => {
-      tourOverlay?.classList.remove("is-hidden");
-      tourPromptCard?.classList.remove("is-hidden");
-    });
-  }
-  if (tourYesBtn) tourYesBtn.addEventListener("click", startGuidedTour);
-  if (tourNoBtn) {
-    tourNoBtn.addEventListener("click", () => terminateTourImmediately());
-  }
 }
 
 // ============================================================================
