@@ -33,6 +33,7 @@ import {
   unlockUI,
   triggerCelebrationModal,
   triggerIncompleteBoardFeedback,
+  showStartingNoteModal,
   initialiseCoreUI,
   closeVignette,
   startGuidedTour,
@@ -89,7 +90,7 @@ export function startLevel(levelId) {
  * task. Deliberately does NOT call generateRhythmTimeline/generatePitchLine
  * again; that would silently swap the exercise out from under the student.
  */
-export function enterPitchPhase() {
+export async function enterPitchPhase() {
   sessionState.exercisePhase = "PITCH";
   sessionState.playCount = 0;
   sessionState.currentState = "IDLE";
@@ -99,6 +100,18 @@ export function enterPitchPhase() {
   renderWorkspace(sessionState);
   renderSolfegeReel(sessionState.targetPitchLine.toneset);
   renderMeta(sessionState);
+
+  // Starting Note modal — showModal() blocks interaction with the rest of
+  // the page natively, so this happens before any count-in can start; the
+  // "Continue" button (wired in core.js) is what actually kicks off the
+  // first pitch-phase listen, via the action-starting-note-continue
+  // listener below. Awaited (rather than fire-and-forget) so a first-ever
+  // AudioContext resume can't race the caller's next step — the note
+  // itself schedules and returns immediately either way, this is only
+  // waiting on Tone's one-time init.
+  const firstPitch = sessionState.targetPitchLine.pitches[0];
+  showStartingNoteModal(firstPitch);
+  await AudioEngine.playStartingNote(firstPitch, sessionState.targetPitchLine.tonic);
 
   console.log(
     `[Conductor] Entered PITCH phase. Streak: ${sessionState.streak}/3`,
@@ -136,6 +149,42 @@ function handleFailedAttempt(applyCorrectAnswer) {
       sessionState.currentState = "IDLE";
       unlockUI();
     }, 2000);
+  }
+}
+
+/**
+ * The actual "listen" action — locks state/UI, plays the full sequence via
+ * AudioEngine, then unlocks. Shared by the Play button's own click handler
+ * and the Starting Note modal's "Continue" button, which effectively
+ * triggers the first pitch-phase listen once the student is ready rather
+ * than requiring a separate first click on Play too.
+ */
+async function triggerReplay() {
+  if (sessionState.currentState === "PLAYING") return;
+  if (sessionState.playCount >= sessionState.maxPlays) {
+    alert("You are out of plays! Give it your best guess.");
+    return;
+  }
+
+  // Lock immediately on click, BEFORE awaiting Tone's async init — this
+  // is the exact fix from the V1 "Audio-Lock Race Condition" bug log.
+  sessionState.currentState = "PLAYING";
+  sessionState.playCount++;
+  DOM.replayBtn?.classList.add("is-locked");
+  renderMeta(sessionState);
+
+  // AudioEngine remains decoupled from the DOM/state; we pass it what it
+  // needs and use the Promise it returns to know when playback finished.
+  await AudioEngine.playSequence(
+    sessionState.targetTimeline,
+    sessionState.activeConfig,
+    sessionState.targetPitchLine?.tonic,
+    sessionState.targetPitchLine?.pitches,
+  );
+
+  sessionState.currentState = "IDLE";
+  if (sessionState.playCount < sessionState.maxPlays) {
+    DOM.replayBtn?.classList.remove("is-locked");
   }
 }
 
@@ -228,35 +277,15 @@ function initialiseEventListeners() {
 
   // --- REPLAY BUTTON: Triggers the Audio Engine ---
   if (DOM.replayBtn) {
-    DOM.replayBtn.addEventListener("click", async () => {
-      if (sessionState.currentState === "PLAYING") return;
-      if (sessionState.playCount >= sessionState.maxPlays) {
-        alert("You are out of plays! Give it your best guess.");
-        return;
-      }
-
-      // Lock immediately on click, BEFORE awaiting Tone's async init — this
-      // is the exact fix from the V1 "Audio-Lock Race Condition" bug log.
-      sessionState.currentState = "PLAYING";
-      sessionState.playCount++;
-      DOM.replayBtn.classList.add("is-locked");
-      renderMeta(sessionState);
-
-      // AudioEngine remains decoupled from the DOM/state; we pass it what it
-      // needs and use the Promise it returns to know when playback finished.
-      await AudioEngine.playSequence(
-        sessionState.targetTimeline,
-        sessionState.activeConfig,
-        sessionState.targetPitchLine?.tonic,
-        sessionState.targetPitchLine?.pitches,
-      );
-
-      sessionState.currentState = "IDLE";
-      if (sessionState.playCount < sessionState.maxPlays) {
-        DOM.replayBtn.classList.remove("is-locked");
-      }
-    });
+    DOM.replayBtn.addEventListener("click", () => triggerReplay());
   }
+
+  // Starting Note modal's Continue button (core.js closes the dialog and
+  // dispatches this) — starts the first pitch-phase listen immediately,
+  // same action as clicking Play.
+  document.addEventListener("action-starting-note-continue", () => {
+    triggerReplay();
+  });
 
   // --- WORKSPACE INTERACTIONS: Placing, targeting, and clearing notes ---
   // (Dispatched as bubbling CustomEvents from core.js, so we catch them here

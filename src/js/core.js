@@ -43,6 +43,8 @@ export const DOM = {
   vignette: document.getElementById("ui-card-vignette"),
   vignetteFocusedCard: document.getElementById("vignette-focused-card"),
   vignetteReel: document.getElementById("vignette-reel"),
+  startingNoteModal: document.getElementById("modal-starting-note"),
+  startingNoteSyllable: document.getElementById("ui-starting-note-syllable"),
 };
 
 const TICKS_PER_PAGE = 16;
@@ -798,6 +800,25 @@ export function closeVignette() {
 // 4. ANIMATIONS & MODALS (Flair Pass)
 // ============================================================================
 
+/**
+ * Shown once at the rhythm->pitch transition (see enterPitchPhase() in
+ * app.js), before the first pitch-phase listen — gives the student a
+ * moment to see (and, via AudioEngine.playStartingNote, hear) the target
+ * pitch before dictation starts. Native <dialog>.showModal() already
+ * blocks interaction with the rest of the page while open, so there's no
+ * separate UI-locking needed here the way triggerIncompleteBoardFeedback
+ * etc. have to do manually.
+ */
+export function showStartingNoteModal(syllable) {
+  if (!DOM.startingNoteModal || typeof DOM.startingNoteModal.showModal !== "function") {
+    return;
+  }
+  if (DOM.startingNoteSyllable) {
+    DOM.startingNoteSyllable.textContent = syllable;
+  }
+  DOM.startingNoteModal.showModal();
+}
+
 export function triggerCelebrationModal(targetLevelId, startLevelCallback) {
   const overlay = document.createElement("div");
   overlay.className = "celebration-overlay";
@@ -1232,6 +1253,22 @@ export function initialiseCoreUI() {
       closeVignette();
     }
   });
+
+  // Starting Note modal — Continue closes the dialog and dispatches a
+  // bubbling event; app.js owns triggering the actual count-in/playback
+  // (business logic), same "core.js dispatches, app.js decides" split as
+  // every other workspace interaction.
+  const startingNoteContinueBtn = document.getElementById(
+    "btn-starting-note-continue",
+  );
+  if (startingNoteContinueBtn) {
+    startingNoteContinueBtn.addEventListener("click", () => {
+      DOM.startingNoteModal?.close();
+      document.dispatchEvent(
+        new CustomEvent("action-starting-note-continue", { bubbles: true }),
+      );
+    });
+  }
 
   // Compliance Modals (native <dialog> — migrated from manual div show/hide)
   const openTriggers = document.querySelectorAll("[data-open-target]");

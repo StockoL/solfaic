@@ -225,3 +225,22 @@ body.practice-room {
     transform: scale(1);
   }
 }
+
+/*
+ * Starting Note modal — the syllable card is the whole point of this
+ * dialog, so it gets a per-instance size override rather than badge.css's
+ * default (sized for a small inline label like the level pill or the
+ * plays-remaining count). .modal itself stays untouched.
+ */
+.starting-note-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-m);
+  text-align: center;
+}
+
+.starting-note-badge {
+  font-size: var(--size-step-3);
+  padding: var(--space-xs) var(--space-l);
+}

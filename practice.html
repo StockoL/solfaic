@@ -197,6 +197,31 @@
       <div class="vignette-overlay__reel reel" id="vignette-reel"></div>
     </div>
 
+    <!--
+      STARTING NOTE: shown once at the rhythm->pitch phase transition, so
+      the student can internalise the first pitch before the count-in
+      starts. Native <dialog> — same pattern as the compliance modals.
+    -->
+    <dialog
+      id="modal-starting-note"
+      class="modal starting-note-modal"
+      aria-labelledby="starting-note-title"
+    >
+      <h2 id="starting-note-title">Starting Note</h2>
+      <span
+        id="ui-starting-note-syllable"
+        class="badge starting-note-badge"
+        data-variant="primary"
+      ></span>
+      <button
+        id="btn-starting-note-continue"
+        class="button"
+        data-variant="primary"
+      >
+        Continue
+      </button>
+    </dialog>
+
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"
       defer

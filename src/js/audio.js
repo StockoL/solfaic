@@ -98,6 +98,19 @@ export const AudioEngine = {
   },
 
   /**
+   * Plays the exercise's first solfège pitch as a single sustained tone —
+   * used by the "Starting Note" modal at the rhythm->pitch transition, so
+   * the student has time to actually internalise the pitch before
+   * dictation starts. "2n" matches too's length, not a quick blip.
+   * Immediate playback (no Transport scheduling needed for a single note).
+   */
+  async playStartingNote(pitch, tonic) {
+    await this.init();
+    const note = resolveSolfegeToNote(pitch, tonic);
+    this.synth.triggerAttackRelease(note, "2n");
+  },
+
+  /**
    * Schedules and plays the rhythm sequence, singing `pitches` over it when
    * given — one solfège syllable per SOUNDING SUB-NOTE in timeline order
    * (restMask-aware), not one per rhythm event. A motif like "titi" is a
