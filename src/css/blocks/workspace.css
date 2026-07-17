@@ -309,6 +309,37 @@
 }
 
 /*
+ * Pitch validation colour — the cell-level counterpart to the border-colour
+ * [data-feedback] gives a whole workspace-box for the rhythm pass. It has to
+ * be per-cell rather than per-box: a box can hold two syllables (titi) and
+ * only one of them may be wrong, the same reason the shake targets cells in
+ * this phase. A cell's only edge is the dashed divider between columns, so
+ * there's no border to recolour the way the rhythm cards do — the tint
+ * carries it instead, and the text darkens against its own background the
+ * way Badge's danger variant does.
+ *
+ * These must stay AFTER .is-filled above: identical specificity (0,2,0), so
+ * source order is the only reason they win over its text colour.
+ */
+.solfege-card__cell[data-feedback="success"] {
+  background-color: color-mix(
+    in srgb,
+    var(--color-status-success) 12%,
+    transparent
+  );
+  color: color-mix(in srgb, var(--color-status-success) 70%, var(--color-graphite));
+}
+
+.solfege-card__cell[data-feedback="error"] {
+  background-color: color-mix(
+    in srgb,
+    var(--color-status-danger) 15%,
+    transparent
+  );
+  color: color-mix(in srgb, var(--color-status-danger) 70%, var(--color-graphite));
+}
+
+/*
  * A pitch error is a single wrong syllable, so the shake lands on the cell
  * rather than the whole box the way a rhythm error's does — a box can hold
  * two syllables (titi), and shaking the box would drag a correct one along

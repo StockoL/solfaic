@@ -451,6 +451,7 @@ function renderSolfegeCard(
   columnTemplate,
   restColumns,
   pitchSubmission,
+  pitchSlotStates,
   startIndex,
 ) {
   solfegeCard.innerHTML = "";
@@ -475,6 +476,17 @@ function renderSolfegeCard(
       // wrong. A box can hold several syllables (titi is two), so pitch
       // errors can't be located by tick index the way rhythm errors can.
       cell.setAttribute("data-pitch-index", cellIndex);
+
+      // Validation colour, mirroring the data-feedback the rhythm pass puts
+      // on a whole workspace-box. It lands on the cell rather than the box
+      // because a box can hold several syllables (titi is two) and only some
+      // of them may be wrong — the same reason triggerWrongAnswerShake
+      // targets cells in this phase.
+      const slotState = pitchSlotStates?.[cellIndex];
+      if (slotState === "success" || slotState === "error") {
+        cell.setAttribute("data-feedback", slotState);
+      }
+
       const syllable = pitchSubmission?.[cellIndex];
       if (syllable) {
         cell.textContent = syllable;
@@ -609,6 +621,7 @@ function buildWorkspaceBox(state, tickIndex) {
         getExtensionColumnTemplate(baseMotifId),
         getExtensionRestColumns(baseMotifId),
         state.pitchSubmission,
+        state.pitchSlotStates,
         pitchExtensionStartIndex(state.userSubmission, tickIndex),
       );
     }
@@ -620,6 +633,7 @@ function buildWorkspaceBox(state, tickIndex) {
       getColumnTemplate(token),
       getRestColumns(token),
       state.pitchSubmission,
+      state.pitchSlotStates,
       pitchOnsetStartIndex(state.userSubmission, tickIndex),
     );
   } else if (isActive) {
