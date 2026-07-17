@@ -2,6 +2,16 @@
    BLOCK: CLASSROOM (page-specific glue classes not covered by another block)
    ========================================================================== */
 
+/*
+ * .container only adds inline padding (see container.css) — main.classroom
+ * had no block padding at all, so it sat flush against .nav's bottom
+ * border with zero gap. Matches the same scale as the inter-section rhythm
+ * below it rather than inventing a new value.
+ */
+.classroom {
+  padding-block-start: var(--space-2xl);
+}
+
 .classroom__levels-hint {
   color: var(--color-text-muted);
   font-size: var(--size-step--1);
