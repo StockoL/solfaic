@@ -46,6 +46,9 @@ export const DOM = {
   startingNoteModal: document.getElementById("modal-starting-note"),
   startingNoteSyllable: document.getElementById("ui-starting-note-syllable"),
   tryAgainModal: document.getElementById("modal-try-again"),
+  practiceModal: document.getElementById("modal-practice"),
+  practiceTitle: document.getElementById("practice-title"),
+  practiceCards: document.getElementById("ui-practice-cards"),
 };
 
 const TICKS_PER_PAGE = 16;
@@ -896,6 +899,63 @@ export function showTryAgainModal() {
   DOM.tryAgainModal?.showModal();
 }
 
+/**
+ * Opens the practice modal with a given title and set of cards. Both
+ * showRhythmPracticeModal/showPitchPracticeModal funnel through here — the
+ * dialog shell is identical, only what it's pointing at differs.
+ */
+function showPracticeModal(title, cards) {
+  if (!DOM.practiceModal || !DOM.practiceCards) return;
+  DOM.practiceTitle.textContent = title;
+  DOM.practiceCards.replaceChildren(...cards);
+  DOM.practiceModal.showModal();
+}
+
+/**
+ * Second wrong rhythm submission — names the one motif to go practise.
+ * Rendered with the same renderRhythmSVG the workspace and reel use, so the
+ * student is looking at the exact notation they'll meet again, not a
+ * description of it.
+ */
+export function showRhythmPracticeModal(motifId) {
+  const card = document.createElement("div");
+  card.className = "feedback-modal__card";
+
+  const svg = document.createElement("div");
+  svg.className = "feedback-modal__card-svg";
+  svg.innerHTML = renderRhythmSVG(motifId);
+
+  const label = document.createElement("span");
+  label.className = "feedback-modal__card-label";
+  label.textContent = MOTIF_LIBRARY[motifId]?.label ?? motifId;
+
+  card.append(svg, label);
+  showPracticeModal("Unlucky, this is the rhythm you need to practise", [card]);
+}
+
+/**
+ * Second wrong pitch submission — shows the interval that broke down, as
+ * the syllable before the mistake followed by what the mistake should have
+ * been. Takes an array rather than two arguments because the interval can
+ * legitimately be a single card: an error on the very first syllable has no
+ * preceding note to pair with (see app.js).
+ */
+export function showPitchPracticeModal(syllables) {
+  const cards = syllables.map((syllable) => {
+    const card = document.createElement("div");
+    card.className = "feedback-modal__card";
+
+    const text = document.createElement("span");
+    text.className = "feedback-modal__card-syllable";
+    text.textContent = syllable;
+
+    card.appendChild(text);
+    return card;
+  });
+
+  showPracticeModal("Unlucky, practise this interval", cards);
+}
+
 export function triggerCelebrationModal(targetLevelId, startLevelCallback) {
   const backdrop = createCelebrationBackdrop();
 
@@ -1368,6 +1428,18 @@ export function initialiseCoreUI() {
       DOM.tryAgainModal?.close();
       document.dispatchEvent(
         new CustomEvent("action-try-again-continue", { bubbles: true }),
+      );
+    });
+  }
+
+  // Practice modal — the reset it leads into is the Conductor's business, so
+  // this only closes the dialog and announces the dismissal.
+  const practiceContinueBtn = document.getElementById("btn-practice-continue");
+  if (practiceContinueBtn) {
+    practiceContinueBtn.addEventListener("click", () => {
+      DOM.practiceModal?.close();
+      document.dispatchEvent(
+        new CustomEvent("action-practice-continue", { bubbles: true }),
       );
     });
   }

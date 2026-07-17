@@ -36,6 +36,8 @@ import {
   triggerWrongAnswerShake,
   showStartingNoteModal,
   showTryAgainModal,
+  showRhythmPracticeModal,
+  showPitchPracticeModal,
   initialiseCoreUI,
   closeVignette,
   startGuidedTour,
@@ -139,6 +141,23 @@ function findErrorIndices(slotStates) {
 }
 
 /**
+ * Held from the practice modal opening until the student dismisses it — the
+ * correction can't run until then, and that click lands long after
+ * handleFailedAttempt's own call frame has returned.
+ */
+let pendingCorrection = null;
+
+/**
+ * flatTarget marks the held beats of a multi-tick motif with "<id>_ext"
+ * tokens, which aren't real MOTIF_LIBRARY entries — renderRhythmSVG would
+ * throw on one. If the first error landed on a held beat, the motif worth
+ * practising is the one that started it anyway, so strip back to the base id.
+ */
+function baseMotifId(token) {
+  return token.endsWith("_ext") ? token.slice(0, -"_ext".length) : token;
+}
+
+/**
  * Shows the correct answer on the board (via `applyCorrectAnswer`, which is
  * phase-specific), holds it there long enough to read, then rolls a fresh
  * exercise. startLevel() resets wrongAttemptCount, so the new exercise
@@ -164,23 +183,31 @@ function showAnswerThenRestart(applyCorrectAnswer) {
  * events, and the streak now survives the first wrong answer either way.
  *
  * First wrong: shake the wrong slots, say "not quite", let them try again
- * with the streak intact. Second wrong: the streak goes, and the exercise is
- * reset with the answer shown (what running out of plays used to trigger).
+ * with the streak intact. Second wrong: the streak goes, and `showPractice`
+ * names what actually went wrong before the exercise resets with the answer
+ * shown (what running out of plays used to trigger).
+ *
+ * Both phase-specific behaviours arrive as callbacks — what "the correct
+ * answer" and "the thing to practise" mean differ per phase, but the
+ * attempt-counting around them doesn't.
  */
-function handleFailedAttempt(applyCorrectAnswer, errorIndices) {
+function handleFailedAttempt({ applyCorrectAnswer, errorIndices, showPractice }) {
   triggerWrongAnswerShake(errorIndices);
   sessionState.wrongAttemptCount++;
-
-  if (sessionState.wrongAttemptCount >= 2) {
-    sessionState.streak = 0;
-    renderStreakTracker(sessionState.streak);
-    setTimeout(() => showAnswerThenRestart(applyCorrectAnswer), 1500);
-    return;
-  }
 
   // Let the shake finish before a dialog covers the board — the shake is what
   // says WHICH slots were wrong, so burying it immediately would waste it.
   // 500ms matches the window triggerWrongAnswerShake keeps .is-shaking for.
+  if (sessionState.wrongAttemptCount >= 2) {
+    sessionState.streak = 0;
+    renderStreakTracker(sessionState.streak);
+    // The reset waits for the student to dismiss the modal (see the
+    // action-practice-continue listener) rather than running on a timer.
+    pendingCorrection = applyCorrectAnswer;
+    setTimeout(() => showPractice(errorIndices[0]), 500);
+    return;
+  }
+
   setTimeout(() => showTryAgainModal(), 500);
 }
 
@@ -267,12 +294,19 @@ function initialiseEventListeners() {
           // completing both phases, not rhythm alone.
           setTimeout(() => enterPitchPhase(), 1000);
         } else {
-          handleFailedAttempt(() => {
-            sessionState.userSubmission = [...result.flatTarget];
-            sessionState.slotStates = Array(result.flatTarget.length).fill(
-              "idle",
-            );
-          }, findErrorIndices(result.newSlotStates));
+          handleFailedAttempt({
+            applyCorrectAnswer: () => {
+              sessionState.userSubmission = [...result.flatTarget];
+              sessionState.slotStates = Array(result.flatTarget.length).fill(
+                "idle",
+              );
+            },
+            errorIndices: findErrorIndices(result.newSlotStates),
+            showPractice: (firstErrorIndex) =>
+              showRhythmPracticeModal(
+                baseMotifId(result.flatTarget[firstErrorIndex]),
+              ),
+          });
         }
       } else {
         // PITCH phase
@@ -297,11 +331,27 @@ function initialiseEventListeners() {
             }
           }, 1000);
         } else {
-          handleFailedAttempt(() => {
-            const target = sessionState.targetPitchLine.pitches;
-            sessionState.pitchSubmission = [...target];
-            sessionState.pitchSlotStates = Array(target.length).fill("idle");
-          }, findErrorIndices(result.newPitchSlotStates));
+          handleFailedAttempt({
+            applyCorrectAnswer: () => {
+              const target = sessionState.targetPitchLine.pitches;
+              sessionState.pitchSubmission = [...target];
+              sessionState.pitchSlotStates = Array(target.length).fill("idle");
+            },
+            errorIndices: findErrorIndices(result.newPitchSlotStates),
+            showPractice: (firstErrorIndex) => {
+              const pitches = sessionState.targetPitchLine.pitches;
+              // An interval is a relationship between two notes, so show the
+              // syllable leading into the mistake as well as the mistake
+              // itself. A mistake on the very first syllable has nothing
+              // before it, so that one is shown alone rather than inventing
+              // a predecessor.
+              const interval =
+                firstErrorIndex === 0
+                  ? [pitches[0]]
+                  : [pitches[firstErrorIndex - 1], pitches[firstErrorIndex]];
+              showPitchPracticeModal(interval);
+            },
+          });
         }
       }
     });
@@ -325,6 +375,14 @@ function initialiseEventListeners() {
   document.addEventListener("action-try-again-continue", () => {
     sessionState.currentState = "IDLE";
     unlockUI();
+  });
+
+  // Practice modal's button — the student has seen what to practise, so now
+  // the answer goes up on the board and a fresh exercise follows.
+  document.addEventListener("action-practice-continue", () => {
+    const correction = pendingCorrection;
+    pendingCorrection = null;
+    if (correction) showAnswerThenRestart(correction);
   });
 
   // --- WORKSPACE INTERACTIONS: Placing, targeting, and clearing notes ---

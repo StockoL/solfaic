@@ -238,6 +238,24 @@
       </button>
     </dialog>
 
+    <!--
+      PRACTICE: second wrong submission in a row. Names the specific thing
+      that went wrong — the rhythm motif, or the interval — before the
+      exercise resets. Title and cards are filled in by core.js, since both
+      depend on which phase the student is in.
+    -->
+    <dialog
+      id="modal-practice"
+      class="modal feedback-modal"
+      aria-labelledby="practice-title"
+    >
+      <h2 id="practice-title"></h2>
+      <div id="ui-practice-cards" class="feedback-modal__cards"></div>
+      <button id="btn-practice-continue" class="button" data-variant="primary">
+        Continue
+      </button>
+    </dialog>
+
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"
       defer
