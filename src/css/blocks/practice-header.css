@@ -2,6 +2,56 @@
    BLOCK: PRACTICE HEADER & SHELL
    ========================================================================== */
 
+/*
+ * Full-viewport flex column so leftover vertical space (a short exercise
+ * on a tall phone screen) can be distributed instead of just sitting as
+ * dead space below the reel — .practice-actions's margin-top: auto below
+ * does the actual pushing. dvh first since it tracks mobile browser
+ * chrome showing/hiding more reliably than vh; the vh line is a fallback
+ * for browsers that don't support dvh (invalid values are ignored, not
+ * overwritten, so the more specific/later dvh rule wins where supported).
+ *
+ * min(…, 60rem) caps how far that push-to-bottom stretch goes — without
+ * it, an extreme-aspect-ratio screen (a tall external monitor, a phone
+ * in a docked/rotated state) would stretch the shell to the full
+ * viewport height and shove the controls a huge, disconnected-looking
+ * distance below the grid. 60rem comfortably covers real phone-in-
+ * portrait heights (iPhone 12 Pro is ~52.75rem) where "controls near the
+ * thumb" is the actual goal; beyond that the shell just settles at its
+ * capped height, vertically centered by body.practice-room below.
+ */
+.practice-shell {
+  display: flex;
+  flex-direction: column;
+  /* Flex items with width:auto shrink-to-fit their content instead of
+     filling the available cross-axis space the way a normal block-level
+     element would - combined with .container's margin-inline: auto (a
+     cross-axis auto margin), that suppresses stretch entirely and the
+     shell collapses to a much narrower fit-content width instead of
+     .container's own max-width, breaking every viewport, not just the
+     tall-screen case this was meant to fix. width: 100% restores the
+     normal block-sizing behavior explicitly, so margin-inline: auto goes
+     back to centering a properly max-width-capped box exactly as it did
+     before .practice-shell became a flex item. */
+  width: 100%;
+  min-height: min(100vh, 60rem);
+  min-height: min(100dvh, 60rem);
+}
+
+body.practice-room {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.practice-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 .practice-header {
   padding-block: var(--space-s);
   border-block-end: 1px solid var(--color-border-subtle);
@@ -82,6 +132,32 @@
   justify-content: center;
   gap: var(--space-s);
   padding-block: var(--space-s);
+  /* Pushes itself, and the reel after it, to the bottom of .practice-main
+     whenever there's leftover height (a short exercise on a tall
+     screen) — auto margins can't go negative, so this never makes a
+     tight fit worse, only ever fills genuine slack. */
+  margin-top: auto;
+}
+
+/*
+ * Height-constrained pass: a laptop-height viewport can be just tall
+ * enough that the header/section gaps below tip the page into needing a
+ * scroll for a couple of stray pixels. Trims the same vertical rhythm
+ * that padding-block/--flow-space normally spend generously, rather than
+ * touching anything horizontal.
+ */
+@media (max-height: 56.25rem) {
+  .practice-header {
+    padding-block: var(--space-xs);
+  }
+
+  .practice-main {
+    --flow-space: var(--space-s);
+  }
+
+  .practice-actions {
+    padding-block: var(--space-2xs);
+  }
 }
 
 /*
