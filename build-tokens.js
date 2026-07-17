@@ -15,6 +15,13 @@
  *                 A "{other-key}" value is a SEMANTIC alias — it compiles to
  *                 var(--color-other-key) rather than duplicating the hex, so
  *                 swapping a primitive updates every alias automatically.
+ *  - solfege:    same alias handling as colors, output under the same
+ *                 --color- namespace with a "solfege-" prefix
+ *                 (--color-solfege-do etc.) — a separate top-level section
+ *                 purely for discoverability in the JSON, not a separate
+ *                 CSS namespace. A "{ref}" here resolves against ref's KEY
+ *                 name, not against colors' own data, so it works exactly
+ *                 the same whether ref lives in colors or solfege itself.
  *  - typography: "font-family-*" keys pass straight through.
  *                 "step-N" / "step--N" keys compile to --size-step-N.
  *  - space:      keys compile to --space-{key} as-is.
@@ -64,6 +71,28 @@ function compileColors(colors) {
     }
   });
 
+  return lines;
+}
+
+/**
+ * Solfège colours compile into the exact same --color- namespace as
+ * compileColors' own aliases (just "solfege-" prefixed), so component CSS
+ * reaches for var(--color-solfege-do) the same way it reaches for
+ * var(--color-action-primary) — no separate namespace or lookup convention
+ * to remember for a category that only exists as its own JSON section for
+ * discoverability.
+ */
+function compileSolfege(solfege) {
+  const lines = [];
+  Object.entries(solfege).forEach(([key, value]) => {
+    if (isDocKey(key)) return;
+    if (typeof value === "string" && value.startsWith("{")) {
+      const referencedKey = value.slice(1, -1);
+      lines.push(`  --color-solfege-${key}: var(--color-${referencedKey});`);
+    } else {
+      lines.push(`  --color-solfege-${key}: ${value};`);
+    }
+  });
   return lines;
 }
 
@@ -124,6 +153,7 @@ function build() {
 
   const sections = [
     { title: "COLOUR", lines: compileColors(tokens.colors || {}) },
+    { title: "SOLFEGE", lines: compileSolfege(tokens.solfege || {}) },
     { title: "TYPOGRAPHY", lines: compileTypography(tokens.typography || {}) },
     { title: "SPACE", lines: compileSpace(tokens.space || {}) },
     { title: "MOTION", lines: compileMotion(tokens.motion || {}) },

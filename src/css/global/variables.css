@@ -31,6 +31,15 @@
   --color-accent-vivid-secondary: var(--color-golden-pollen);
   --color-accent-vivid-tertiary: var(--color-muted-teal);
 
+  /* -- SOLFEGE ------------------------------------------------------------- */
+  --color-solfege-do: var(--color-action-primary);
+  --color-solfege-re: #a16439;
+  --color-solfege-mi: var(--color-action-secondary);
+  --color-solfege-fa: #747653;
+  --color-solfege-so: var(--color-status-success);
+  --color-solfege-la: #4c5e52;
+  --color-solfege-ti: var(--color-status-danger);
+
   /* -- TYPOGRAPHY ---------------------------------------------------------- */
   --font-family-heading: 'Galindo', system-ui, sans-serif;
   --font-family-body: 'Poppins', system-ui, sans-serif;

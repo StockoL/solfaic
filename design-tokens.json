@@ -9,7 +9,7 @@
     "graphite": "#2D2D2D",
     "charcoal": "#545454",
     "amaranth-red": "#D6334A",
-    "_comment_deep": "Text-safe darkened variants of the three bright accent primitives, verified against WCAG AA (4.5:1 minimum) with white text — see docs/palette-accessibility-audit.md for the full contrast audit and derivation. amaranth-red needed no 'deep' variant; it already passes at full brightness.",
+    "_comment_deep": "Text-safe darkened variants of the three bright accent primitives, verified against WCAG AA (4.5:1 minimum) with white text — see the palette accessibility audit doc for the full contrast audit and derivation. amaranth-red needed no 'deep' variant; it already passes at full brightness.",
     "tangerine-deep": "#B65532",
     "pollen-deep": "#8C7340",
     "teal-deep": "#5C7966",
@@ -28,6 +28,16 @@
     "accent-vivid-primary": "{atomic-tangerine}",
     "accent-vivid-secondary": "{golden-pollen}",
     "accent-vivid-tertiary": "{muted-teal}"
+  },
+  "_comment_solfege": "One colour per diatonic solfège syllable, for the reel card redesign — its own category (rather than more colors keys) purely for discoverability; a '{ref}' value here still resolves the same way it does in colors, against that key's name, not its value, so it doesn't matter that the referenced keys live in a different JSON object. do/mi/so/ti alias the existing action/status tokens directly (same colours already used for buttons/badges elsewhere, so this doubles as visual reinforcement of the app's existing vocabulary rather than a disconnected new palette); re/fa/la are new blends, each independently verified at 4.5:1+ against white.",
+  "solfege": {
+    "do": "{action-primary}",
+    "re": "#a16439",
+    "mi": "{action-secondary}",
+    "fa": "#747653",
+    "so": "{status-success}",
+    "la": "#4c5e52",
+    "ti": "{status-danger}"
   },
   "_comment_motion": "Durations + easing curves referenced across Block components (accordion, dropdown, navbar, offcanvas). 'spring' curves intentionally overshoot slightly for a tactile feel; 'smooth' curves don't.",
   "motion": {
