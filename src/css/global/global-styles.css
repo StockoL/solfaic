@@ -88,12 +88,22 @@ a:not([class]):hover {
 
 /*
  * Visible keyboard focus. This is the floor for every interactive element
- * site-wide — Blocks may layer on more specific treatments later. :focus-visible 
+ * site-wide — Blocks may layer on more specific treatments later. :focus-visible
  *(rather than :focus) keeps mouse/touch interactions free of an outline while
  * keyboard and switch-access users always get one.
+ *
+ * accent-vivid-primary, not action-primary — a ring has no text inside it,
+ * so it was never one of the surfaces the palette audit's contrast fix
+ * needed to darken; its only job is being visible against whatever it's
+ * drawn over. Checked both:
+ * action-primary's now-muted tone visibly blends into any component that
+ * itself uses action-primary as a background (the pushable CTA, primary
+ * buttons) — the ring all but disappears into the exact element it's
+ * supposed to be highlighting. accent-vivid-primary stays a confident,
+ * unmistakable ring in every context tested.
  */
 :focus-visible {
-  outline: 3px solid var(--color-action-primary);
+  outline: 3px solid var(--color-accent-vivid-primary);
   outline-offset: 2px;
   border-radius: 2px;
 }
