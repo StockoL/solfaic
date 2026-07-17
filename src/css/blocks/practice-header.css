@@ -85,6 +85,24 @@
 }
 
 /*
+ * Compact pass so Back/Play/Submit stay one row down to at least 375px,
+ * same approach as the thin header's own narrow-width pass above — the
+ * base .button padding (--space-m horizontal) is sized for a roomy
+ * standalone button, not three sharing one narrow row.
+ */
+@media (max-width: 30rem) {
+  .practice-actions {
+    gap: var(--space-2xs);
+  }
+
+  .practice-actions .button {
+    padding: var(--space-3xs) var(--space-xs);
+    gap: var(--space-3xs);
+    font-size: var(--size-step--1);
+  }
+}
+
+/*
  * Wraps the replay button so the count-in indicator (below) can overlay it
  * directly — that's exactly where the user's attention already is when
  * they click play, and the button is locked (unclickable) during count-in
