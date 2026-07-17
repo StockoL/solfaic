@@ -139,7 +139,7 @@ export function renderMeta(state) {
   }
   if (DOM.playsRemaining) {
     const remaining = Math.max(0, state.maxPlays - state.playCount);
-    DOM.playsRemaining.textContent = `Plays remaining: ${remaining} / ${state.maxPlays}`;
+    DOM.playsRemaining.textContent = `${remaining}/${state.maxPlays}`;
   }
 }
 

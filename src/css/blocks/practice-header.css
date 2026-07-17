@@ -58,9 +58,16 @@
   }
 }
 
-.plays-remaining {
-  color: var(--color-text-muted);
-  font-size: var(--size-step--1);
+/*
+ * Plays-remaining badge nested inside the Play button itself. Reuses the
+ * .badge Block rather than a new component, but the default 0.85em sizing
+ * (relative to the button's own font-size) reads too large sitting next to
+ * "Play" — sized down here at the call site, same pattern as other
+ * per-instance overrides in this project. badge.css itself is untouched.
+ */
+#btn-replay .badge {
+  font-size: var(--size-step--2);
+  padding: 0.15em 0.5em;
 }
 
 /*
