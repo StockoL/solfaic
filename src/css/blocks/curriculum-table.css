@@ -124,3 +124,32 @@
   block-size: 100%;
   inline-size: auto;
 }
+
+/*
+ * Compact pass so the table scales down to fit narrow viewports instead
+ * of forcing horizontal scroll — a table's default layout won't shrink
+ * below its content's min-content width, and cell padding (--space-m
+ * horizontal, x2 sides x3 columns) plus the SVG preview's fixed size were
+ * together the biggest contributors to that floor. Text itself already
+ * wraps within each cell; this just gives it room to.
+ */
+@media (max-width: 30rem) {
+  .curriculum-table th,
+  .curriculum-table td {
+    padding: var(--space-3xs) var(--space-2xs);
+  }
+
+  .curriculum-table thead th,
+  .curriculum-table td {
+    font-size: var(--size-step--2);
+  }
+
+  .table-svg-preview {
+    block-size: 1.5rem;
+  }
+
+  .syllable-token {
+    padding: var(--space-3xs) var(--space-3xs);
+    font-size: var(--size-step--1);
+  }
+}
