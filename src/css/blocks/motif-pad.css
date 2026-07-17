@@ -28,6 +28,12 @@
   background-color: var(--color-surface-sunken);
 }
 
+.practice-reel__nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
 .practice-reel__track {
   padding-block: var(--space-2xs);
 }

@@ -596,6 +596,47 @@ function initialiseWorkspacePager() {
   mutationObserver.observe(DOM.workspace, { childList: true });
 }
 
+/**
+ * Reel prev/next buttons — scroll by roughly one card's width (the first
+ * card plus the reel's own gap) rather than a fixed page width, since
+ * unlike the workspace pager this reel isn't split into discrete pages.
+ * Each button disables itself at its scroll extreme instead of staying
+ * clickable past the end; a MutationObserver re-checks after every render
+ * since the reel's contents (and therefore its scrollWidth) are replaced
+ * per exercise. Only #ui-motif-reel has nav buttons — the vignette's
+ * mirrored reel (#vignette-reel) doesn't, so it needs no wiring here.
+ */
+function initialiseReelNav(trackEl, prevBtn, nextBtn) {
+  if (!trackEl || !prevBtn || !nextBtn) return;
+
+  const cardScrollDistance = () => {
+    const firstCard = trackEl.firstElementChild;
+    if (!firstCard) return trackEl.clientWidth;
+    const gap = parseFloat(getComputedStyle(trackEl).columnGap) || 0;
+    return firstCard.getBoundingClientRect().width + gap;
+  };
+
+  const updateDisabledState = () => {
+    const maxScroll = trackEl.scrollWidth - trackEl.clientWidth;
+    prevBtn.disabled = trackEl.scrollLeft <= 1;
+    nextBtn.disabled = trackEl.scrollLeft >= maxScroll - 1;
+  };
+
+  prevBtn.addEventListener("click", () => {
+    trackEl.scrollBy({ left: -cardScrollDistance(), behavior: "smooth" });
+  });
+  nextBtn.addEventListener("click", () => {
+    trackEl.scrollBy({ left: cardScrollDistance(), behavior: "smooth" });
+  });
+
+  trackEl.addEventListener("scroll", updateDisabledState);
+  new MutationObserver(updateDisabledState).observe(trackEl, {
+    childList: true,
+  });
+
+  updateDisabledState();
+}
+
 export function renderWorkspace(state) {
   if (!DOM.workspace) return;
   const config = state.activeConfig;
@@ -994,6 +1035,11 @@ function triggerTourCompletionModal() {
 
 export function initialiseCoreUI() {
   initialiseWorkspacePager();
+  initialiseReelNav(
+    DOM.motifReel,
+    document.querySelector(".practice-reel__nav--prev"),
+    document.querySelector(".practice-reel__nav--next"),
+  );
 
   // Count-in indicator — purely reactive to audio.js's own events, no
   // state/business logic involved, so it's self-contained here rather
