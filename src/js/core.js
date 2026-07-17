@@ -166,16 +166,18 @@ function renderCountdownBeat(beat) {
   });
 }
 
-const COUNTDOWN_GO_DISPLAY_MS = 500;
-
-function renderCountdownGo() {
+/*
+ * Countdown finishes exactly when real playback starts (both scheduled at
+ * the same Transport time in audio.js), so hiding immediately here is what
+ * keeps the count-in to exactly ticksPerBar beats. An earlier version held
+ * a "GO" state on screen for another 500ms after this — visually reading
+ * as a 5th beat tacked onto e.g. a 4-beat count-in, which made it
+ * impossible to tell whether the exercise's own beat 1 was silent (a rest)
+ * or just hadn't happened yet.
+ */
+function hideCountdownIndicator() {
   if (!DOM.countdownIndicator) return;
-  DOM.countdownIndicator.textContent = "GO";
-  DOM.countdownIndicator.setAttribute("data-state", "go");
-
-  setTimeout(() => {
-    DOM.countdownIndicator.setAttribute("data-state", "hidden");
-  }, COUNTDOWN_GO_DISPLAY_MS);
+  DOM.countdownIndicator.setAttribute("data-state", "hidden");
 }
 
 /**
@@ -1000,7 +1002,7 @@ export function initialiseCoreUI() {
     renderCountdownBeat(e.detail.beat);
   });
   document.addEventListener("audio-countdown-finish", () => {
-    renderCountdownGo();
+    hideCountdownIndicator();
   });
 
   // Primary Nav (mobile collapse toggle)

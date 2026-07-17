@@ -107,16 +107,9 @@
     visibility var(--dur-fast);
 }
 
-.countdown-indicator[data-state="counting"],
-.countdown-indicator[data-state="go"] {
+.countdown-indicator[data-state="counting"] {
   opacity: 1;
   visibility: visible;
-}
-
-/* The one unambiguous "count-in has ended, real playback starts now"
-   signal — a distinct colour plus the word itself, not just a number. */
-.countdown-indicator[data-state="go"] {
-  background-color: var(--color-status-success);
 }
 
 .countdown-indicator.is-pulsing {
