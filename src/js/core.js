@@ -407,6 +407,63 @@ export function renderMotifReel(allowedMotifs) {
 }
 
 /**
+ * The seven diatonic solfège anchors, in semitone order, paired with the
+ * CSS custom property token each one's colour lives on (--color-solfege-*,
+ * see design-tokens.json's "solfege" category).
+ */
+const SOLFEGE_COLOR_ANCHORS = [
+  { degree: 0, token: "do" },
+  { degree: 2, token: "re" },
+  { degree: 4, token: "mi" },
+  { degree: 5, token: "fa" },
+  { degree: 7, token: "so" },
+  { degree: 9, token: "la" },
+  { degree: 11, token: "ti" },
+];
+
+/**
+ * Resolves any solfège syllable to a CSS colour expression for the reel
+ * pad's background: a direct var() for the seven diatonic anchors, or
+ * for an octave mark like do' (same pitch class — only the semitone value
+ * mod 12 matters, so it shares do's colour rather than needing its own).
+ * A chromatic syllable not among the anchors (fi, si, ta, etc.) gets a
+ * color-mix() blend between its two nearest anchors instead, weighted by
+ * exactly how far it sits from each — not just a flat 50/50 split, so a
+ * future chromatic pitch that isn't perfectly centred between its
+ * neighbours still blends proportionally rather than needing a bespoke
+ * colour decision of its own. Nothing chromatic is reachable yet (Levels
+ * 1-4 are diatonic-only), but the lookup is degree-based rather than a
+ * hand-listed table of syllable spellings, so it doesn't need revisiting
+ * when one is.
+ */
+function resolveSolfegeColor(syllable) {
+  const degree = (((SOLFEGE_DEGREES[syllable] ?? 0) % 12) + 12) % 12;
+
+  const exact = SOLFEGE_COLOR_ANCHORS.find((a) => a.degree === degree);
+  if (exact) return `var(--color-solfege-${exact.token})`;
+
+  // Nearest anchor below and above, wrapping the octave — dead code for
+  // every currently reachable syllable (the smallest/largest anchors sit
+  // at 0/11, and a degree past either boundary always exact-matches
+  // above via the mod-12 normalisation before this point), kept for the
+  // same future-chromatic-syllable robustness as the rest of this lookup.
+  let below = SOLFEGE_COLOR_ANCHORS[SOLFEGE_COLOR_ANCHORS.length - 1];
+  let above = SOLFEGE_COLOR_ANCHORS[0];
+  for (const anchor of SOLFEGE_COLOR_ANCHORS) {
+    if (anchor.degree < degree) below = anchor;
+    if (anchor.degree > degree && above === SOLFEGE_COLOR_ANCHORS[0]) {
+      above = anchor;
+    }
+  }
+
+  const span = (((above.degree - below.degree) % 12) + 12) % 12 || 12;
+  const distanceFromBelow = (((degree - below.degree) % 12) + 12) % 12;
+  const towardAbovePercent = Math.round((distanceFromBelow / span) * 100);
+
+  return `color-mix(in srgb, var(--color-solfege-${above.token}) ${towardAbovePercent}%, var(--color-solfege-${below.token}) ${100 - towardAbovePercent}%)`;
+}
+
+/**
  * Renders one .solfege-pad button per syllable in the exercise's active
  * toneset into a given reel track element — the solfège-phase counterpart
  * to renderReelInto, sharing its DOM setup via renderReelTrack but with no
@@ -428,6 +485,7 @@ function renderSolfegeReelInto(trackEl, toneset) {
     btn.className = "solfege-pad";
     btn.setAttribute("role", "option");
     btn.setAttribute("aria-label", syllable);
+    btn.style.setProperty("--pad-color", resolveSolfegeColor(syllable));
     btn.innerHTML = `<span class="solfege-pad__label">${syllable}</span>`;
 
     btn.addEventListener("click", () => {

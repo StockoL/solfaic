@@ -83,40 +83,50 @@
 }
 
 /*
- * Solfège pad: same reel-card shell as .motif-pad, but there's no SVG slot
- * to fill - the syllable itself is the content, so it's sized up and
- * centered instead of sitting below a stick-notation graphic.
+ * Solfège pad — one filled circle per syllable, coloured via --pad-color
+ * (set inline per-instance by resolveSolfegeColor() in core.js, since the
+ * colour depends on which syllable this particular pad is, not something
+ * a static class-based rule could express for every current AND future
+ * syllable spelling). The var(--color-action-primary) fallback only
+ * matters if that inline property is ever missing — every real pad sets
+ * it, so it should never actually be seen.
+ *
+ * Solid colour full-bleed on a circle (rather than the rectangular card
+ * shell .motif-pad uses) is a deliberate visual split from the rhythm
+ * reel: rhythm pads show notation ON a neutral card, solfège pads ARE
+ * their colour — the syllable's identity is the colour itself, with white
+ * text just labelling it, matching how do/mi/so/ti already double as the
+ * same colours used for buttons/badges elsewhere.
  */
 .solfege-pad {
   display: flex;
   align-items: center;
   justify-content: center;
-  inline-size: 6rem;
-  aspect-ratio: 4 / 1;
+  inline-size: 4.5rem;
+  aspect-ratio: 1 / 1;
   padding: var(--space-xs);
-  background-color: var(--color-surface-card);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 6px;
-  color: var(--color-text-base);
+  background-color: var(--pad-color, var(--color-action-primary));
+  border: none;
+  border-radius: 50%;
+  color: var(--color-surface-card);
   cursor: pointer;
   scroll-snap-align: start;
   transition:
-    background-color var(--dur-fast) ease,
-    border-color var(--dur-fast) ease,
+    filter var(--dur-fast) ease,
     transform var(--dur-fast) var(--spring-smooth);
 }
 
 .solfege-pad:hover,
 .solfege-pad:focus-visible {
-  background-color: var(--color-surface-sunken);
-  border-color: var(--color-action-primary);
+  filter: brightness(1.12);
 }
 
 .solfege-pad:active {
-  transform: scale(0.96);
+  transform: scale(0.92);
 }
 
 .solfege-pad__label {
   font-size: var(--size-step-1);
   font-weight: 700;
+  color: var(--color-surface-card);
 }
