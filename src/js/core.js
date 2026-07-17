@@ -47,6 +47,19 @@ export const DOM = {
 
 const TICKS_PER_PAGE = 16;
 
+// A single-bar row for a low-ticksPerBar metre (e.g. 2/4) reads much
+// narrower than a 4/4 row, even though both are "one complete bar" — so
+// rows pack as many whole bars as fit within a ~4-box-wide reference
+// without splitting a bar across rows. 2/4 (ticksPerBar 2) packs 2 bars
+// per row (4 boxes, matching 4/4); 3/4 (ticksPerBar 3) doesn't divide
+// evenly into 4, so it stays at 1 bar per row (3 boxes) rather than
+// jumping to 2 bars (6 boxes, noticeably wider than every other metre).
+const WORKSPACE_ROW_REFERENCE_COLUMNS = 4;
+
+function barsPerRow(ticksPerBar) {
+  return Math.max(1, Math.floor(WORKSPACE_ROW_REFERENCE_COLUMNS / ticksPerBar));
+}
+
 // ============================================================================
 // LONG-PRESS HELPER
 // ============================================================================
@@ -651,8 +664,11 @@ export function renderWorkspace(state) {
     pageEl.className = "workspace-page";
 
     const gridEl = document.createElement("div");
-    gridEl.className = "workspace-grid";
-    gridEl.style.setProperty("--workspace-columns", config.ticksPerBar);
+    gridEl.className = "workspace-grid grid";
+    gridEl.style.setProperty(
+      "--grid-placement",
+      barsPerRow(config.ticksPerBar) * config.ticksPerBar,
+    );
 
     for (let i = 0; i < TICKS_PER_PAGE; i++) {
       const tickIndex = page * TICKS_PER_PAGE + i;
