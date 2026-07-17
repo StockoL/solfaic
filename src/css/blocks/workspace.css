@@ -4,14 +4,27 @@
 
 /*
  * One box per beat (tick), not per bar — see practice.html's workspace
- * comment. --grid-placement/--grid-min-item-size are Grid's own exposed
- * custom properties (Compositions stay media-query-free by design), set
- * here rather than as inline styles in JS-generated markup since they're
- * fixed configuration for this specific component, not a per-instance value.
+ * comment. Deliberately NOT the Grid composition: Grid's defining behavior
+ * is 1fr stretchy columns, which is exactly wrong here — column count
+ * needs to follow the exercise's metre (ticksPerBar, set as
+ * --workspace-columns by renderWorkspace() in core.js) while box size
+ * stays fixed regardless, so a 3/4 exercise is a narrower centered grid
+ * of same-size boxes rather than the same row width stretched across
+ * fewer, wider ones. --workspace-box-size is captured from how a box
+ * rendered at 4 columns on a narrow (375px) viewport before this change —
+ * not the desktop stretched size, since fixing box size to the desktop
+ * value would overflow narrow viewports (a fixed-size box that already
+ * looks right on mobile can only ever look smaller, never overflow, as
+ * screens get wider).
  */
 .workspace-grid {
-  --grid-placement: 4;
-  --grid-min-item-size: 1px;
+  display: grid;
+  grid-template-columns: repeat(
+    var(--workspace-columns, 4),
+    var(--workspace-box-size, 4.3rem)
+  );
+  justify-content: center;
+  gap: var(--gutter, 1rem);
 }
 
 /*

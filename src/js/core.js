@@ -651,7 +651,8 @@ export function renderWorkspace(state) {
     pageEl.className = "workspace-page";
 
     const gridEl = document.createElement("div");
-    gridEl.className = "workspace-grid grid";
+    gridEl.className = "workspace-grid";
+    gridEl.style.setProperty("--workspace-columns", config.ticksPerBar);
 
     for (let i = 0; i < TICKS_PER_PAGE; i++) {
       const tickIndex = page * TICKS_PER_PAGE + i;
