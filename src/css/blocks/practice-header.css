@@ -42,6 +42,36 @@
   font-weight: 600;
 }
 
+/*
+ * Compact pass so the thin header (level+streak | metre+bars) stays one
+ * row down to at least 375px instead of Spread wrapping the two clusters
+ * onto separate lines. --gutter cascades into every Cluster/Spread
+ * instance inside .practice-header (both clusters, plus the streak
+ * tracker's own internal dot spacing), so overriding it once here tightens
+ * all of them together rather than needing a rule per composition.
+ */
+@media (max-width: 30rem) {
+  .practice-header {
+    --gutter: var(--space-3xs);
+    padding-block: var(--space-xs);
+  }
+
+  .practice-header .badge {
+    padding: 0.2em 0.5em;
+    font-size: var(--size-step--2);
+  }
+
+  .practice-header .meta-chip {
+    padding: calc(var(--space-3xs) / 2) var(--space-3xs);
+    font-size: var(--size-step--2);
+  }
+
+  .streak-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
+}
+
 .plays-remaining {
   color: var(--color-text-muted);
   font-size: var(--size-step--1);
