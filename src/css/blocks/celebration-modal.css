@@ -12,16 +12,37 @@
  * backdrop. is-active is a plain class (not [data-state], unlike the
  * vignette overlay) because that's what the existing JS already toggles.
  *
- * z-index: 320, not 300 — .confetti-particle sits at 310 as a *sibling*
- * fixed element (appended directly to body, not inside this overlay), so
- * raising this overlay is what actually matters: a child's z-index can
- * never let it escape its own parent's stacking context to compete with
- * a sibling context directly, no matter how high that child's z-index
- * is. .celebration-modal itself was never going to be able to fix this
- * on its own for exactly that reason. Confetti still reads as behind/
- * around the modal (via the translucent backdrop) rather than in front
- * of it - only the front-to-back order flips, nothing about layout.
+ * The dimming backdrop is its own element (.celebration-backdrop, created
+ * by createCelebrationBackdrop() in core.js) rather than this overlay's
+ * own background — that's what lets it sit BELOW confetti while this
+ * overlay (holding just the modal) sits ABOVE confetti. One shared
+ * element for both jobs couldn't do this: .celebration-overlay is
+ * position: fixed, which always creates its own stacking context, so
+ * .celebration-modal can never escape it to compete with confetti on its
+ * own — raising the whole overlay above confetti to fix "confetti in
+ * front of the modal" would always also drag its background (and
+ * therefore any confetti sitting behind that translucent background)
+ * above confetti's un-dimmed appearance, tinting it. Splitting the two
+ * apart is what lets confetti stay fully coloured while the modal still
+ * ends up on top.
  */
+.celebration-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background-color: color-mix(in srgb, var(--color-graphite) 75%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--dur-base) var(--spring-smooth),
+    visibility var(--dur-base);
+}
+
+.celebration-backdrop.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
 .celebration-overlay {
   position: fixed;
   inset: 0;
@@ -30,7 +51,6 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-l);
-  background-color: color-mix(in srgb, var(--color-graphite) 75%, transparent);
   opacity: 0;
   visibility: hidden;
   transition:

@@ -819,7 +819,29 @@ export function showStartingNoteModal(syllable) {
   DOM.startingNoteModal.showModal();
 }
 
+/**
+ * The dimming layer lives as its own body-level element, separate from
+ * .celebration-overlay, specifically so it can sit BELOW the confetti in
+ * the stacking order while the overlay (holding the modal) stays above
+ * it — a child can never escape its own parent's stacking context
+ * (.celebration-overlay is position: fixed, which always creates one,
+ * regardless of z-index), so as long as the backdrop's dimming and the
+ * modal shared one element, raising that element above confetti to fix
+ * "confetti in front of the modal" would always also dim the confetti,
+ * with no way to separate the two. Both triggerCelebrationModal() and
+ * triggerTourCompletionModal() use this, so the tour-completion modal
+ * (which has no confetti) keeps its identical dimmed-backdrop look.
+ */
+function createCelebrationBackdrop() {
+  const backdrop = document.createElement("div");
+  backdrop.className = "celebration-backdrop";
+  document.body.appendChild(backdrop);
+  return backdrop;
+}
+
 export function triggerCelebrationModal(targetLevelId, startLevelCallback) {
+  const backdrop = createCelebrationBackdrop();
+
   const overlay = document.createElement("div");
   overlay.className = "celebration-overlay";
 
@@ -849,8 +871,10 @@ export function triggerCelebrationModal(targetLevelId, startLevelCallback) {
 
   btn.addEventListener("click", () => {
     overlay.classList.remove("is-active");
+    backdrop.classList.remove("is-active");
     setTimeout(() => {
       overlay.remove();
+      backdrop.remove();
       startLevelCallback(targetLevelId <= MAX_LEVEL ? targetLevelId : 1);
     }, 300);
   });
@@ -862,6 +886,7 @@ export function triggerCelebrationModal(targetLevelId, startLevelCallback) {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       overlay.classList.add("is-active");
+      backdrop.classList.add("is-active");
     });
   });
 
@@ -1088,6 +1113,8 @@ export function terminateTourImmediately() {
 }
 
 function triggerTourCompletionModal() {
+  const backdrop = createCelebrationBackdrop();
+
   const overlay = document.createElement("div");
   overlay.className = "celebration-overlay";
 
@@ -1106,7 +1133,11 @@ function triggerTourCompletionModal() {
 
   btn.addEventListener("click", () => {
     overlay.classList.remove("is-active");
-    setTimeout(() => overlay.remove(), 300);
+    backdrop.classList.remove("is-active");
+    setTimeout(() => {
+      overlay.remove();
+      backdrop.remove();
+    }, 300);
   });
 
   modal.appendChild(btn);
@@ -1116,6 +1147,7 @@ function triggerTourCompletionModal() {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       overlay.classList.add("is-active");
+      backdrop.classList.add("is-active");
     });
   });
 }
