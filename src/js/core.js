@@ -254,6 +254,33 @@ export function triggerIncompleteBoardFeedback() {
     boxes.forEach((box) => box.classList.remove("is-shaking"));
     missingSlots.forEach((card) => card.classList.remove("is-empty-panic"));
   }, 500);
+
+  updatePagerErrorDots();
+}
+
+/**
+ * Marks each pager dot with data-has-error when its page contains a wrong
+ * answer (data-feedback="error", set by buildWorkspaceBox from
+ * state.slotStates) or a still-empty slot (.is-empty-panic, set above) —
+ * both already fire correctly on an off-screen page today, the user just
+ * has no way to know without swiping over. The flag naturally clears on
+ * the next render once the underlying box state does (evaluateSubmission
+ * resets slotStates to idle after a wrong attempt shows the answer, and a
+ * fresh exercise starts with idle everywhere), so no separate cleanup is
+ * needed beyond recomputing this on every relevant render.
+ */
+function updatePagerErrorDots() {
+  if (!DOM.workspace || !DOM.workspaceDots) return;
+  const pages = DOM.workspace.querySelectorAll(".workspace-page");
+  const dots = DOM.workspaceDots.querySelectorAll(".workspace-pager__dot");
+
+  pages.forEach((page, i) => {
+    const hasError =
+      page.querySelector('.workspace-box[data-feedback="error"]') !== null ||
+      page.querySelector(".is-empty-panic") !== null;
+    if (hasError) dots[i]?.setAttribute("data-has-error", "true");
+    else dots[i]?.removeAttribute("data-has-error");
+  });
 }
 
 /**
@@ -583,6 +610,8 @@ function renderWorkspacePagerDots(pageCount) {
     if (i === 0) dot.setAttribute("data-state", "active");
     DOM.workspaceDots.appendChild(dot);
   }
+
+  updatePagerErrorDots();
 }
 
 /**

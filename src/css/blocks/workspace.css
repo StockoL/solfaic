@@ -89,6 +89,16 @@
   background-color: var(--color-action-primary);
 }
 
+/*
+ * A ring rather than swapping the fill colour, so it stays visible
+ * whether or not the same dot also happens to be data-state="active" —
+ * an error can be on the page you're currently looking at, or on a
+ * different one, and both need to read clearly.
+ */
+.workspace-pager__dot[data-has-error="true"] {
+  box-shadow: 0 0 0 2px var(--color-status-danger);
+}
+
 /* --- Box --- */
 
 .workspace-box {
