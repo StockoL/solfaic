@@ -7,20 +7,6 @@
   border-block-end: 1px solid var(--color-border-subtle);
 }
 
-.practice-header__back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3xs);
-  color: var(--color-text-muted);
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.practice-header__back:hover,
-.practice-header__back:focus-visible {
-  color: var(--color-action-primary);
-}
-
 .streak-dot {
   width: 0.75rem;
   height: 0.75rem;
@@ -77,10 +63,18 @@
   font-size: var(--size-step--1);
 }
 
-.action-panel {
+/*
+ * Back, Play, and Submit share one row (wireframe order) between the
+ * workspace grid and the reel, rather than Back living in the header and
+ * Play/Submit scattered above/below the reel separately.
+ */
+.practice-actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
-  padding-block-start: var(--space-s);
+  gap: var(--space-s);
+  padding-block: var(--space-s);
 }
 
 /*

@@ -72,23 +72,6 @@
       </header>
 
       <main id="main-content" class="practice-main flow">
-        <div class="playback-panel cluster">
-          <div class="playback-panel__replay-wrap">
-            <button id="btn-replay" class="button" data-variant="primary">
-              🔊 Play
-            </button>
-            <div
-              id="ui-countdown-indicator"
-              class="countdown-indicator"
-              data-state="hidden"
-              role="status"
-              aria-live="polite"
-              aria-atomic="true"
-            ></div>
-          </div>
-          <p id="ui-plays-remaining" class="plays-remaining" role="status"></p>
-        </div>
-
         <!--
           WORKSPACE: one box per beat (tick), not per bar — a 4/4 exercise
           needs 4 boxes per bar, so higher levels (up to 8 bars x 4 ticks)
@@ -133,6 +116,33 @@
         </section>
 
         <!--
+          PRACTICE ACTIONS: Back, Play, Submit share one row (wireframe
+          order), sitting between the workspace grid and the reel rather
+          than scattered above/below both.
+        -->
+        <div class="practice-actions">
+          <a href="classroom.html" class="button">
+            <span aria-hidden="true">←</span> Classroom
+          </a>
+          <div class="playback-panel__replay-wrap">
+            <button id="btn-replay" class="button" data-variant="primary">
+              🔊 Play
+            </button>
+            <div
+              id="ui-countdown-indicator"
+              class="countdown-indicator"
+              data-state="hidden"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            ></div>
+          </div>
+          <button id="btn-submit" class="button" data-variant="primary">
+            Submit Sequence
+          </button>
+        </div>
+
+        <!--
           PRACTICE REEL: horizontal motif selector. Cards animate on/off
           viewport (rolodex-style, Flair phase) when they exceed the visible
           width. Prev/Next buttons exist for keyboard/switch-access users who
@@ -160,12 +170,6 @@
             <span aria-hidden="true">›</span>
           </button>
         </section>
-
-        <div class="action-panel">
-          <button id="btn-submit" class="button" data-variant="primary">
-            Submit Sequence
-          </button>
-        </div>
       </main>
     </div>
 
