@@ -33,6 +33,7 @@ import {
   unlockUI,
   triggerCelebrationModal,
   triggerIncompleteBoardFeedback,
+  triggerWrongAnswerShake,
   showStartingNoteModal,
   initialiseCoreUI,
   closeVignette,
@@ -119,13 +120,28 @@ export async function enterPitchPhase() {
 }
 
 /**
+ * The positions a validation pass marked wrong. Both phases' slot-state
+ * arrays use the same "error" marker and are both positional, so one
+ * helper covers rhythm ticks and pitch syllables alike — only the meaning
+ * of the index differs (see triggerWrongAnswerShake in core.js).
+ */
+function findErrorIndices(slotStates) {
+  const indices = [];
+  slotStates.forEach((state, index) => {
+    if (state === "error") indices.push(index);
+  });
+  return indices;
+}
+
+/**
  * Shared failure tail for both phases' submit handling — wipes the streak,
  * then either shows the correct answer once plays run out (applying it via
  * `applyCorrectAnswer`, phase-specific) before restarting the level, or
  * unlocks the UI for another attempt. Identical timing/DOM-marking either
  * way, only which submission array gets corrected differs.
  */
-function handleFailedAttempt(applyCorrectAnswer) {
+function handleFailedAttempt(applyCorrectAnswer, errorIndices) {
+  triggerWrongAnswerShake(errorIndices);
   sessionState.streak = 0;
   renderStreakTracker(sessionState.streak);
 
@@ -240,7 +256,7 @@ function initialiseEventListeners() {
             sessionState.slotStates = Array(result.flatTarget.length).fill(
               "idle",
             );
-          });
+          }, findErrorIndices(result.newSlotStates));
         }
       } else {
         // PITCH phase
@@ -269,7 +285,7 @@ function initialiseEventListeners() {
             const target = sessionState.targetPitchLine.pitches;
             sessionState.pitchSubmission = [...target];
             sessionState.pitchSlotStates = Array(target.length).fill("idle");
-          });
+          }, findErrorIndices(result.newPitchSlotStates));
         }
       }
     });

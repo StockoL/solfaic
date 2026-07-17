@@ -45,6 +45,7 @@ export const DOM = {
   vignetteReel: document.getElementById("vignette-reel"),
   startingNoteModal: document.getElementById("modal-starting-note"),
   startingNoteSyllable: document.getElementById("ui-starting-note-syllable"),
+  tryAgainModal: document.getElementById("modal-try-again"),
 };
 
 const TICKS_PER_PAGE = 16;
@@ -261,6 +262,47 @@ export function triggerIncompleteBoardFeedback() {
 }
 
 /**
+ * The wrong-answer counterpart to triggerIncompleteBoardFeedback above:
+ * shakes ONLY the slots the student actually got wrong, rather than every
+ * bar. The two cases mean different things — "your board isn't full yet"
+ * is about the board as a whole, "these specific answers are wrong" is
+ * about individual slots — so they deliberately don't share a function.
+ *
+ * What counts as a slot is phase-dependent: a rhythm error index is a tick
+ * (one workspace box), but a pitch error index is a single syllable, and a
+ * box can hold more than one (titi is two). Shaking the whole box for a
+ * pitch error would drag a correct syllable along with the wrong one, so
+ * PITCH targets the individual cell instead.
+ */
+export function triggerWrongAnswerShake(errorIndices) {
+  if (!DOM.workspace) return;
+
+  const selectorFor = (index) =>
+    sessionState.exercisePhase === "PITCH"
+      ? `.solfege-card__cell[data-pitch-index="${index}"]`
+      : `.workspace-box[data-tick-index="${index}"]`;
+
+  const targets = errorIndices
+    .map((index) => DOM.workspace.querySelector(selectorFor(index)))
+    .filter(Boolean);
+
+  targets.forEach((el) => {
+    el.classList.remove("is-shaking");
+    // Double rAF avoids a forced synchronous reflow when re-triggering the
+    // animation, same as the beat-pulse/countdown re-trigger above.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.classList.add("is-shaking");
+      });
+    });
+  });
+
+  setTimeout(() => {
+    targets.forEach((el) => el.classList.remove("is-shaking"));
+  }, 500);
+}
+
+/**
  * Marks each pager dot with data-has-error when its page contains a wrong
  * answer (data-feedback="error", set by buildWorkspaceBox from
  * state.slotStates) or a still-empty slot (.is-empty-panic, set above) —
@@ -425,6 +467,11 @@ function renderSolfegeCard(
       cell.classList.add("is-rest");
     } else {
       const cellIndex = pitchCursor;
+      // The cell's own pitchSubmission index, exposed so a targeted shake
+      // (triggerWrongAnswerShake) can find exactly the syllables that were
+      // wrong. A box can hold several syllables (titi is two), so pitch
+      // errors can't be located by tick index the way rhythm errors can.
+      cell.setAttribute("data-pitch-index", cellIndex);
       const syllable = pitchSubmission?.[cellIndex];
       if (syllable) {
         cell.textContent = syllable;
@@ -837,6 +884,16 @@ function createCelebrationBackdrop() {
   backdrop.className = "celebration-backdrop";
   document.body.appendChild(backdrop);
   return backdrop;
+}
+
+/**
+ * First wrong submission of an exercise/phase — "Not quite!". Same wording
+ * in both phases: at this point the student just needs another listen, and
+ * naming what went wrong is the second attempt's job (showPracticeModal).
+ * The streak is deliberately untouched by this one; app.js owns that call.
+ */
+export function showTryAgainModal() {
+  DOM.tryAgainModal?.showModal();
 }
 
 export function triggerCelebrationModal(targetLevelId, startLevelCallback) {
@@ -1298,6 +1355,19 @@ export function initialiseCoreUI() {
       DOM.startingNoteModal?.close();
       document.dispatchEvent(
         new CustomEvent("action-starting-note-continue", { bubbles: true }),
+      );
+    });
+  }
+
+  // Try Again modal — same core.js-dispatches/app.js-decides split as the
+  // starting-note modal above: closing the dialog is a view concern, but
+  // unlocking the board for another attempt is the Conductor's call.
+  const tryAgainContinueBtn = document.getElementById("btn-try-again-continue");
+  if (tryAgainContinueBtn) {
+    tryAgainContinueBtn.addEventListener("click", () => {
+      DOM.tryAgainModal?.close();
+      document.dispatchEvent(
+        new CustomEvent("action-try-again-continue", { bubbles: true }),
       );
     });
   }

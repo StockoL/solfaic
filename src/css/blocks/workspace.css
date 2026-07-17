@@ -307,3 +307,16 @@
   color: var(--color-text-base);
   cursor: pointer;
 }
+
+/*
+ * A pitch error is a single wrong syllable, so the shake lands on the cell
+ * rather than the whole box the way a rhythm error's does — a box can hold
+ * two syllables (titi), and shaking the box would drag a correct one along
+ * with the wrong one. Reuses .workspace-box's own shake keyframes; the
+ * parent card's overflow: hidden clips the translate slightly at the card's
+ * outer edges, which reads fine because the syllable text sits centered
+ * with slack either side and never reaches the clip itself.
+ */
+.solfege-card__cell.is-shaking {
+  animation: workspace-box-shake var(--dur-base) var(--spring-snappy);
+}
