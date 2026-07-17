@@ -17,7 +17,7 @@
 }
 
 /*
- * Filter status pill — the Level Guides accordion above doubles as this
+ * Filter status pill — the Level Guides dropdown above doubles as this
  * table's level filter; this is the "state change is obvious" signal, both
  * visually (colour swap the instant a level is selected) and to assistive
  * tech (aria-live="polite" is set directly in the markup).

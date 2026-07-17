@@ -30,3 +30,26 @@
 .classroom.flow > * + * {
   margin-block-start: var(--space-2xl);
 }
+
+/*
+ * The level-select dropdown's currently-active guide (prose + video mount
+ * point). Only one .level-guide is unhidden at a time (see core.js) — the
+ * other two stay display:none via the native hidden attribute, which is
+ * safe here since nothing in this file gives .level-guide an unconditional
+ * display override.
+ */
+.level-guide__video {
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-surface-sunken);
+  border: 1px dashed var(--color-border-subtle);
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  font-size: var(--size-step--1);
+}
+
+.level-guide__video::before {
+  content: "Video coming soon";
+}

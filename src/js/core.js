@@ -1015,13 +1015,12 @@ export function initialiseCoreUI() {
     });
   }
 
-  // Accordion (Classroom's Level Guides) — exclusive-open (opening one
-  // closes any other), and each level doubles as a filter for the Kodály
-  // Reference Matrix table below it. This replaces what used to be a
-  // separate, entirely unwired level-picker dropdown — clicking it never
-  // touched the table, so combining the two controls into one that
-  // actually works is strictly a functionality gain, not a feature cut.
-  const accordionTriggers = document.querySelectorAll(".accordion__trigger");
+  // Level Select (Classroom's Level Guides dropdown) — selecting a level
+  // shows that level's guide content and doubles as a filter for the
+  // Kodály Reference Matrix table below it, so there's exactly one control
+  // doing both jobs instead of two separate, easy-to-desync pickers.
+  const levelSelectTrigger = document.getElementById("btn-level-dropdown");
+  const levelSelectMenu = document.getElementById("menu-level-dropdown");
   const matrixTable = document.querySelector(".curriculum-table");
   const matrixEmptyState = document.getElementById("matrix-empty-state");
   const matrixStatus = document.getElementById("matrix-filter-status");
@@ -1032,49 +1031,70 @@ export function initialiseCoreUI() {
     let visibleCount = 0;
 
     rows.forEach((row) => {
-      const matches = !levelId || row.getAttribute("data-level") === levelId;
+      const matches = row.getAttribute("data-level") === levelId;
       row.hidden = !matches;
       if (matches) visibleCount++;
     });
 
     if (matrixStatus) {
-      matrixStatus.textContent = levelId
-        ? `Showing Level ${levelId} only.`
-        : "Showing all levels.";
-      matrixStatus.setAttribute("data-filtered", levelId ? "true" : "false");
+      matrixStatus.textContent = `Showing Level ${levelId} only.`;
+      matrixStatus.setAttribute("data-filtered", "true");
     }
 
     if (matrixEmptyState) matrixEmptyState.hidden = visibleCount > 0;
     matrixTable.hidden = visibleCount === 0;
   };
 
-  accordionTriggers.forEach((trigger) => {
-    const panel = document.getElementById(
-      trigger.getAttribute("aria-controls"),
+  if (levelSelectTrigger && levelSelectMenu) {
+    const levelSelectItems = levelSelectMenu.querySelectorAll(
+      ".level-select__item",
     );
-    if (!panel) return;
 
-    trigger.addEventListener("click", () => {
-      const isOpen = trigger.getAttribute("aria-expanded") === "true";
-      const levelId = trigger.closest(".accordion")?.getAttribute("data-level");
+    const closeLevelSelect = () => {
+      levelSelectMenu.setAttribute("data-state", "closed");
+      levelSelectTrigger.setAttribute("aria-expanded", "false");
+    };
 
-      // Exclusive: collapse every other level's accordion first, so
-      // "selecting a level" always has exactly one clear answer.
-      accordionTriggers.forEach((otherTrigger) => {
-        if (otherTrigger === trigger) return;
-        const otherPanel = document.getElementById(
-          otherTrigger.getAttribute("aria-controls"),
-        );
-        otherTrigger.setAttribute("aria-expanded", "false");
-        otherPanel?.setAttribute("data-state", "closed");
-      });
-
-      trigger.setAttribute("aria-expanded", isOpen ? "false" : "true");
-      panel.setAttribute("data-state", isOpen ? "closed" : "open");
-
-      filterMatrixByLevel(isOpen ? null : levelId);
+    levelSelectTrigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = levelSelectMenu.getAttribute("data-state") === "open";
+      levelSelectMenu.setAttribute("data-state", isOpen ? "closed" : "open");
+      levelSelectTrigger.setAttribute(
+        "aria-expanded",
+        isOpen ? "false" : "true",
+      );
     });
-  });
+
+    levelSelectItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        const levelId = item.getAttribute("data-value");
+
+        levelSelectItems.forEach((i) => i.classList.remove("is-active"));
+        item.classList.add("is-active");
+
+        const labelNode = Array.from(levelSelectTrigger.childNodes).find(
+          (node) => node.nodeType === Node.TEXT_NODE,
+        );
+        if (labelNode) {
+          labelNode.textContent = `Level ${levelId} `;
+        }
+
+        document.querySelectorAll(".level-guide").forEach((guide) => {
+          guide.hidden = guide.id !== `level-guide-${levelId}`;
+        });
+
+        filterMatrixByLevel(levelId);
+        closeLevelSelect();
+      });
+    });
+
+    document.addEventListener("click", closeLevelSelect);
+
+    // Sync the table to whichever level is active by default (Level 1)
+    // instead of only filtering after the first selection.
+    const initialItem = levelSelectMenu.querySelector(".level-select__item.is-active");
+    if (initialItem) filterMatrixByLevel(initialItem.getAttribute("data-value"));
+  }
 
   // Focus Vignette (tap-and-hold a workspace box)
   const vignetteCloseBtn = document.querySelector(".vignette-overlay__close");
