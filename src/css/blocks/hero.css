@@ -217,6 +217,23 @@
 }
 
 /*
+ * Small reusable utility for forcing a line break at a specific word
+ * boundary (here, the comma in the hero title/subtitle) on wider
+ * viewports, while letting narrow viewports reflow naturally instead of
+ * squeezing a short second line. text-wrap: balance alone can't target a
+ * specific break point. Lives here since hero.css is its only consumer
+ * today; promote to utilities/ if a second consumer shows up.
+ */
+.conditional-break {
+  display: none;
+}
+@media (min-width: 30rem) {
+  .conditional-break {
+    display: block;
+  }
+}
+
+/*
  * The global p { max-width: var(--measure) } rule caps this box at 60ch —
  * fine normally, since it usually matches its container's width, but the
  * hero's widened --center-max-width (52rem) is bigger than that at body
@@ -228,4 +245,5 @@
 .hero__subtitle {
   color: var(--color-text-muted);
   margin-inline: auto;
+  text-wrap: balance;
 }
