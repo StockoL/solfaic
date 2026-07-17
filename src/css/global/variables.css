@@ -13,6 +13,9 @@
   --color-graphite: #2D2D2D;
   --color-charcoal: #545454;
   --color-amaranth-red: #D6334A;
+  --color-tangerine-deep: #B65532;
+  --color-pollen-deep: #8C7340;
+  --color-teal-deep: #5C7966;
 
   --color-surface-base: var(--color-alabaster-grey);
   --color-surface-card: var(--color-white);
@@ -20,10 +23,13 @@
   --color-border-subtle: var(--color-alabaster-grey);
   --color-text-base: var(--color-graphite);
   --color-text-muted: var(--color-charcoal);
-  --color-action-primary: var(--color-atomic-tangerine);
-  --color-action-secondary: var(--color-golden-pollen);
-  --color-status-success: var(--color-muted-teal);
+  --color-action-primary: var(--color-tangerine-deep);
+  --color-action-secondary: var(--color-pollen-deep);
+  --color-status-success: var(--color-teal-deep);
   --color-status-danger: var(--color-amaranth-red);
+  --color-accent-vivid-primary: var(--color-atomic-tangerine);
+  --color-accent-vivid-secondary: var(--color-golden-pollen);
+  --color-accent-vivid-tertiary: var(--color-muted-teal);
 
   /* -- TYPOGRAPHY ---------------------------------------------------------- */
   --font-family-heading: 'Galindo', system-ui, sans-serif;
