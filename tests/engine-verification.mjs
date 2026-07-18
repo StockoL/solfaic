@@ -17,6 +17,7 @@ import {
   IRREGULAR_METRE_GROUPINGS,
   PITCH_LEVEL_RULES,
   SOLFEGE_DEGREES,
+  INTERVAL_NAMES,
   allowedTonics,
 } from "../src/js/data.js";
 import {
@@ -28,6 +29,10 @@ import {
   evaluatePitchSubmission,
   getCumulativeToneset,
   getNewlyIntroducedSyllables,
+  getSemitoneDistance,
+  resolveIntervalName,
+  pickIntervalPair,
+  evaluateIntervalGuess,
 } from "../src/js/engine.js";
 import { resolveSolfegeToNote } from "../src/js/audio.js";
 
@@ -448,6 +453,82 @@ section("Melodic level-of-introduction");
     );
   });
   console.log("  L1-4 newly-introduced syllable sets check out.");
+}
+
+// ============================================================================
+// 9. Interval Detective engine logic
+// ============================================================================
+section("Interval Detective engine logic");
+{
+  assert(
+    INTERVAL_NAMES.length === 13,
+    "INTERVAL_NAMES covers 0-12 semitones (13 entries)",
+  );
+  const knownDistances = [
+    [0, "Unison"],
+    [4, "Major 3rd"],
+    [7, "Perfect 5th"],
+    [12, "Octave"],
+  ];
+  knownDistances.forEach(([semitones, expected]) => {
+    assert(
+      resolveIntervalName(semitones) === expected,
+      `resolveIntervalName(${semitones}) === "${expected}"`,
+    );
+  });
+  assert(
+    getSemitoneDistance("do", "so") === 7 &&
+      getSemitoneDistance("so", "do") === 7,
+    "getSemitoneDistance is order-independent (do/so === so/do === 7)",
+  );
+
+  const INTERVAL_TRIALS = 200;
+  [1, 2, 3, 4].forEach((levelId) => {
+    const toneset = getCumulativeToneset(levelId);
+    let sawAscending = false;
+    let sawDescending = false;
+
+    for (let trial = 0; trial < INTERVAL_TRIALS; trial++) {
+      const pair = pickIntervalPair(levelId);
+      assert(
+        toneset.includes(pair.syllableA) && toneset.includes(pair.syllableB),
+        `L${levelId}: both syllables ("${pair.syllableA}", "${pair.syllableB}") are in the cumulative toneset`,
+      );
+      assert(
+        pair.syllableA !== pair.syllableB,
+        `L${levelId}: pair is two distinct syllables`,
+      );
+      assert(
+        pair.semitones >= 0 &&
+          pair.semitones <= 12 &&
+          pair.intervalName === resolveIntervalName(pair.semitones),
+        `L${levelId}: semitones (${pair.semitones}) resolves to a valid interval name ("${pair.intervalName}")`,
+      );
+      assert(
+        evaluateIntervalGuess([pair.syllableA, pair.syllableB], pair) &&
+          evaluateIntervalGuess([pair.syllableB, pair.syllableA], pair),
+        `L${levelId}: evaluateIntervalGuess accepts the correct pair in either click order`,
+      );
+      if (pair.ascending) sawAscending = true;
+      else sawDescending = true;
+    }
+
+    assert(
+      sawAscending && sawDescending,
+      `L${levelId}: both ascending and descending pairs occur across ${INTERVAL_TRIALS} trials`,
+    );
+    console.log(`  L${levelId}: ${INTERVAL_TRIALS} trials, both directions seen.`);
+  });
+
+  const target = { syllableA: "do", syllableB: "mi" };
+  assert(
+    evaluateIntervalGuess(["do", "fa"], target) === false,
+    "evaluateIntervalGuess rejects a wrong syllable",
+  );
+  assert(
+    evaluateIntervalGuess(["do"], target) === false,
+    "evaluateIntervalGuess rejects a single-syllable guess",
+  );
 }
 
 // ============================================================================

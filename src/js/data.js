@@ -627,6 +627,28 @@ export const SOLFEGE_DEGREES = {
 };
 
 /**
+ * Standard interval name by semitone distance (0-12) — index IS the
+ * distance, so a lookup is just `INTERVAL_NAMES[semitones]`. Reuses
+ * SOLFEGE_DEGREES' existing offsets rather than needing separate interval
+ * curriculum data; Interval Detective is the sole consumer.
+ */
+export const INTERVAL_NAMES = [
+  "Unison",
+  "Minor 2nd",
+  "Major 2nd",
+  "Minor 3rd",
+  "Major 3rd",
+  "Perfect 4th",
+  "Tritone",
+  "Perfect 5th",
+  "Minor 6th",
+  "Major 6th",
+  "Minor 7th",
+  "Major 7th",
+  "Octave",
+];
+
+/**
  * Tonic pool an exercise's movable "do" is randomly chosen from — a modest
  * mid-range band (not specified numerically in the design doc) so Level 1-4
  * material, which ranges as low as "so" below the tonic and as high as

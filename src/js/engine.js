@@ -6,6 +6,8 @@ import {
   IRREGULAR_METRE_GROUPINGS,
   PITCH_LEVEL_RULES,
   PITCH_SYNTAX_DICTIONARY,
+  SOLFEGE_DEGREES,
+  INTERVAL_NAMES,
   allowedTonics,
 } from "./data.js";
 
@@ -537,4 +539,58 @@ export function getNewlyIntroducedSyllables(levelId) {
   const current = getCumulativeToneset(levelId);
   const previous = getCumulativeToneset(levelId - 1);
   return current.filter((syllable) => !previous.includes(syllable));
+}
+
+/**
+ * Interval Detective — engine logic. Picks two distinct syllables from a
+ * level's cumulative toneset, orders them into an ascending-or-descending
+ * pair, and names the interval between them.
+ */
+export function getSemitoneDistance(syllableA, syllableB) {
+  return Math.abs(SOLFEGE_DEGREES[syllableA] - SOLFEGE_DEGREES[syllableB]);
+}
+
+export function resolveIntervalName(semitones) {
+  return INTERVAL_NAMES[semitones] ?? null;
+}
+
+export function pickIntervalPair(levelId) {
+  const toneset = getCumulativeToneset(levelId);
+
+  const indexA = Math.floor(Math.random() * toneset.length);
+  let indexB = Math.floor(Math.random() * (toneset.length - 1));
+  if (indexB >= indexA) indexB++;
+
+  const [lower, higher] =
+    SOLFEGE_DEGREES[toneset[indexA]] <= SOLFEGE_DEGREES[toneset[indexB]]
+      ? [toneset[indexA], toneset[indexB]]
+      : [toneset[indexB], toneset[indexA]];
+
+  const ascending = Math.random() < 0.5;
+  const [syllableA, syllableB] = ascending ? [lower, higher] : [higher, lower];
+  const semitones = getSemitoneDistance(syllableA, syllableB);
+
+  return {
+    syllableA,
+    syllableB,
+    ascending,
+    semitones,
+    intervalName: resolveIntervalName(semitones),
+  };
+}
+
+/**
+ * Order-independent: the student names the two syllables they heard, not
+ * which one came first — direction is confirmed separately by ear, not by
+ * the answer grid (the existing colored solfège circles have no inherent
+ * ascending/descending affordance).
+ */
+export function evaluateIntervalGuess(guessedPair, targetPair) {
+  if (guessedPair.length !== 2) return false;
+  const guessed = new Set(guessedPair);
+  return (
+    guessed.size === 2 &&
+    guessed.has(targetPair.syllableA) &&
+    guessed.has(targetPair.syllableB)
+  );
 }
