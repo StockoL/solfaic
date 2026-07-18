@@ -42,6 +42,7 @@ import {
   closeVignette,
 } from "./core.js";
 import { AudioEngine } from "./audio.js";
+import { initialiseClassroomPanels } from "./classroom.js";
 
 /**
  * Bootstraps a new round. Generates data, clears previous UI elements, and requests a render.
@@ -508,6 +509,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // level-select, compliance modals). Everything below it is the Practice
   // Room engine itself, which only has DOM to attach to on practice.html.
   initialiseCoreUI();
+  initialiseClassroomPanels();
 
   if (DOM.workspace) {
     initialiseEventListeners();

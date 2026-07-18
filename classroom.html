@@ -252,6 +252,41 @@
         </p>
       </section>
 
+      <!--
+        Presentation, Rhythm Workshop, Melodic Workshop, Example, and
+        Interval Detective — rendered entirely by classroom.js in response
+        to the classroom-level-changed event core.js's level dropdown
+        dispatches. One root per level's content, not one section repeated
+        per level, since these are data-driven off data.js/engine.js rather
+        than hand-authored prose like the Level Guides above.
+      -->
+      <section
+        class="classroom__panels flow"
+        id="classroom-panels-root"
+        aria-label="Level content"
+      >
+        <div class="classroom-panel" id="panel-presentation">
+          <h2>Presentation</h2>
+          <div id="presentation-content"></div>
+        </div>
+        <div class="classroom-panel" id="panel-rhythm-workshop">
+          <h2>Rhythm Workshop</h2>
+          <div id="rhythm-workshop-content"></div>
+        </div>
+        <div class="classroom-panel" id="panel-melodic-workshop">
+          <h2>Melodic Workshop</h2>
+          <div id="melodic-workshop-content"></div>
+        </div>
+        <div class="classroom-panel" id="panel-example">
+          <h2>Example</h2>
+          <div id="example-content"></div>
+        </div>
+        <div class="classroom-panel" id="panel-interval-detective">
+          <h2>Interval Detective</h2>
+          <div id="interval-detective-content"></div>
+        </div>
+      </section>
+
       <section class="classroom__matrix flow" aria-labelledby="matrix-heading">
         <h2 id="matrix-heading">Kodály Reference Matrix</h2>
 

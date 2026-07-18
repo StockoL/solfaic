@@ -53,3 +53,31 @@
 .level-guide__video::before {
   content: "Video coming soon";
 }
+
+/*
+ * The five level-driven panels (Presentation, both Workshops, Example,
+ * Interval Detective) stack much more densely than the single Level Guide
+ * block above them, so — unlike .level-guide, which has no box styling of
+ * its own — each gets a plain top-border separator to read as distinct
+ * sections rather than one long undifferentiated block of headings.
+ */
+.classroom-panel {
+  padding-block-start: var(--space-l);
+  border-block-start: 1px solid var(--color-border-subtle);
+}
+
+.classroom-panel:first-child {
+  padding-block-start: 0;
+  border-block-start: none;
+}
+
+.panel-unavailable {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2xs);
+  padding: var(--space-m);
+  border: 1px dashed var(--color-border-subtle);
+  border-radius: 8px;
+  color: var(--color-text-muted);
+}
