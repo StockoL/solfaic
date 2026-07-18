@@ -4,21 +4,32 @@
 
 /*
  * One box per beat (tick), not per bar — see practice.html's workspace
- * comment. Back on the Grid composition (not bespoke fixed-size Block
- * CSS) so the workspace fills the available space like everything else
- * in the app, rather than rendering a small fixed-size island regardless
- * of viewport. --grid-placement is Grid's own exposed custom property,
- * set per-render by renderWorkspace() in core.js to a multiple of the
- * exercise's ticksPerBar (packing whole bars per row, up to ~4 boxes'
- * worth) so every row is still exactly N complete bars for every metre —
- * e.g. 2/4 packs 2 bars per row (4 boxes, matching 4/4's row width)
- * rather than rendering a much narrower row than every other metre.
- * --grid-min-item-size disables Grid's 15rem default floor, which would
- * otherwise force horizontal overflow at these row-width/column-count
- * combinations on narrow viewports.
+ * comment. --grid-placement is set per-render by renderWorkspace() in
+ * core.js to a multiple of the exercise's ticksPerBar (packing whole bars
+ * per row, up to ~4 boxes' worth) so every row is still exactly N complete
+ * bars for every metre.
+ *
+ * Column tracks are a fixed size computed from a 4-column reference,
+ * NOT the Grid composition's default 1fr (which divides the row's full
+ * width evenly by however many columns actually exist). Those aren't the
+ * same thing: 3/4 only fits 3 boxes per row without splitting a bar, and
+ * under 1fr that meant each of those 3 columns was wider than every other
+ * metre's 4 columns — which .workspace-card--rhythm's aspect-ratio (4/1)
+ * turns directly into taller cards. Compounded across every row of a
+ * multi-bar phrase, 3/4 exercises rendered dramatically taller than every
+ * other metre and forced far more scrolling than the content warranted.
+ * Sizing every column against a constant 4-box reference instead keeps
+ * box size identical across all metres — 2/4, 4/4, and 6/8 already land
+ * on 4 columns so this is a no-op for them; 3/4's row is simply narrower
+ * (3 reference-sized boxes instead of 4), centred via justify-content
+ * rather than stretched to fill the row.
  */
 .workspace-grid {
-  --grid-min-item-size: 1px;
+  grid-template-columns: repeat(
+    var(--grid-placement, 4),
+    calc((100% - 3 * var(--gutter, 1rem)) / 4)
+  );
+  justify-content: center;
 }
 
 /*
