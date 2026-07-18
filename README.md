@@ -282,43 +282,43 @@ Each exercise is dictated once and answered in two passes against the same audio
 
 The headline addition in V2. Where V1 tested rhythm alone, every exercise is now dictated once and answered twice: the student identifies the rhythm first, and only once that's confirmed correct does the practice reel switch to solfège syllables, layered over the same audio the rhythm was drawn from — not a second, different exercise. Each phase carries its own independent play budget, and a dedicated "Starting Note" cue sounds at the transition, giving the student a stable reference pitch before pitch identification begins.
 
-![Screenshot]()
+![The Starting Note modal appearing at the rhythm-to-pitch transition, naming the resolved tonic before the solfège phase begins](./docs/screenshots/v2_two_phase_starting_note.png)
 
 ### Colour-Coded Solfège
 
 Each solfège syllable renders as its own distinctly-coloured circular card — a real convention in colour-coded solfège teaching, not a decorative choice. Several of the seven colours deliberately reuse the same tokens already driving the app's primary buttons and badges, so the palette reinforces the app's existing visual identity rather than introducing a second, disconnected one.
 
-![Screenshot]()
+![The solfège reel during the pitch phase, showing mi, so, and la each rendered in their own distinct, verified-accessible colour](./docs/screenshots/v2_colour_coded_solfege.png)
 
 ### Escalating Diagnostic Feedback
 
 V1 offered a single tier of feedback — correct or incorrect. V2 escalates: a first wrong submission shakes only the specific incorrect elements (not the whole board) and prompts a retry without touching the streak. A second wrong submission on the same answer triggers targeted remediation — the correct rhythm shown directly for a rhythm mistake, or, for a pitch mistake, both notes of the actual interval that needs practice, not just the wrong note in isolation.
 
-![Screenshot]()
+![The first-tier "Not quite!" modal shown after an incorrect submission, prompting a retry without affecting the streak](./docs/screenshots/v2_escalating_feedback.png)
 
 ### Metre-Aware, Self-Aligning Workspace
 
 The workspace grid's column count now follows the exercise's actual time signature — a 3/4 exercise renders in genuine 3-column rows rather than being forced into a 4-column layout that split bars awkwardly across row boundaries. Every rhythm card's stick-notation SVG and its paired solfège entry card are generated from the same underlying duration data, guaranteeing their columns align for any motif without hand-tuning two separate assets to match.
 
-![Screenshot]()
+![The Level 1 practice workspace grid, columns packed to the exercise's actual metre with rhythm cards paired above their solfège entry rows](./docs/screenshots/v2_workspace_metre_grid.png)
 
 ### Movable-Do Playback
 
 Generation itself never touches an absolute pitch — every exercise is produced as relative solfège tokens, and only resolved to a real, audible key at the moment of playback, via a randomly-selected tonic from a curated, comfortably-singable set. The same generated exercise structure will very rarely sound in the same key twice, training genuine relative pitch rather than memorised absolute recognition.
 
-![Screenshot]()
+![The Starting Note modal resolving the exercise's relative "so" degree to its randomly-chosen tonic for this playback](./docs/screenshots/v2_movable_do_resolution.png)
 
 ### A Rebuilt, Accessible Visual System
 
 V1 claimed an "AAA-accessible high-contrast schema" without a documented basis for it. V2's palette is built on a verified two-tier structure instead — bright tokens reserved strictly for decoration (no text ever sits on them), and separately-derived "deep" variants for anything text-bearing, each individually checked against WCAG AA's 4.5:1 contrast minimum rather than chosen by eye. Full architectural detail is in Section 4; this is the user-facing result of that work.
 
-![Screenshot]()
+![The homepage hero, showing the pushable CTA and hero particle field against the verified-accessible "deep" and decorative "vivid" palette tiers](./docs/screenshots/v2_home_hero.png)
 
 ### Three-Page Restructure
 
 V1's single-page application is now three purpose-built pages — Home, Classroom, and Practice Room — replacing one overloaded view with a deliberate learn-then-test information architecture. The Practice Room specifically strips away all navigation chrome in favour of a thin, focus-mode header, protecting concentration during an actual exercise.
 
-![Screenshot]()
+![The Classroom page, with standard nav chrome, a Level Guide, and the Kodály reference matrix filtered to Level 1's syllables](./docs/screenshots/v2_classroom_page.png)
 
 ### Dual-Purpose Rest Cards & the Anacrusis Mechanism
 
@@ -402,6 +402,8 @@ From the cloned root directory, after completing the Build Step above:
 - **Phoenix Collective (Cyrilla Rowsell) / British Kodály Academy:** Source curriculum for the melodic engine's tonesets, cadence logic, and rhythm vocabulary across all 9 modelled levels — the pedagogical backbone of the entire melodic system.
 - **Google Fonts (Galindo, Poppins):** V2's typeface pairing, replacing V1's unspecified system font stack.
 
+Licensed under the [MIT License](./LICENSE).
+
 ### AI Pair Programming & Academic Integrity
 
 Artificial Intelligence (LLMs) was utilised strictly as a "Pair Programmer" and strict linter throughout the development lifecycle to accelerate cross-browser debugging, reflow profiling, and formatting, ensuring absolute human ownership and comprehension of the overarching engine code.
@@ -419,13 +421,28 @@ Artificial Intelligence (LLMs) was utilised strictly as a "Pair Programmer" and 
 ### 📂 Repository Structural Layout
 
 ```text
-├── design-tokens.json        # Single Source of Truth — colour, type, space, motion tokens
-├── build-tokens.js           # Token compiler (Vanilla Node.js)
-├── package.json               # Build commands (npm run build:tokens)
+├── .github/workflows/         # CI — runs the Playwright suite on push
+├── LICENSE                     # MIT
+├── design-tokens.json         # Single Source of Truth — colour, type, space, motion tokens
+├── build-tokens.js            # Token compiler (Vanilla Node.js)
+├── package.json                # Build & test commands (build:tokens, verify:engine)
 │
-├── index.html                 # Home
-├── classroom.html             # Classroom — curriculum reference & level guides
-├── practice.html              # Practice Room — the dictation engine itself
+├── index.html                  # Home
+├── classroom.html              # Classroom — curriculum reference & level guides
+├── practice.html               # Practice Room — the dictation engine itself
+├── 404.html                     # GitHub Pages fallback
+│
+├── docs/
+│   ├── wireframes/             # Initial UI concepts
+│   ├── architecturemaps/       # Early Mermaid flowcharts from initial project conception
+│   ├── screenshots/             # UI captures referenced throughout this README
+│   └── animations/              # Confetti / frustration-shake source clips
+│
+├── tests/
+│   ├── engine-verification.mjs  # Node harness — pure-function engine checks (npm run verify:engine)
+│   └── solfaic.spec.js           # Playwright E2E suite
+├── playwright.config.js         # 3 browser/device projects (Desktop Chromium, Mobile Chrome, Mobile Safari)
+│
 └── src/
     ├── css/
     │   ├── index.css           # Orchestrator — declares the cascade layer order
@@ -447,6 +464,41 @@ Artificial Intelligence (LLMs) was utilised strictly as a "Pair Programmer" and 
 <p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 8. <a name="dev-log"></a>🏗️ Development Log & Engineering Phases
+
+V2's build ran in five loosely sequential phases, each building directly on the last rather than as a flat feature list:
+
+1. **Rhythm engine extension** — carrying V1's Markov-driven bar generator forward, then adding anacrusis (pickup-beat) support and irregular-metre grouping (5/8, 7/8) without a second, parallel generator.
+2. **Melodic engine & the movable-do bridge** — a curriculum-grounded pitch generation layer built onto the same architectural pattern as the rhythm engine, plus the resolution step (`audio.js`) that turns relative solfège tokens into real, keyed notes only at playback time.
+3. **CUBE CSS rebuild & the accessible palette rollout** — migrating from V1's single stylesheet to a four-layer cascade architecture, then auditing and darkening every text-bearing button/badge/status colour to a verified WCAG AA 4.5:1 minimum, while deliberately keeping the hero particle field and focus ring on the brighter, pre-darkened tokens.
+4. **Two-phase workspace & shared notation rendering** — rebuilding the practice workspace around a metre-aware grid and a single shared duration table that drives both the rhythm SVG and the paired solfège entry columns, so the two never drift out of alignment.
+5. **Test harness build-out** — a Node harness for the two pure-function engines (`tests/engine-verification.mjs`), followed by a full Playwright rewrite of the E2E suite to match the two-phase rhythm/pitch flow and the current page structure.
+
+### Notable Bugs Caught & Fixed
+
+**Tied motifs left the solfège card with no entry column in the continuation box**
+
+- A motif tied across two grid boxes (a dotted note whose sound continues into the next box) had nothing tracking which portion of its duration belonged to which box, so the solfège card's continuation box rendered with no entry column at all.
+- _Fix:_ Generalised the shared rendering system to track duration-per-box explicitly, rather than patching the one motif that exposed the gap.
+
+**Palette darkening had fallout across three derived surfaces**
+
+- Darkening `action-primary`/`action-secondary`/`status-success` for text contrast — the core accessibility fix — had knock-on effects nothing else caught automatically: the pushable CTA's `color-mix()`-derived shadow/edge layers collapsed into a muddy, low-contrast stack; the hero particle field silently inherited the new muted tone instead of staying decorative-bright; and the site-wide focus ring became noticeably less visible.
+- _Fix:_ Restored the CTA's 3D depth against the new base colour, and pointed the hero particles and focus ring explicitly at the separate `accent-vivid-*` tokens reserved for decoration, leaving the deep tokens exclusively for text-bearing surfaces.
+
+**Practice Room broke after a dead-code removal**
+
+- Removing the unused V1 onboarding-tour wizard from `core.js` took a live module dependency down with it, breaking Practice Room's boot sequence.
+- _Fix:_ Restored the load path without reintroducing the dead tour code.
+
+**Confetti and the celebration modal fought over stacking order**
+
+- The confetti burst originally rendered in front of the celebration modal instead of behind it, and the modal backdrop dimmed the confetti's own colours.
+- _Fix:_ Corrected the layering so the modal reads as sitting in front of the burst, with the confetti kept fully coloured.
+
+**The workspace grid didn't follow the exercise's actual metre**
+
+- Early workspace layouts used a fixed column count, splitting bars awkwardly across row boundaries for anything other than common time.
+- _Fix:_ Column count is now derived from the live session's `ticksPerBar`, so a 3/4 exercise renders in genuine 3-column rows.
 
 <p align="right">(<a href="#top">Back to top</a>)</p>
 
@@ -523,30 +575,9 @@ Playwright's Mobile Safari project runs the WebKit _engine_, not physical Safari
 | W3C CSS Validator           | —      | ☐ Pending                                   |
 | ESLint / JS static analysis | —      | ☐ Pending                                   |
 
-## 10. Bugs Fixed (Sprint Log, V1)
-
-**The Audio-Lock Race Condition (Caught by Playwright)**
-
-- Automated E2E testing revealed a race condition where the UI failed to lock fast enough on the first audio playback. The engine was executing `await this.init()` (booting the Tone.js hardware context) _before_ applying the `is-locked` CSS classes. On older devices, this 500ms boot-up delay allowed users to double-click the play button.
-- _Fix:_ Shifted the synchronous DOM locking sequence (`sessionState.currentState = "PLAYING"`) to execute immediately upon the click event, deferring the asynchronous hardware initialisation safely behind the UI lock.
-
-**The "Skyscraper" Card Stretching Bug**
-
-- Tall viewports forced `flex: 1` grids to excessively stretch the vertical heights of the input staves, distorting note dimensions.
-- _Fix:_ Implemented a strict row clamp (`grid-auto-rows: clamp(55px, 10vh, 85px)`) to create a hard visual ceiling.
-
-**The Collapsing SVG Window Bug**
-
-- Moving the cards to a strict flex layout collapsed the underlying programmatic vector graphic heights to 0.
-- _Fix:_ Explicitly scaled the dynamic `.svg-container` to map out 100% of parent dimensions.
-
-**ESLint Lexical/Assignment Analysis**
-
-- Identified "useless assignments" and potential scope leakage within switch statement case blocks.
-- _Fix:_ Refactored tour-step coordinate declarations for clean initialisation and wrapped switch/case logic in block-scope curly braces {} to satisfy modern ES8 block-scoping requirements.
-
-### 11. Known Issues
+### Known Issues
 
 - **Tone.js Cold-Start Lag:** On older mobile processors, the very first note triggered after initialisation can occasionally experience a ~50ms audio latency spike as the browser compiles the Web Audio API oscillator nodes. Subsequent playbacks run entirely in real-time.
+- **Anacrusis-affected exercises may under-size the submission board:** `app.js`'s `startLevel()` sizes the answer board from `bars × ticksPerBar` rather than the generated exercise's actual `totalTicks`. Levels 3 and 4 can generate an anacrusis (pickup beat), which adds one tick the board doesn't currently budget for — worth verifying directly before those levels see wider use.
 
 <p align="right">(<a href="#top">Back to top</a>)</p>
