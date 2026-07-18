@@ -232,4 +232,98 @@ export const AudioEngine = {
       );
     });
   },
+
+  /**
+   * Loops a single motif or a short solfège pattern a fixed number of
+   * times — the Classroom drill counterpart to playSequence, deliberately
+   * simpler since there's no bar/form/cadence structure or count-in to
+   * schedule, just "this one thing, repeated". `content` is either a
+   * MOTIF_LIBRARY id (rhythm drill) or an array of solfège syllables
+   * (melody drill, one quarter-note per syllable) — `tonic` is only
+   * consulted in the syllable-array case. Dispatches one
+   * "audio-ostinato-beat" CustomEvent per sounding note (mirroring
+   * playSequence's audio-pulse-beat) so a consumer can sync a beat-pulse
+   * highlight to each repetition. Returns a Promise that resolves when
+   * playback completes.
+   */
+  async playOstinato(content, repeatCount = 4, tonic = null) {
+    await this.init();
+
+    Tone.Transport.cancel();
+    Tone.Transport.stop();
+
+    const isRhythmMotif = typeof content === "string";
+    const motifData = isRhythmMotif ? MOTIF_LIBRARY[content] : null;
+
+    // One "sub-note" entry per sounding/silent slot in a single repetition.
+    const subNotes = isRhythmMotif
+      ? motifData.playback.map((subDuration, i) => ({
+          subDuration,
+          isRest: !!motifData.restMask?.[i],
+          syllable: null,
+        }))
+      : content.map((syllable) => ({
+          subDuration: "4n",
+          isRest: false,
+          syllable,
+        }));
+
+    const loopDuration = subNotes.reduce(
+      (sum, note) => sum + Tone.Time(note.subDuration).toSeconds(),
+      0,
+    );
+
+    const playableEvents = [];
+    for (let repetitionIndex = 0; repetitionIndex < repeatCount; repetitionIndex++) {
+      let subTime = repetitionIndex * loopDuration;
+
+      subNotes.forEach((note, subIndex) => {
+        if (!note.isRest) {
+          const resolvedPitch =
+            tonic && note.syllable && SOLFEGE_DEGREES[note.syllable] !== undefined
+              ? resolveSolfegeToNote(note.syllable, tonic)
+              : "G3";
+
+          playableEvents.push({
+            time: subTime,
+            duration: note.subDuration,
+            pitch: resolvedPitch,
+            repetitionIndex,
+            subIndex,
+          });
+        }
+        subTime += Tone.Time(note.subDuration).toSeconds();
+      });
+    }
+
+    const part = new Tone.Part((time, event) => {
+      const soundingDuration = Tone.Time(event.duration).toSeconds() * 0.82;
+      this.synth.triggerAttackRelease(event.pitch, soundingDuration, time);
+      Tone.Draw.schedule(() => {
+        document.dispatchEvent(
+          new CustomEvent("audio-ostinato-beat", {
+            detail: {
+              repetitionIndex: event.repetitionIndex,
+              subIndex: event.subIndex,
+              totalRepeats: repeatCount,
+            },
+          }),
+        );
+      }, time);
+    }, playableEvents);
+    part.start(0);
+
+    Tone.Transport.start();
+
+    const stopTimeInSeconds = loopDuration * repeatCount;
+    return new Promise((resolve) => {
+      setTimeout(
+        () => {
+          Tone.Transport.stop();
+          resolve();
+        },
+        stopTimeInSeconds * 1000 + 500,
+      );
+    });
+  },
 };
