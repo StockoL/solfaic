@@ -500,6 +500,11 @@ V2's build ran in five loosely sequential phases, each building directly on the 
 - Early workspace layouts used a fixed column count, splitting bars awkwardly across row boundaries for anything other than common time.
 - _Fix:_ Column count is now derived from the live session's `ticksPerBar`, so a 3/4 exercise renders in genuine 3-column rows.
 
+**3/4 exercises rendered dramatically taller than every other metre**
+
+- Fixing the row above surfaced a second-order bug: the Grid composition's default `1fr` columns divide a row's full width evenly by however many columns exist, and 3/4 only fits 3 boxes per row without splitting a bar — so those 3 columns rendered wider than every other metre's 4. Since `.workspace-card--rhythm`'s `aspect-ratio: 4/1` ties height directly to width, that extra width became extra height on every card, compounding across a multi-bar phrase into a workspace that scrolled far longer than the same content needed in any other metre.
+- _Fix:_ Column tracks now size against a constant 4-box reference instead of the row's actual column count, so box size stays identical across every metre; 3/4's row is simply narrower and centred rather than stretched.
+
 <p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 9. <a name="testing"></a> 🧪 Testing & Quality Assurance Portfolio
