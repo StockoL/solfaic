@@ -555,7 +555,7 @@ The rhythm and melodic engines are pure functions with no DOM dependency, so the
 - `resolveSolfegeToNote`: confirmed against 6 known solfège-token/tonic pairs, plus a full accounting check on `SOLFEGE_DEGREES` (14 syllables: 7 diatonic, upper `do'`, and 6 chromatic alterations).
 - **Sample phrase printout:** 5 generated rhythm+pitch phrases per level logged in full, for a human legibility check numbers alone can't provide — does a generated Level 2 phrase actually look like something a Level 2 student would plausibly be asked to sing?
 - `introducedAtLevel` **tagging:** every `MOTIF_LIBRARY` entry's level tag is checked against `MOTIF_POOLS`' own pool-of-origin, and that all 23 motifs are accounted for exactly once.
-- **Melodic level-of-introduction, 4 levels:** `getNewlyIntroducedSyllables` matches known values exactly — Level 3 introduces only `fa` (the example Classroom's own scope doc uses), Level 4 introduces none at all despite having new rhythm content, confirming the two tracks are genuinely independent.
+- **Melodic level-of-introduction, 4 levels:** `getNewlyIntroducedSyllables` matches known values exactly — Level 3 introduces only `fa`, Level 4 introduces none at all despite having new rhythm content, confirming the two tracks are genuinely independent.
 - **Interval Detective, 200 trials per level:** `pickIntervalPair` always draws two distinct syllables from the level's cumulative toneset, in both ascending and descending order across trials; `resolveIntervalName` checked against known semitone distances; `evaluateIntervalGuess` confirmed order-independent and rejecting of wrong/incomplete guesses.
 
 ### 2. Automated End-to-End Testing (Playwright)
