@@ -16,6 +16,7 @@ import { MAX_LEVEL, MOTIF_LIBRARY } from "./data.js";
 import { renderRhythmSVG } from "./rhythm-notation.js";
 import { resolveSolfegeColor, sortSyllablesAscending } from "./core.js";
 import { getPresentationContent } from "./engine.js";
+import { AudioEngine } from "./audio.js";
 
 const DOM = {
   presentationContent: document.getElementById("presentation-content"),
@@ -75,17 +76,19 @@ export function buildSolfegeDisplayPad(syllable) {
 }
 
 /**
- * Shared by Presentation's melody block and Melodic Workshop — Level 4 is
- * fully live but genuinely introduces no new syllable (its real advance is
- * new cadence targets/modes), so both sections need to say that plainly
- * rather than either rendering an empty circle row or falling back to the
- * "not yet available" state, which would misrepresent a live level as an
- * unbuilt one.
+ * Shared by Presentation and both Workshops — Level 4 is fully live but
+ * genuinely introduces no new syllable (its real advance is new cadence
+ * targets/modes), so melody sections need to say that plainly rather than
+ * either rendering an empty circle row or falling back to the "not yet
+ * available" state, which would misrepresent a live level as an unbuilt
+ * one. Rhythm's equivalent branch is currently unreachable (every live
+ * level introduces at least one new motif) but handled the same way for
+ * consistency if that ever changes.
  */
-function renderNoNewMelodyMessage(container) {
+function renderNoNewContentMessage(container, trackLabel) {
   const message = document.createElement("p");
   message.className = "text-muted";
-  message.textContent = "No new solfège this level.";
+  message.textContent = `No new ${trackLabel} this level.`;
   container.appendChild(message);
 }
 
@@ -111,7 +114,7 @@ function renderPresentationPanel(levelId) {
   melodySection.className = "flow";
   melodySection.innerHTML = "<h3>New this level: Melody</h3>";
   if (content.newSyllables.length === 0) {
-    renderNoNewMelodyMessage(melodySection);
+    renderNoNewContentMessage(melodySection, "solfège");
   } else {
     const melodyCluster = document.createElement("div");
     melodyCluster.className = "cluster";
@@ -121,6 +124,91 @@ function renderPresentationPanel(levelId) {
     melodySection.appendChild(melodyCluster);
   }
   container.appendChild(melodySection);
+}
+
+/**
+ * Beat-highlight sync for AudioEngine.playOstinato, shared by every drill
+ * in this module (Rhythm/Melodic Workshop, later Interval Detective) —
+ * mirrors core.js's renderBeatPulse/audio-pulse-beat idiom (double-rAF
+ * remove/re-add of .is-pulsing to avoid a forced-reflow flicker), but
+ * keyed off audio-ostinato-beat's subIndex against a small target array
+ * instead of a fixed .workspace-box[data-tick-index] grid. `targets[i %
+ * targets.length]` lets a single-pad drill (Workshops) point every
+ * subIndex at the same element, while a future multi-pad drill (Interval
+ * Detective's two-syllable sequence) can point each subIndex at its own.
+ */
+let activeOstinatoTargets = [];
+
+function pulseOstinatoTarget(subIndex) {
+  if (activeOstinatoTargets.length === 0) return;
+  const target = activeOstinatoTargets[subIndex % activeOstinatoTargets.length];
+  if (!target) return;
+  target.classList.remove("is-pulsing");
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      target.classList.add("is-pulsing");
+    });
+  });
+}
+
+async function playOstinatoWithPulse(content, repeatCount, tonic, targets) {
+  activeOstinatoTargets = targets;
+  try {
+    await AudioEngine.playOstinato(content, repeatCount, tonic);
+  } finally {
+    activeOstinatoTargets = [];
+  }
+}
+
+function buildPlayButton(label, onClick) {
+  const btn = document.createElement("button");
+  btn.className = "button";
+  btn.setAttribute("data-variant", "primary");
+  btn.textContent = label;
+  btn.addEventListener("click", onClick);
+  return btn;
+}
+
+function renderRhythmWorkshopPanel(levelId) {
+  const container = DOM.rhythmWorkshopContent;
+  if (!container) return;
+  container.innerHTML = "";
+
+  const { newMotifIds } = getPresentationContent(levelId);
+  if (newMotifIds.length === 0) {
+    renderNoNewContentMessage(container, "rhythm motifs");
+    return;
+  }
+
+  let selectedMotifId = newMotifIds[0];
+
+  const reel = document.createElement("div");
+  reel.className = "cluster";
+  newMotifIds.forEach((motifId, i) => {
+    const pad = buildMotifDisplayPad(motifId);
+    pad.setAttribute("role", "option");
+    pad.setAttribute("tabindex", "0");
+    pad.setAttribute("aria-selected", i === 0 ? "true" : "false");
+    if (i === 0) pad.classList.add("is-selected");
+    pad.addEventListener("click", () => {
+      reel.querySelectorAll(".motif-pad").forEach((p) => {
+        p.classList.remove("is-selected");
+        p.setAttribute("aria-selected", "false");
+      });
+      pad.classList.add("is-selected");
+      pad.setAttribute("aria-selected", "true");
+      selectedMotifId = motifId;
+    });
+    reel.appendChild(pad);
+  });
+  container.appendChild(reel);
+
+  container.appendChild(
+    buildPlayButton("Play Ostinato", () => {
+      const selectedPad = reel.querySelector(".motif-pad.is-selected");
+      playOstinatoWithPulse(selectedMotifId, 4, null, [selectedPad]);
+    }),
+  );
 }
 
 function renderAllPanels(levelId) {
@@ -136,6 +224,7 @@ function renderAllPanels(levelId) {
   }
 
   renderPresentationPanel(levelId);
+  renderRhythmWorkshopPanel(levelId);
 
   // Remaining section render functions are wired in as they're built —
   // each guards on its own container's presence like the rest of this
@@ -147,6 +236,10 @@ export function initialiseClassroomPanels() {
 
   document.addEventListener("classroom-level-changed", (e) => {
     renderAllPanels(e.detail.levelId);
+  });
+
+  document.addEventListener("audio-ostinato-beat", (e) => {
+    pulseOstinatoTarget(e.detail.subIndex);
   });
 
   // Render immediately off whichever level is active by default, rather

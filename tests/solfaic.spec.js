@@ -422,5 +422,48 @@ test.describe("Solfaic Interactive Application Suite", () => {
         await expect(badge).toContainText("Not yet available");
       }
     });
+
+    test("Rhythm Workshop plays the selected motif, not just any motif", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await expect(
+        page.locator("#rhythm-workshop-content .motif-pad"),
+      ).toHaveCount(3);
+
+      // Select the 2nd pad instead of leaving the default 1st selected, so
+      // this can't pass by coincidence if the click handler is wired to a
+      // stale/wrong element.
+      await page.locator("#rhythm-workshop-content .motif-pad").nth(1).click();
+      const selectedId = await page
+        .locator("#rhythm-workshop-content .motif-pad.is-selected")
+        .getAttribute("aria-label");
+
+      // Intercept the live singleton's playOstinato rather than checking
+      // "some call happened" — confirms the exact content/repeatCount
+      // classroom.js actually passed, not just that a click fired.
+      await page.evaluate(async () => {
+        const audio = await import("/src/js/audio.js");
+        window.__ostinatoCalls = [];
+        audio.AudioEngine.playOstinato = (content, repeatCount, tonic) => {
+          window.__ostinatoCalls.push({ content, repeatCount, tonic });
+          return Promise.resolve();
+        };
+      });
+
+      await page.locator("#rhythm-workshop-content button").click();
+
+      const calls = await page.evaluate(() => window.__ostinatoCalls);
+      expect(calls).toHaveLength(1);
+      expect(calls[0].repeatCount).toBe(4);
+      // The played content is a motif ID string whose label matches the
+      // selected pad — not the first pad, confirming selection state (not
+      // a hardcoded default) drives what actually plays.
+      const { MOTIF_LIBRARY } = await page.evaluate(async () => {
+        const data = await import("/src/js/data.js");
+        return { MOTIF_LIBRARY: data.MOTIF_LIBRARY };
+      });
+      expect(MOTIF_LIBRARY[calls[0].content].label).toBe(selectedId);
+    });
   });
 });

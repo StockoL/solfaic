@@ -68,6 +68,28 @@
   transform: scale(0.96);
 }
 
+/*
+ * Classroom Workshop drills reuse .motif-pad/.solfege-pad for a "select
+ * which one to drill" interaction rather than the practice reel's
+ * "click to insert" — .is-selected marks the current drill target, and
+ * .is-pulsing (already defined for the practice workspace, see
+ * workspace.css) reuses the exact same beat-highlight animation, synced
+ * to AudioEngine's audio-ostinato-beat event instead of audio-pulse-beat.
+ */
+.motif-pad.is-selected {
+  border-color: var(--color-action-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 30%, transparent);
+}
+
+.solfege-pad.is-selected {
+  box-shadow: 0 0 0 3px var(--color-action-primary);
+}
+
+.motif-pad.is-pulsing,
+.solfege-pad.is-pulsing {
+  animation: workspace-box-pulse var(--dur-base) var(--spring-snappy);
+}
+
 .motif-pad__svg {
   display: flex;
   align-items: center;
