@@ -594,3 +594,23 @@ export function evaluateIntervalGuess(guessedPair, targetPair) {
     guessed.has(targetPair.syllableB)
   );
 }
+
+/**
+ * Presentation's data: what's genuinely new at this level, rhythm and
+ * melody tracked independently (one can be non-empty while the other is
+ * empty -- Level 4 has new motifs but no new syllable). `videoAnchor` is
+ * pre-wired and currently unused, same pattern as V1's speculative
+ * `pitch: null` before the melodic engine existed -- nothing reads it yet.
+ */
+export function getPresentationContent(levelId) {
+  const newMotifIds = Object.keys(MOTIF_LIBRARY).filter(
+    (id) => MOTIF_LIBRARY[id].introducedAtLevel === levelId,
+  );
+
+  return {
+    levelId,
+    newMotifIds,
+    newSyllables: getNewlyIntroducedSyllables(levelId),
+    videoAnchor: null,
+  };
+}

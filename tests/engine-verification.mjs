@@ -33,6 +33,7 @@ import {
   resolveIntervalName,
   pickIntervalPair,
   evaluateIntervalGuess,
+  getPresentationContent,
 } from "../src/js/engine.js";
 import { resolveSolfegeToNote } from "../src/js/audio.js";
 
@@ -529,6 +530,36 @@ section("Interval Detective engine logic");
     evaluateIntervalGuess(["do"], target) === false,
     "evaluateIntervalGuess rejects a single-syllable guess",
   );
+}
+
+// ============================================================================
+// 10. Presentation content assembly (getPresentationContent)
+// ============================================================================
+section("Presentation content assembly");
+{
+  const l1 = getPresentationContent(1);
+  assert(
+    l1.newMotifIds.length === 3 &&
+      ["ta", "titi", "taRest"].every((id) => l1.newMotifIds.includes(id)),
+    `L1: newMotifIds is exactly [ta, titi, taRest] (got [${l1.newMotifIds.join(",")}])`,
+  );
+  assert(
+    l1.videoAnchor === null,
+    "videoAnchor is pre-wired but unused (null)",
+  );
+
+  // Level 4 is the key case: real new rhythm content, but nothing new
+  // melodically -- the two tracks must be independent, not coupled.
+  const l4 = getPresentationContent(4);
+  assert(
+    l4.newMotifIds.length > 0,
+    `L4: newMotifIds is non-empty (got [${l4.newMotifIds.join(",")}])`,
+  );
+  assert(
+    l4.newSyllables.length === 0,
+    `L4: newSyllables is empty despite newMotifIds being non-empty (got [${l4.newSyllables.join(",")}])`,
+  );
+  console.log("  L1 and L4 presentation content check out (rhythm/melody tracked independently).");
 }
 
 // ============================================================================
