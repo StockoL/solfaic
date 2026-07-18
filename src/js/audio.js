@@ -59,6 +59,7 @@ export function resolveSolfegeToNote(token, tonic) {
   const semitoneOffset = SOLFEGE_DEGREES[token];
   if (semitoneOffset === undefined) return tonic;
 
+  // AI-Attribution: Regex pattern generated to extract pitch class and octave
   const match = /^([A-G][#b]?)(\d+)$/.exec(tonic);
   if (!match) return tonic;
 
@@ -120,7 +121,12 @@ export const AudioEngine = {
    * playback slot regardless of which event it's inside.
    * Returns a Promise that resolves when playback completes.
    */
-  async playSequence(targetTimeline, activeConfig, tonic = null, pitches = null) {
+  async playSequence(
+    targetTimeline,
+    activeConfig,
+    tonic = null,
+    pitches = null,
+  ) {
     await this.init();
 
     Tone.Transport.cancel();
