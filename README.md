@@ -362,6 +362,12 @@ Two more Classroom panels turn Presentation's "here's what's new" moment into co
 
 ![Melodic Workshop, showing a selected solfège circle and its Play Ostinato button](./docs/screenshots/v2_melodic_workshop.png)
 
+### Example
+
+A fourth Classroom panel, listen-only: Play generates a fresh phrase from that level's real generator — `generateRhythmTimeline`, `countSoundingNotes`, and `generatePitchLine`, the exact same functions Practice Room's dictation engine runs — and plays it straight through with `AudioEngine.playSequence`, no workspace, no submission, no evaluation. Each click regenerates rather than replaying the same phrase, since there's no fixed target here to stay in sync with; the resolved metre and bar count render as a plain confirmation that something new actually played.
+
+![Example panel after a click, showing the resolved metre/bar count and the Play button](./docs/screenshots/v2_example_panel.png)
+
 <p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 6. <a name="deployment"></a> 🌐 Deployment Guide

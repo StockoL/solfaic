@@ -536,5 +536,44 @@ test.describe("Solfaic Interactive Application Suite", () => {
         page.locator("#melodic-workshop-content .text-muted"),
       ).toContainText("No new solfège this level");
     });
+
+    test("Example plays a freshly generated phrase and reports its metre/bars, across every playable level", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+
+      for (const level of [1, 2, 3, 4]) {
+        if (level > 1) {
+          await page.locator("#btn-level-dropdown").click();
+          await page
+            .locator(".level-select__item")
+            .filter({ hasText: `Level ${level}` })
+            .click();
+        }
+        await expect(page.locator("#example-content .text-muted")).toHaveText(
+          "Press play to hear a generated phrase.",
+        );
+        await page.locator("#example-content button").click();
+        await expect(
+          page.locator("#example-content .text-muted"),
+        ).toContainText(/\d\/\d time, \d+ bars?/);
+      }
+    });
+
+    test("Level 5's Example shows the unavailable state, no Play button", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await page.locator("#btn-level-dropdown").click();
+      await page
+        .locator(".level-select__item")
+        .filter({ hasText: "Level 5" })
+        .click();
+
+      await expect(
+        page.locator("#example-content .panel-unavailable"),
+      ).toBeVisible();
+      await expect(page.locator("#example-content button")).toHaveCount(0);
+    });
   });
 });

@@ -15,7 +15,12 @@
 import { MAX_LEVEL, MOTIF_LIBRARY, allowedTonics } from "./data.js";
 import { renderRhythmSVG } from "./rhythm-notation.js";
 import { resolveSolfegeColor, sortSyllablesAscending } from "./core.js";
-import { getPresentationContent } from "./engine.js";
+import {
+  getPresentationContent,
+  generateRhythmTimeline,
+  countSoundingNotes,
+  generatePitchLine,
+} from "./engine.js";
 import { AudioEngine } from "./audio.js";
 
 const DOM = {
@@ -261,6 +266,43 @@ function renderMelodicWorkshopPanel(levelId) {
 }
 
 /**
+ * Listen-only: generate, play, done — no workspace, no submission, no
+ * evaluation. Regenerates a fresh phrase on every click rather than
+ * replaying one fixed target, since there's nothing here that needs to
+ * stay in sync with a target across repeated presses — "another example"
+ * reads better than "the same one again". Reuses generateRhythmTimeline/
+ * generatePitchLine/AudioEngine.playSequence directly, exactly as built
+ * for Practice Room, rather than a new generator or playback path.
+ */
+function renderExamplePanel(levelId) {
+  const container = DOM.exampleContent;
+  if (!container) return;
+  container.innerHTML = "";
+
+  const metaText = document.createElement("p");
+  metaText.className = "text-muted";
+  metaText.textContent = "Press play to hear a generated phrase.";
+  container.appendChild(metaText);
+
+  container.appendChild(
+    buildPlayButton("Play Example", async () => {
+      const { timeline, config } = generateRhythmTimeline(levelId);
+      const noteCount = countSoundingNotes(timeline);
+      const pitchResult = generatePitchLine(levelId, noteCount);
+
+      metaText.textContent = `${config.metre} time, ${config.bars} bar${config.bars === 1 ? "" : "s"}`;
+
+      await AudioEngine.playSequence(
+        timeline,
+        config,
+        pitchResult.tonic,
+        pitchResult.pitches,
+      );
+    }),
+  );
+}
+
+/**
  * Drawn once per level render, not once per Play click — a tonic is the
  * exercise's singing register, and resampling it on every button press
  * inside the same level-select would be a jarring, pointless key change
@@ -287,6 +329,7 @@ function renderAllPanels(levelId) {
   renderPresentationPanel(levelId);
   renderRhythmWorkshopPanel(levelId);
   renderMelodicWorkshopPanel(levelId);
+  renderExamplePanel(levelId);
 
   // Remaining section render functions are wired in as they're built —
   // each guards on its own container's presence like the rest of this
