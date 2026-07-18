@@ -5,7 +5,7 @@
 // against yet (the melodic engine sprint is engine-layer only), so this
 // runs the generators directly, asserts the invariants that actually
 // matter, and prints a handful of generated phrases per level for a
-// human sanity check.
+// sanity check.
 //
 // Run: node tests/engine-verification.mjs
 
@@ -66,7 +66,8 @@ const QUARTER_BEATS = {
 };
 
 Object.entries(MOTIF_LIBRARY).forEach(([id, motif]) => {
-  const expectedQuarterBeats = motif.ticks * (motif.type === "compound" ? 1.5 : 1);
+  const expectedQuarterBeats =
+    motif.ticks * (motif.type === "compound" ? 1.5 : 1);
 
   if (motif.playback.length === 0) {
     // Whole-motif rests carry no playback — nothing to sum.
@@ -121,8 +122,11 @@ Object.keys(levelRules).forEach((levelKey) => {
 
     // Toneset adherence: every motif used must come from this level's pool.
     const metreType = config.metre === "6/8" ? "compound" : "simple";
-    const pool = metreType === "compound" ? rules.compoundMotifs : rules.simpleMotifs;
-    const nonAnacrusisEvents = config.hasAnacrusis ? timeline.slice(1) : timeline;
+    const pool =
+      metreType === "compound" ? rules.compoundMotifs : rules.simpleMotifs;
+    const nonAnacrusisEvents = config.hasAnacrusis
+      ? timeline.slice(1)
+      : timeline;
     nonAnacrusisEvents.forEach((event) => {
       assert(
         pool.includes(event.motifId),
@@ -171,7 +175,9 @@ Object.keys(levelRules).forEach((levelKey) => {
     );
   }
 
-  console.log(`  L${levelId}: ${RHYTHM_TRIALS} trials, anacrusis in ${anacrusisSeen}.`);
+  console.log(
+    `  L${levelId}: ${RHYTHM_TRIALS} trials, anacrusis in ${anacrusisSeen}.`,
+  );
 });
 
 // ============================================================================
@@ -195,7 +201,10 @@ Object.entries(IRREGULAR_METRE_GROUPINGS).forEach(([metre, groupingConfig]) => {
         ? null // variant is chosen internally, length may differ per pick
         : groupingConfig.default;
 
-      const totalTicks = barMotifs.reduce((sum, id) => sum + MOTIF_LIBRARY[id].ticks, 0);
+      const totalTicks = barMotifs.reduce(
+        (sum, id) => sum + MOTIF_LIBRARY[id].ticks,
+        0,
+      );
 
       if (!isContrastingBar) {
         assert(
@@ -308,8 +317,14 @@ section("evaluatePitchSubmission");
   const target = ["do", "re", "mi", "do"];
   const correct = evaluatePitchSubmission(["do", "re", "mi", "do"], target);
   const wrong = evaluatePitchSubmission(["do", "re", "fa", "do"], target);
-  assert(correct.isCorrect === true, "identical submission evaluates as correct");
-  assert(wrong.isCorrect === false, "divergent submission evaluates as incorrect");
+  assert(
+    correct.isCorrect === true,
+    "identical submission evaluates as correct",
+  );
+  assert(
+    wrong.isCorrect === false,
+    "divergent submission evaluates as incorrect",
+  );
   assert(
     wrong.newPitchSlotStates.join(",") === "success,success,error,success",
     "per-slot states pinpoint the wrong syllable",
