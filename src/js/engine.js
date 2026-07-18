@@ -500,3 +500,41 @@ export function clearPitch(currentPitchSubmission, currentPitchSlotStates, index
   newPitchSlotStates[index] = "idle";
   return { newPitchSubmission, newPitchSlotStates };
 }
+
+/**
+ * A level's full allowed toneset, cumulative through that level. Levels 2+
+ * store this directly as `toneset`; Level 1 has no single top-level toneset
+ * (it's split into two named `melodicGroups`, each a genuinely separate
+ * early-repertoire starting point), so its cumulative set is the union of
+ * both groups' tonesets instead.
+ */
+export function getCumulativeToneset(levelId) {
+  const rules = PITCH_LEVEL_RULES[levelId];
+  if (!rules) return [];
+
+  if (levelId === 1) {
+    const seen = [];
+    Object.values(rules.melodicGroups).forEach((group) => {
+      group.toneset.forEach((syllable) => {
+        if (!seen.includes(syllable)) seen.push(syllable);
+      });
+    });
+    return seen;
+  }
+
+  return [...rules.toneset];
+}
+
+/**
+ * Which syllable(s) are genuinely new at this level, vs. carried over from
+ * the level before it — the melodic-side counterpart to MOTIF_LIBRARY's
+ * introducedAtLevel tagging. Derived from getCumulativeToneset rather than
+ * hardcoded, so it can't silently drift if PITCH_LEVEL_RULES ever changes.
+ * Can be empty (Level 4 adds no new syllable — its real advance is new
+ * cadence targets/modes, not new syllable names).
+ */
+export function getNewlyIntroducedSyllables(levelId) {
+  const current = getCumulativeToneset(levelId);
+  const previous = getCumulativeToneset(levelId - 1);
+  return current.filter((syllable) => !previous.includes(syllable));
+}

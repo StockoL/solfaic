@@ -26,6 +26,8 @@ import {
   countSoundingNotes,
   generatePitchLine,
   evaluatePitchSubmission,
+  getCumulativeToneset,
+  getNewlyIntroducedSyllables,
 } from "../src/js/engine.js";
 import { resolveSolfegeToNote } from "../src/js/audio.js";
 
@@ -416,6 +418,36 @@ section("MOTIF_LIBRARY introducedAtLevel tagging");
     );
   });
   console.log(`  Checked ${motifIds.length} motifs against their pool of origin.`);
+}
+
+// ============================================================================
+// 8. Melodic level-of-introduction (getCumulativeToneset / getNewlyIntroducedSyllables)
+// ============================================================================
+section("Melodic level-of-introduction");
+{
+  const l1 = getCumulativeToneset(1);
+  assert(
+    l1.length === 5 &&
+      ["so", "mi", "la", "do", "re"].every((s) => l1.includes(s)),
+    `L1 cumulative toneset is the union of both melodicGroups (got [${l1.join(",")}])`,
+  );
+
+  const expectedNew = {
+    1: ["so", "mi", "la", "do", "re"],
+    2: ["do'"],
+    3: ["fa"],
+    4: [],
+  };
+  Object.entries(expectedNew).forEach(([levelKey, expected]) => {
+    const levelId = parseInt(levelKey, 10);
+    const actual = getNewlyIntroducedSyllables(levelId);
+    assert(
+      actual.length === expected.length &&
+        expected.every((s) => actual.includes(s)),
+      `L${levelId}: newly-introduced syllables are [${expected.join(",")}] (got [${actual.join(",")}])`,
+    );
+  });
+  console.log("  L1-4 newly-introduced syllable sets check out.");
 }
 
 // ============================================================================
