@@ -348,6 +348,12 @@ V1's own stated pedagogical principle — real motifs from curated pools, not ar
 
 Practice Room has no level switcher of its own — a session always begins at Level 1, and advancing to the next level happens only by completing three exercises correctly in a row, surfaced through the celebration modal. This is a deliberate constraint, not a missing feature: it prevents a student from skipping ahead to content they haven't actually demonstrated mastery of. Classroom's level dropdown is a separate, unrelated control — it filters which level's curriculum guide and reference-matrix rows are currently being viewed, with no effect on the active practice session at all.
 
+### Presentation
+
+Classroom's level dropdown now reveals a Presentation panel alongside the existing Level Guide and reference matrix — the explicit "here's what's new" moment for whichever level is selected, isolating only the motif(s)/syllable(s) genuinely introduced at that level rather than its full cumulative pool. Rhythm content renders as real stick notation (the same `renderRhythmSVG` the practice reel itself uses, not a separate illustration), and melody as the same colour-coded solfège circles used throughout the app, sorted low-to-high by pitch rather than left in their pedagogically-ordered (not pitch-ordered) source data. The two tracks are independent: Level 4 has new rhythm motifs but no new syllable, and Presentation says so plainly instead of rendering an empty circle row. Levels 5-9 show a clear "not yet available" state rather than a broken or hidden section, since those levels' generation algorithms don't exist yet.
+
+![Presentation panel showing Level 1's new motif cards and ascending solfège circles](./docs/screenshots/v2_presentation_panel.png)
+
 <p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 6. <a name="deployment"></a> 🌐 Deployment Guide

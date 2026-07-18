@@ -14,7 +14,8 @@
 
 import { MAX_LEVEL, MOTIF_LIBRARY } from "./data.js";
 import { renderRhythmSVG } from "./rhythm-notation.js";
-import { resolveSolfegeColor } from "./core.js";
+import { resolveSolfegeColor, sortSyllablesAscending } from "./core.js";
+import { getPresentationContent } from "./engine.js";
 
 const DOM = {
   presentationContent: document.getElementById("presentation-content"),
@@ -73,6 +74,55 @@ export function buildSolfegeDisplayPad(syllable) {
   return pad;
 }
 
+/**
+ * Shared by Presentation's melody block and Melodic Workshop — Level 4 is
+ * fully live but genuinely introduces no new syllable (its real advance is
+ * new cadence targets/modes), so both sections need to say that plainly
+ * rather than either rendering an empty circle row or falling back to the
+ * "not yet available" state, which would misrepresent a live level as an
+ * unbuilt one.
+ */
+function renderNoNewMelodyMessage(container) {
+  const message = document.createElement("p");
+  message.className = "text-muted";
+  message.textContent = "No new solfège this level.";
+  container.appendChild(message);
+}
+
+function renderPresentationPanel(levelId) {
+  const container = DOM.presentationContent;
+  if (!container) return;
+  container.innerHTML = "";
+
+  const content = getPresentationContent(levelId);
+
+  const rhythmSection = document.createElement("div");
+  rhythmSection.className = "flow";
+  rhythmSection.innerHTML = "<h3>New this level: Rhythm</h3>";
+  const rhythmCluster = document.createElement("div");
+  rhythmCluster.className = "cluster";
+  content.newMotifIds.forEach((motifId) => {
+    rhythmCluster.appendChild(buildMotifDisplayPad(motifId));
+  });
+  rhythmSection.appendChild(rhythmCluster);
+  container.appendChild(rhythmSection);
+
+  const melodySection = document.createElement("div");
+  melodySection.className = "flow";
+  melodySection.innerHTML = "<h3>New this level: Melody</h3>";
+  if (content.newSyllables.length === 0) {
+    renderNoNewMelodyMessage(melodySection);
+  } else {
+    const melodyCluster = document.createElement("div");
+    melodyCluster.className = "cluster";
+    sortSyllablesAscending(content.newSyllables).forEach((syllable) => {
+      melodyCluster.appendChild(buildSolfegeDisplayPad(syllable));
+    });
+    melodySection.appendChild(melodyCluster);
+  }
+  container.appendChild(melodySection);
+}
+
 function renderAllPanels(levelId) {
   const isAvailable = levelId <= MAX_LEVEL;
 
@@ -85,9 +135,11 @@ function renderAllPanels(levelId) {
     return;
   }
 
-  // Individual section render functions are wired in as they're built —
+  renderPresentationPanel(levelId);
+
+  // Remaining section render functions are wired in as they're built —
   // each guards on its own container's presence like the rest of this
-  // module, so this stays a no-op list until then.
+  // module.
 }
 
 export function initialiseClassroomPanels() {

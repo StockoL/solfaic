@@ -361,4 +361,66 @@ test.describe("Solfaic Interactive Application Suite", () => {
       expect(Number(gridPlacement)).toBe(expectedPlacement);
     });
   });
+
+  test.describe("9. Classroom Level Panels", () => {
+    test("Presentation shows Level 1's 3 new motifs and 5 new syllables as real notation/colour circles", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await expect(
+        page.locator("#presentation-content .motif-pad"),
+      ).toHaveCount(3);
+      await expect(
+        page.locator("#presentation-content .solfege-pad"),
+      ).toHaveCount(5);
+      // Real notation, not placeholder boxes — each motif card renders an
+      // actual inline SVG via renderRhythmSVG.
+      const svgCount = await page
+        .locator("#presentation-content .motif-pad svg")
+        .count();
+      expect(svgCount).toBe(3);
+    });
+
+    test("Presentation shows the 'no new solfège' message at Level 4, not empty circles or the unavailable badge", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await page.locator("#btn-level-dropdown").click();
+      await page
+        .locator(".level-select__item")
+        .filter({ hasText: "Level 4" })
+        .click();
+
+      // Rhythm still has real new content at Level 4.
+      expect(
+        await page.locator("#presentation-content .motif-pad").count(),
+      ).toBeGreaterThan(0);
+      await expect(
+        page.locator("#presentation-content .solfege-pad"),
+      ).toHaveCount(0);
+      await expect(
+        page.locator("#presentation-content .text-muted"),
+      ).toContainText("No new solfège this level");
+      await expect(
+        page.locator("#panel-presentation .panel-unavailable"),
+      ).toHaveCount(0);
+    });
+
+    test("Level 5 shows the shared 'not yet available' state across all five panels", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await page.locator("#btn-level-dropdown").click();
+      await page
+        .locator(".level-select__item")
+        .filter({ hasText: "Level 5" })
+        .click();
+
+      await expect(page.locator(".panel-unavailable")).toHaveCount(5);
+      const badges = page.locator(".panel-unavailable .badge");
+      for (const badge of await badges.all()) {
+        await expect(badge).toContainText("Not yet available");
+      }
+    });
+  });
 });
