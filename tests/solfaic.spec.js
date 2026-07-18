@@ -599,5 +599,105 @@ test.describe("Solfaic Interactive Application Suite", () => {
       await expect(secondPad).toHaveAttribute("aria-pressed", "true");
       await expect(secondPad).toHaveClass(/is-selected/);
     });
+
+    test("Interval Detective plays the actual target pair and names the interval on a correct guess", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await expect(
+        page.locator("#interval-detective-content .solfege-pad"),
+      ).toHaveCount(5); // Level 1's cumulative toneset: so, mi, la, do, re
+
+      await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const audio = await import("/src/js/audio.js");
+        // @ts-ignore -- test-only global bridging the page's callback back to the Node/Playwright side
+        window.__ostinatoCalls = [];
+        audio.AudioEngine.playOstinato = (
+          /** @type {any} */ content,
+          /** @type {any} */ repeatCount,
+          /** @type {any} */ tonic,
+        ) => {
+          // @ts-ignore
+          window.__ostinatoCalls.push({ content, repeatCount, tonic });
+          return Promise.resolve();
+        };
+      });
+
+      await page
+        .locator("#interval-detective-content")
+        .getByRole("button", { name: "Play Interval" })
+        .click();
+
+      // @ts-ignore -- __ostinatoCalls is a test-only global set above
+      const calls = await page.evaluate(() => window.__ostinatoCalls);
+      expect(calls).toHaveLength(1);
+      expect(calls[0].repeatCount).toBe(1);
+      const [syllableA, syllableB] = calls[0].content;
+      expect(syllableA).not.toBe(syllableB);
+
+      // Click exactly the played pair -- confirms both that a correct
+      // guess is recognised AND that the interval name in the feedback
+      // corresponds to the ACTUAL pair that played, not a hardcoded string.
+      await page
+        .locator(`#interval-detective-content .solfege-pad[data-syllable="${syllableA}"]`)
+        .click();
+      await page
+        .locator(`#interval-detective-content .solfege-pad[data-syllable="${syllableB}"]`)
+        .click();
+
+      const feedback = page.locator("#interval-detective-content .text-muted");
+      await expect(feedback).toContainText("Correct!");
+      await expect(feedback).toContainText(syllableA);
+      await expect(feedback).toContainText(syllableB);
+      await expect(
+        page.locator(
+          `#interval-detective-content .solfege-pad[data-syllable="${syllableA}"]`,
+        ),
+      ).toHaveClass(/is-correct/);
+    });
+
+    test("Interval Detective names what to practise on a wrong guess, without crashing the flow", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await page
+        .locator("#interval-detective-content")
+        .getByRole("button", { name: "Play Interval" })
+        .click();
+
+      // Click two syllables guaranteed distinct from each other -- whether
+      // or not they happen to be the real target, this exercises the
+      // "not correct" or "correct" path without needing to intercept
+      // playOstinato first; either way the flow must not crash and must
+      // always reveal an interval name.
+      const pads = page.locator("#interval-detective-content .solfege-pad");
+      await pads.nth(0).click();
+      await pads.nth(1).click();
+
+      const feedback = page.locator("#interval-detective-content .text-muted");
+      await expect(feedback).toContainText(/Correct!|Not quite\./);
+      await expect(feedback).toContainText(
+        /Unison|Minor 2nd|Major 2nd|Minor 3rd|Major 3rd|Perfect 4th|Tritone|Perfect 5th|Minor 6th|Major 6th|Minor 7th|Major 7th|Octave/,
+      );
+    });
+
+    test("Level 5's Interval Detective shows the unavailable state", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await page.locator("#btn-level-dropdown").click();
+      await page
+        .locator(".level-select__item")
+        .filter({ hasText: "Level 5" })
+        .click();
+
+      await expect(
+        page.locator("#interval-detective-content .panel-unavailable"),
+      ).toBeVisible();
+      await expect(
+        page.locator("#interval-detective-content .solfege-pad"),
+      ).toHaveCount(0);
+    });
   });
 });

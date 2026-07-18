@@ -111,6 +111,22 @@
   animation: workspace-box-pulse var(--dur-base) var(--spring-snappy);
 }
 
+/*
+ * Interval Detective's per-guess result — layered on top of .is-selected
+ * (both classes stay applied together) rather than replacing it, since
+ * the ring already shows "this is what you picked" and the outline adds
+ * "...and here's whether it was right".
+ */
+.solfege-pad.is-correct {
+  outline: 3px solid var(--color-status-success);
+  outline-offset: 2px;
+}
+
+.solfege-pad.is-incorrect {
+  outline: 3px solid var(--color-status-danger);
+  outline-offset: 2px;
+}
+
 .motif-pad__svg {
   display: flex;
   align-items: center;

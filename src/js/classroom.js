@@ -20,6 +20,9 @@ import {
   generateRhythmTimeline,
   countSoundingNotes,
   generatePitchLine,
+  getCumulativeToneset,
+  pickIntervalPair,
+  evaluateIntervalGuess,
 } from "./engine.js";
 import { AudioEngine } from "./audio.js";
 
@@ -269,12 +272,9 @@ function renderMelodicWorkshopPanel(levelId) {
   container.appendChild(
     buildPlayButton("Play Ostinato", () => {
       const selectedPad = reel.querySelector(".solfege-pad.is-selected");
-      playOstinatoWithPulse(
-        [selectedSyllable],
-        4,
-        currentLevelTonic,
-        [selectedPad],
-      );
+      playOstinatoWithPulse([selectedSyllable], 4, currentLevelTonic, [
+        selectedPad,
+      ]);
     }),
   );
 }
@@ -317,6 +317,94 @@ function renderExamplePanel(levelId) {
 }
 
 /**
+ * Interval Detective: Play draws two syllables from the level's cumulative
+ * toneset (ascending or descending) and sounds them via playOstinato; the
+ * student picks the matching pair from the same colour circles used
+ * throughout the app rather than a text answer. Auto-evaluates on the 2nd
+ * distinct pick — no separate submit button, since this is a much lighter
+ * single-question drill than Practice Room's multi-slot dictation flow.
+ * Feedback names the interval either way.
+ */
+function renderIntervalDetectivePanel(levelId) {
+  const container = DOM.intervalDetectiveContent;
+  if (!container) return;
+  container.innerHTML = "";
+
+  const toneset = sortSyllablesAscending(getCumulativeToneset(levelId));
+  let currentTarget = null;
+  let guessedSyllables = [];
+
+  const feedback = document.createElement("p");
+  feedback.className = "text-muted";
+  feedback.setAttribute("role", "status");
+  feedback.setAttribute("aria-live", "polite");
+  feedback.textContent = "Press play, then pick the two syllables you heard.";
+
+  const grid = document.createElement("div");
+  grid.className = "cluster";
+
+  function resetGuess() {
+    guessedSyllables = [];
+    grid.querySelectorAll(".solfege-pad").forEach((pad) => {
+      pad.classList.remove("is-selected", "is-correct", "is-incorrect");
+      pad.setAttribute("aria-pressed", "false");
+    });
+  }
+
+  function evaluateGuess() {
+    const isCorrect = evaluateIntervalGuess(guessedSyllables, currentTarget);
+    grid.querySelectorAll(".solfege-pad").forEach((pad) => {
+      if (guessedSyllables.includes(pad.dataset.syllable)) {
+        pad.classList.add(isCorrect ? "is-correct" : "is-incorrect");
+      }
+    });
+    const directionWord = currentTarget.ascending ? "ascending" : "descending";
+    feedback.textContent = `${isCorrect ? "Correct!" : "Not quite."} That was ${currentTarget.syllableA} → ${currentTarget.syllableB} (${directionWord}): ${currentTarget.intervalName}.`;
+  }
+
+  toneset.forEach((syllable) => {
+    const pad = buildSolfegeDisplayPad(syllable);
+    pad.disabled = false;
+    pad.setAttribute("aria-pressed", "false");
+    pad.addEventListener("click", () => {
+      if (!currentTarget) return; // nothing to guess until Play has run
+      if (guessedSyllables.length >= 2) resetGuess(); // start a fresh guess
+      if (guessedSyllables.includes(syllable)) return; // no double-counting one pad
+
+      guessedSyllables.push(syllable);
+      pad.classList.add("is-selected");
+      pad.setAttribute("aria-pressed", "true");
+
+      if (guessedSyllables.length === 2) evaluateGuess();
+    });
+    grid.appendChild(pad);
+  });
+
+  container.appendChild(feedback);
+  container.appendChild(grid);
+  container.appendChild(
+    buildPlayButton("Play Interval", () => {
+      currentTarget = pickIntervalPair(levelId);
+      resetGuess();
+      feedback.textContent = "Listen, then pick the two syllables you heard.";
+
+      const padA = grid.querySelector(
+        `.solfege-pad[data-syllable="${currentTarget.syllableA}"]`,
+      );
+      const padB = grid.querySelector(
+        `.solfege-pad[data-syllable="${currentTarget.syllableB}"]`,
+      );
+      playOstinatoWithPulse(
+        [currentTarget.syllableA, currentTarget.syllableB],
+        1,
+        currentLevelTonic,
+        [padA, padB],
+      );
+    }),
+  );
+}
+
+/**
  * Drawn once per level render, not once per Play click — a tonic is the
  * exercise's singing register, and resampling it on every button press
  * inside the same level-select would be a jarring, pointless key change
@@ -344,10 +432,7 @@ function renderAllPanels(levelId) {
   renderRhythmWorkshopPanel(levelId);
   renderMelodicWorkshopPanel(levelId);
   renderExamplePanel(levelId);
-
-  // Remaining section render functions are wired in as they're built —
-  // each guards on its own container's presence like the rest of this
-  // module.
+  renderIntervalDetectivePanel(levelId);
 }
 
 export function initialiseClassroomPanels() {
@@ -366,9 +451,7 @@ export function initialiseClassroomPanels() {
   // own dropdown setup may have already dispatched it before this
   // listener above was registered, since both run inside the same
   // DOMContentLoaded handler.
-  const initialItem = document.querySelector(
-    ".level-select__item.is-active",
-  );
+  const initialItem = document.querySelector(".level-select__item.is-active");
   if (initialItem) {
     renderAllPanels(Number(initialItem.getAttribute("data-value")));
   }

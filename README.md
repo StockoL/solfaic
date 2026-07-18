@@ -368,6 +368,12 @@ A fourth Classroom panel, listen-only: Play generates a fresh phrase from that l
 
 ![Example panel after a click, showing the resolved metre/bar count and the Play button](./docs/screenshots/v2_example_panel.png)
 
+### Interval Detective
+
+The fifth and final Classroom panel: Play draws two syllables from the level's full cumulative toneset (not just what's new that level), sounds them in a random ascending or descending order, and the student picks the matching pair from the same colour-coded solfège circles used throughout the app — no text-based answer, staying in the app's existing visual vocabulary. Guessing auto-evaluates on the second distinct pick rather than needing a separate submit button, a deliberately lighter interaction than Practice Room's multi-slot dictation flow. A new semitone-distance-to-interval-name lookup (0–12 semitones, reusing the same offsets `SOLFEGE_DEGREES` already stores for movable-do resolution) names the interval in the feedback either way — "so → mi... Minor 3rd" — turning a right/wrong signal into an actual piece of ear-training vocabulary.
+
+![Interval Detective after a guess, showing the incorrect-answer ring and the revealed interval name](./docs/screenshots/v2_interval_detective.png)
+
 <p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 6. <a name="deployment"></a> 🌐 Deployment Guide
