@@ -443,7 +443,7 @@ const SOLFEGE_COLOR_ANCHORS = [
  * hand-listed table of syllable spellings, so it doesn't need revisiting
  * when one is.
  */
-function resolveSolfegeColor(syllable) {
+export function resolveSolfegeColor(syllable) {
   const degree = (((SOLFEGE_DEGREES[syllable] ?? 0) % 12) + 12) % 12;
 
   const exact = SOLFEGE_COLOR_ANCHORS.find((a) => a.degree === degree);
@@ -1213,6 +1213,31 @@ export function initialiseCoreUI() {
     matrixTable.hidden = visibleCount === 0;
   };
 
+  // applyLevelSelection is the ONE place a level selection's content
+  // effects happen — guide toggle, empty-state, matrix filter, and telling
+  // the rest of the app (classroom.js's Presentation/Workshops/Example/
+  // Interval Detective panels) via a CustomEvent, rather than each new
+  // per-level section growing its own independent listener directly on
+  // the dropdown. Called both on click and on initial load, so every
+  // consumer sees one consistent entry point.
+  const applyLevelSelection = (levelId) => {
+    let guideMatched = false;
+    document.querySelectorAll(".level-guide").forEach((guide) => {
+      const matches = guide.id === `level-guide-${levelId}`;
+      guide.hidden = !matches;
+      if (matches) guideMatched = true;
+    });
+    if (levelGuideEmptyState) levelGuideEmptyState.hidden = guideMatched;
+
+    filterMatrixByLevel(levelId);
+
+    document.dispatchEvent(
+      new CustomEvent("classroom-level-changed", {
+        detail: { levelId: Number(levelId) },
+      }),
+    );
+  };
+
   if (levelSelectTrigger && levelSelectMenu) {
     const levelSelectItems = levelSelectMenu.querySelectorAll(
       ".level-select__item",
@@ -1247,28 +1272,19 @@ export function initialiseCoreUI() {
           labelNode.textContent = `Level ${levelId} `;
         }
 
-        let guideMatched = false;
-        document.querySelectorAll(".level-guide").forEach((guide) => {
-          const matches = guide.id === `level-guide-${levelId}`;
-          guide.hidden = !matches;
-          if (matches) guideMatched = true;
-        });
-        if (levelGuideEmptyState) levelGuideEmptyState.hidden = guideMatched;
-
-        filterMatrixByLevel(levelId);
+        applyLevelSelection(levelId);
         closeLevelSelect();
       });
     });
 
     document.addEventListener("click", closeLevelSelect);
 
-    // Sync the table to whichever level is active by default (Level 1)
-    // instead of only filtering after the first selection.
+    // Sync to whichever level is active by default (Level 1) instead of
+    // only applying selection effects after the first click.
     const initialItem = levelSelectMenu.querySelector(
       ".level-select__item.is-active",
     );
-    if (initialItem)
-      filterMatrixByLevel(initialItem.getAttribute("data-value"));
+    if (initialItem) applyLevelSelection(initialItem.getAttribute("data-value"));
   }
 
   // Focus Vignette (tap-and-hold a workspace box)
