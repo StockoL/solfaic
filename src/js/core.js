@@ -1391,6 +1391,19 @@ export function initialiseCoreUI() {
     if (document.querySelector(".celebration-overlay.is-active")) return;
     if (sessionState.currentState === "PLAYING") return;
 
+    // A focused native interactive element (button, link, form control)
+    // already has its own correct Space/Enter behaviour — this router's
+    // job is providing a global shortcut for when focus is elsewhere
+    // (e.g. resting on the workspace), not overriding whichever specific
+    // control the user has actually tabbed to. Without this guard,
+    // e.preventDefault() below fires unconditionally and silently breaks
+    // native keyboard activation for every button on every page, not just
+    // Practice Room's own Replay/Submit (which happen to be re-forwarded
+    // via .click() below and so appear to keep working regardless).
+    if (e.target.matches("button, a, input, select, textarea, [contenteditable]")) {
+      return;
+    }
+
     switch (e.code) {
       case "Space":
         e.preventDefault();

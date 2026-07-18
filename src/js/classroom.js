@@ -49,16 +49,20 @@ export function renderUnavailableState(container) {
 }
 
 /**
- * Read-only rhythm motif card — visually similar to the practice reel's
- * .motif-pad, but with no click-to-insert semantics (this is "look/listen",
- * not "answer"), so it's built directly here rather than reusing core.js's
- * private renderReelInto.
+ * Real <button> elements, not <div>s — a div with tabindex="0" gets
+ * keyboard focus but never native Enter/Space-activates its click handler
+ * the way a button does, so anything meant to be clickable needs to
+ * actually be one. Built disabled by default (Presentation's read-only
+ * use: inert, excluded from the tab order, but still exposes its
+ * aria-label to assistive tech); interactive call sites (the Workshops,
+ * Interval Detective) explicitly re-enable it.
  */
 export function buildMotifDisplayPad(motifId) {
   const motifData = MOTIF_LIBRARY[motifId];
-  const pad = document.createElement("div");
+  const pad = document.createElement("button");
+  pad.type = "button";
+  pad.disabled = true;
   pad.className = "motif-pad";
-  pad.setAttribute("role", "img");
   pad.setAttribute("aria-label", motifData.label);
   pad.dataset.motifId = motifId;
   pad.innerHTML = `<div class="motif-pad__svg">${renderRhythmSVG(motifId)}</div><span class="motif-pad__label">${motifData.label}</span>`;
@@ -66,13 +70,14 @@ export function buildMotifDisplayPad(motifId) {
 }
 
 /**
- * Read-only solfège circle — same colour lookup as the practice reel's
- * .solfege-pad, no click-to-insert semantics.
+ * Same real-<button> reasoning as buildMotifDisplayPad, same colour
+ * lookup as the practice reel's .solfege-pad.
  */
 export function buildSolfegeDisplayPad(syllable) {
-  const pad = document.createElement("div");
+  const pad = document.createElement("button");
+  pad.type = "button";
+  pad.disabled = true;
   pad.className = "solfege-pad";
-  pad.setAttribute("role", "img");
   pad.setAttribute("aria-label", syllable);
   pad.dataset.syllable = syllable;
   pad.style.setProperty("--pad-color", resolveSolfegeColor(syllable));
@@ -165,6 +170,27 @@ async function playOstinatoWithPulse(content, repeatCount, tonic, targets) {
   }
 }
 
+/**
+ * Wires a read-only display pad into a "pick one from this group" control
+ * — re-enables it, marks it a toggle button (aria-pressed rather than a
+ * hand-rolled listbox/role="option" pattern, since this is genuinely just
+ * "which one is currently pressed" among siblings sharing groupClass), and
+ * swaps the pressed state to whichever was just clicked.
+ */
+function makeSelectablePad(pad, container, groupClass, onSelect) {
+  pad.disabled = false;
+  pad.setAttribute("aria-pressed", "false");
+  pad.addEventListener("click", () => {
+    container.querySelectorAll(`.${groupClass}`).forEach((p) => {
+      p.classList.remove("is-selected");
+      p.setAttribute("aria-pressed", "false");
+    });
+    pad.classList.add("is-selected");
+    pad.setAttribute("aria-pressed", "true");
+    onSelect();
+  });
+}
+
 function buildPlayButton(label, onClick) {
   const btn = document.createElement("button");
   btn.className = "button";
@@ -191,19 +217,13 @@ function renderRhythmWorkshopPanel(levelId) {
   reel.className = "cluster";
   newMotifIds.forEach((motifId, i) => {
     const pad = buildMotifDisplayPad(motifId);
-    pad.setAttribute("role", "option");
-    pad.setAttribute("tabindex", "0");
-    pad.setAttribute("aria-selected", i === 0 ? "true" : "false");
-    if (i === 0) pad.classList.add("is-selected");
-    pad.addEventListener("click", () => {
-      reel.querySelectorAll(".motif-pad").forEach((p) => {
-        p.classList.remove("is-selected");
-        p.setAttribute("aria-selected", "false");
-      });
-      pad.classList.add("is-selected");
-      pad.setAttribute("aria-selected", "true");
+    makeSelectablePad(pad, reel, "motif-pad", () => {
       selectedMotifId = motifId;
     });
+    if (i === 0) {
+      pad.classList.add("is-selected");
+      pad.setAttribute("aria-pressed", "true");
+    }
     reel.appendChild(pad);
   });
   container.appendChild(reel);
@@ -235,19 +255,13 @@ function renderMelodicWorkshopPanel(levelId) {
   reel.className = "cluster";
   newSyllables.forEach((syllable, i) => {
     const pad = buildSolfegeDisplayPad(syllable);
-    pad.setAttribute("role", "option");
-    pad.setAttribute("tabindex", "0");
-    pad.setAttribute("aria-selected", i === 0 ? "true" : "false");
-    if (i === 0) pad.classList.add("is-selected");
-    pad.addEventListener("click", () => {
-      reel.querySelectorAll(".solfege-pad").forEach((p) => {
-        p.classList.remove("is-selected");
-        p.setAttribute("aria-selected", "false");
-      });
-      pad.classList.add("is-selected");
-      pad.setAttribute("aria-selected", "true");
+    makeSelectablePad(pad, reel, "solfege-pad", () => {
       selectedSyllable = syllable;
     });
+    if (i === 0) {
+      pad.classList.add("is-selected");
+      pad.setAttribute("aria-pressed", "true");
+    }
     reel.appendChild(pad);
   });
   container.appendChild(reel);

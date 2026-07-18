@@ -458,7 +458,10 @@ test.describe("Solfaic Interactive Application Suite", () => {
         };
       });
 
-      await page.locator("#rhythm-workshop-content button").click();
+      await page
+        .locator("#rhythm-workshop-content")
+        .getByRole("button", { name: "Play Ostinato" })
+        .click();
 
       // @ts-ignore -- __ostinatoCalls is a test-only global set above
       const calls = await page.evaluate(() => window.__ostinatoCalls);
@@ -509,7 +512,10 @@ test.describe("Solfaic Interactive Application Suite", () => {
           return Promise.resolve();
         };
       });
-      await page.locator("#melodic-workshop-content button").click();
+      await page
+        .locator("#melodic-workshop-content")
+        .getByRole("button", { name: "Play Ostinato" })
+        .click();
 
       // @ts-ignore -- __ostinatoCalls is a test-only global set above
       const calls = await page.evaluate(() => window.__ostinatoCalls);
@@ -574,6 +580,24 @@ test.describe("Solfaic Interactive Application Suite", () => {
         page.locator("#example-content .panel-unavailable"),
       ).toBeVisible();
       await expect(page.locator("#example-content button")).toHaveCount(0);
+    });
+
+    test("Workshop pads are keyboard-selectable with Space, not just clickable", async ({
+      page,
+    }) => {
+      // core.js's global keydown router (Practice Room's Space=replay/
+      // Enter=submit shortcuts) used to call e.preventDefault() on every
+      // Space/Enter press page-wide, which silently broke native
+      // button activation for any focused button anywhere, including
+      // these pads. Only caught via a real keyboard press -- a
+      // Playwright .click() bypasses the native keyboard path entirely
+      // and would pass even with the bug present.
+      await page.goto("/classroom.html");
+      const secondPad = page.locator("#rhythm-workshop-content .motif-pad").nth(1);
+      await secondPad.focus();
+      await page.keyboard.press("Space");
+      await expect(secondPad).toHaveAttribute("aria-pressed", "true");
+      await expect(secondPad).toHaveClass(/is-selected/);
     });
   });
 });

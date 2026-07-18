@@ -69,6 +69,27 @@
 }
 
 /*
+ * Both .motif-pad and .solfege-pad are real <button>s now (Classroom's
+ * Workshops/Interval Detective need genuine keyboard-operable click
+ * targets), built disabled by default for read-only display use
+ * (Presentation) — :disabled strips the pointer/hover affordances so an
+ * inert card doesn't visually invite a click that won't do anything.
+ */
+.motif-pad:disabled,
+.solfege-pad:disabled {
+  cursor: default;
+}
+
+.motif-pad:disabled:hover {
+  background-color: var(--color-surface-card);
+  border-color: var(--color-border-subtle);
+}
+
+.solfege-pad:disabled:hover {
+  filter: none;
+}
+
+/*
  * Classroom Workshop drills reuse .motif-pad/.solfege-pad for a "select
  * which one to drill" interaction rather than the practice reel's
  * "click to insert" — .is-selected marks the current drill target, and
