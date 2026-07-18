@@ -1189,6 +1189,9 @@ export function initialiseCoreUI() {
   const matrixTable = document.querySelector(".curriculum-table");
   const matrixEmptyState = document.getElementById("matrix-empty-state");
   const matrixStatus = document.getElementById("matrix-filter-status");
+  const levelGuideEmptyState = document.getElementById(
+    "level-guide-empty-state",
+  );
 
   const filterMatrixByLevel = (levelId) => {
     if (!matrixTable) return;
@@ -1244,9 +1247,13 @@ export function initialiseCoreUI() {
           labelNode.textContent = `Level ${levelId} `;
         }
 
+        let guideMatched = false;
         document.querySelectorAll(".level-guide").forEach((guide) => {
-          guide.hidden = guide.id !== `level-guide-${levelId}`;
+          const matches = guide.id === `level-guide-${levelId}`;
+          guide.hidden = !matches;
+          if (matches) guideMatched = true;
         });
+        if (levelGuideEmptyState) levelGuideEmptyState.hidden = guideMatched;
 
         filterMatrixByLevel(levelId);
         closeLevelSelect();

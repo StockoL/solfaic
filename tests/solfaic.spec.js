@@ -120,6 +120,29 @@ test.describe("Solfaic Interactive Application Suite", () => {
         "closed",
       );
     });
+
+    test("Level 4's guide is reachable, and Level 5 shows the guide's empty state", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+
+      await page.locator("#btn-level-dropdown").click();
+      await page
+        .locator(".level-select__item")
+        .filter({ hasText: "Level 4" })
+        .click();
+      await expect(page.locator("#level-guide-4")).toBeVisible();
+      await expect(page.locator("#level-guide-empty-state")).toBeHidden();
+
+      await page.locator("#btn-level-dropdown").click();
+      await page
+        .locator(".level-select__item")
+        .filter({ hasText: "Level 5" })
+        .click();
+      expect(await page.locator(".level-guide:visible").count()).toBe(0);
+      await expect(page.locator("#level-guide-empty-state")).toBeVisible();
+      await expect(page.locator("#matrix-empty-state")).toBeVisible();
+    });
   });
 
   test.describe("2. Input & Interaction Mechanics", () => {
