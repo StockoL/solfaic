@@ -5,6 +5,60 @@ const { test, expect } = require("@playwright/test");
  * SOLFAIC - Playwright End-to-End Test Suite
  */
 
+/**
+ * Rhythm/pitch generation draws from Math.random() at every step (metre,
+ * form, and each motif/syllable choice), so the exercise a test needs to
+ * solve correctly is normally unknowable from outside the page. Forcing
+ * Math.random to a stateless constant makes every draw in engine.js
+ * reproducible: re-invoking the same generator function (even via a fresh
+ * dynamic import, in a separate call from the one the app itself made on
+ * load) always replays the identical sequence of "random" choices, so it
+ * reveals the exact target the live page is already holding in
+ * sessionState. Must be registered before the page navigates, so callers
+ * re-navigate after installing it.
+ * @param {import('@playwright/test').Page} page
+ */
+async function goToPracticeWithDeterministicRandom(page) {
+  await page.addInitScript(() => {
+    Math.random = () => 0;
+  });
+  await page.goto("/practice.html");
+  await page.waitForSelector(".motif-pad");
+}
+
+/**
+ * The onset-motif labels (reel aria-labels) for the live page's actual rhythm target, Level 1.
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<string[]>}
+ */
+async function getTargetRhythmLabels(page) {
+  return page.evaluate(async () => {
+    // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+    const engine = await import("/src/js/engine.js");
+    // @ts-ignore
+    const data = await import("/src/js/data.js");
+    const { timeline } = engine.generateRhythmTimeline(1);
+    return timeline.map(
+      (/** @type {{motifId: string}} */ event) =>
+        data.MOTIF_LIBRARY[event.motifId].label,
+    );
+  });
+}
+
+/**
+ * Fills and submits the rhythm board with the actual correct answer, then waits out the scheduled phase transition.
+ * @param {import('@playwright/test').Page} page
+ */
+async function completeRhythmPhaseCorrectly(page) {
+  const labels = await getTargetRhythmLabels(page);
+  for (const label of labels) {
+    await page.locator(`.motif-pad[aria-label="${label}"]`).click();
+  }
+  await page.locator("#btn-submit").click();
+  // Evaluation render (~instant) + the 1s scheduled enterPitchPhase() call in app.js.
+  await page.waitForTimeout(1500);
+}
+
 test.describe("Solfaic Interactive Application Suite", () => {
   test.beforeEach(async ({ page }) => {
     // The interactive trainer lives on practice.html; "/" is now a marketing landing page.
@@ -157,6 +211,131 @@ test.describe("Solfaic Interactive Application Suite", () => {
 
       // Verify the UI locks down to prevent double-firing
       await expect(replayBtn).toHaveClass(/is-locked/);
+    });
+  });
+
+  test.describe("5. Two-Phase Rhythm -> Pitch Flow", () => {
+    test("A correct rhythm submission transitions the board into the solfège pitch phase", async ({
+      page,
+    }) => {
+      await goToPracticeWithDeterministicRandom(page);
+      await completeRhythmPhaseCorrectly(page);
+
+      // The Starting Note modal blocks interaction while the student
+      // previews the exercise's first pitch — the clearest signal the
+      // Conductor actually entered PITCH phase (see enterPitchPhase in app.js).
+      await expect(page.locator("#modal-starting-note")).toBeVisible();
+
+      // The reel swaps from rhythm motifs to solfège syllables.
+      await expect(page.locator(".motif-pad")).toHaveCount(0);
+      expect(await page.locator(".solfege-pad").count()).toBeGreaterThan(0);
+
+      // Confirmed rhythm boxes stay visible but become read-only — the
+      // student can still see their confirmed rhythm while working the
+      // solfège pass over the same exercise.
+      const readOnlyBoxes = page.locator('.workspace-box[data-state="readonly"]');
+      expect(await readOnlyBoxes.count()).toBeGreaterThan(0);
+    });
+  });
+
+  test.describe("6. Escalating Feedback & Remediation Modals", () => {
+    test("First wrong attempt shows Try Again; second names what to practise and reveals the answer", async ({
+      page,
+    }) => {
+      await goToPracticeWithDeterministicRandom(page);
+
+      // Under the forced seed the correct rhythm target is always the
+      // reel's first pad, repeated — so filling the board from the SECOND
+      // pad instead is a guaranteed, reproducible wrong answer.
+      const wrongPad = page.locator(".motif-pad").nth(1);
+      const placeholders = page.locator(".workspace-card.is-placeholder");
+      while ((await placeholders.count()) > 0) {
+        await wrongPad.click();
+      }
+
+      // --- First wrong submission: "Try Again", streak untouched ---
+      await page.locator("#btn-submit").click();
+      await expect(page.locator("#modal-try-again")).toBeVisible();
+      const errorBoxes = page.locator('.workspace-box[data-feedback="error"]');
+      expect(await errorBoxes.count()).toBeGreaterThan(0);
+
+      await page.locator("#btn-try-again-continue").click();
+      await expect(page.locator("#modal-try-again")).toBeHidden();
+
+      // --- Second wrong submission (same still-wrong board): Practice modal ---
+      await page.locator("#btn-submit").click();
+      await expect(page.locator("#modal-practice")).toBeVisible();
+      await expect(page.locator("#practice-title")).toContainText("practise");
+      expect(
+        await page.locator(".feedback-modal__card").count(),
+      ).toBeGreaterThan(0);
+
+      // Dismissing it paints the correct answer on the board before the
+      // exercise resets (showAnswerThenRestart in app.js). That correction
+      // runs off the dialog's `close` EVENT (see core.js's announceOnClose),
+      // which — unlike the `open` attribute's removal — the HTML spec fires
+      // as a separate queued task, not synchronously with close(). So the
+      // dialog can already report hidden before the correction has actually
+      // landed; wait for the correction marker itself instead.
+      await page.locator("#btn-practice-continue").click();
+      const correctedBoxes = page.locator(
+        '.workspace-box[data-feedback="corrected"]',
+      );
+      await expect(correctedBoxes.first()).toBeAttached();
+      expect(await correctedBoxes.count()).toBeGreaterThan(0);
+    });
+  });
+
+  test.describe("7. Solfège Card Colours", () => {
+    test("Each reachable syllable gets its own distinct reel-pad colour", async ({
+      page,
+    }) => {
+      await goToPracticeWithDeterministicRandom(page);
+      await completeRhythmPhaseCorrectly(page);
+
+      const pads = page.locator(".solfege-pad");
+      const count = await pads.count();
+      expect(count).toBeGreaterThan(0);
+
+      const colors = await pads.evaluateAll((els) =>
+        els.map((el) => el.style.getPropertyValue("--pad-color")),
+      );
+
+      // Every pad actually resolved to a colour...
+      for (const color of colors) {
+        expect(color).toBeTruthy();
+      }
+      // ...and no two syllables in the same toneset share one, so the reel
+      // reads as genuinely distinguishable rather than several shades of
+      // the same brownish tone.
+      expect(new Set(colors).size).toBe(colors.length);
+    });
+  });
+
+  test.describe("8. Metre-Aware Workspace Grid", () => {
+    test("The grid's bars-per-row packing matches the exercise's actual ticksPerBar", async ({
+      page,
+    }) => {
+      // No determinism needed here — the assertion re-derives the expected
+      // value from the SAME live config the page itself generated, so it
+      // holds for whichever metre this particular load happened to draw.
+      const gridPlacement = await page
+        .locator(".workspace-grid")
+        .first()
+        .evaluate((el) => getComputedStyle(el).getPropertyValue("--grid-placement"));
+
+      const ticksPerBar = await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const state = await import("/src/js/state.js");
+        return state.sessionState.activeConfig.ticksPerBar;
+      });
+
+      // Mirrors barsPerRow()'s own formula in core.js: as many whole bars
+      // as fit within a ~4-box-wide reference, never fewer than one.
+      const expectedBarsPerRow = Math.max(1, Math.floor(4 / ticksPerBar));
+      const expectedPlacement = expectedBarsPerRow * ticksPerBar;
+
+      expect(Number(gridPlacement)).toBe(expectedPlacement);
     });
   });
 });
