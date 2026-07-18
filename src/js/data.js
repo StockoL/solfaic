@@ -16,10 +16,16 @@
  * `restMask[i] === true` means that playback slot is silent (still consumes
  * its share of the beat, but audio.js must not trigger a note for it).
  * Undefined for every motif that has no silent subdivisions.
+ *
+ * `introducedAtLevel` is the level this specific motif first becomes
+ * available at — sourced from MOTIF_POOLS' own naming convention
+ * (simpleL1, simpleL2, ...) below, which is the authoritative source for
+ * this mapping (no separate curriculum-vocabulary doc exists in this repo).
  */
 export const MOTIF_LIBRARY = {
   // ---- Simple time ----
   ta: {
+    introducedAtLevel: 1,
     type: "simple",
     duration: "4n",
     ticks: 1,
@@ -27,6 +33,7 @@ export const MOTIF_LIBRARY = {
     playback: ["4n"],
   },
   titi: {
+    introducedAtLevel: 1,
     type: "simple",
     duration: "4n",
     ticks: 1,
@@ -34,6 +41,7 @@ export const MOTIF_LIBRARY = {
     playback: ["8n", "8n"],
   },
   taRest: {
+    introducedAtLevel: 1,
     type: "simple",
     duration: "4n",
     ticks: 1,
@@ -41,6 +49,7 @@ export const MOTIF_LIBRARY = {
     playback: [],
   },
   tikatika: {
+    introducedAtLevel: 2,
     type: "simple",
     duration: "4n",
     ticks: 1,
@@ -48,6 +57,7 @@ export const MOTIF_LIBRARY = {
     playback: ["16n", "16n", "16n", "16n"],
   },
   tikati: {
+    introducedAtLevel: 2,
     type: "simple",
     duration: "4n",
     ticks: 1,
@@ -55,6 +65,7 @@ export const MOTIF_LIBRARY = {
     playback: ["16n", "16n", "8n"],
   },
   titika: {
+    introducedAtLevel: 2,
     type: "simple",
     duration: "4n",
     ticks: 1,
@@ -62,6 +73,7 @@ export const MOTIF_LIBRARY = {
     playback: ["8n", "16n", "16n"],
   },
   too: {
+    introducedAtLevel: 2,
     type: "simple",
     duration: "2n",
     ticks: 2,
@@ -69,6 +81,7 @@ export const MOTIF_LIBRARY = {
     playback: ["2n"],
   },
   tooRest: {
+    introducedAtLevel: 2,
     type: "simple",
     duration: "2n",
     ticks: 2,
@@ -76,6 +89,7 @@ export const MOTIF_LIBRARY = {
     playback: [],
   },
   timKa: {
+    introducedAtLevel: 2,
     type: "simple",
     duration: "4n",
     ticks: 1,
@@ -83,6 +97,7 @@ export const MOTIF_LIBRARY = {
     playback: ["8n.", "16n"],
   },
   tumTi: {
+    introducedAtLevel: 2,
     type: "simple",
     duration: "2n",
     ticks: 2,
@@ -94,6 +109,7 @@ export const MOTIF_LIBRARY = {
     tieContinuation: true,
   },
   syncopaV2: {
+    introducedAtLevel: 2,
     type: "simple",
     duration: "2n",
     ticks: 2,
@@ -106,6 +122,7 @@ export const MOTIF_LIBRARY = {
     tieContinuation: true,
   },
   trioLa: {
+    introducedAtLevel: 3,
     type: "simple",
     duration: "4n",
     ticks: 1,
@@ -113,6 +130,7 @@ export const MOTIF_LIBRARY = {
     playback: ["8t", "8t", "8t"],
   },
   restTi: {
+    introducedAtLevel: 3,
     type: "simple",
     duration: "4n",
     ticks: 1,
@@ -121,6 +139,7 @@ export const MOTIF_LIBRARY = {
     restMask: [true, false],
   },
   syncopaV1: {
+    introducedAtLevel: 4,
     type: "simple",
     duration: "4n",
     ticks: 1,
@@ -128,6 +147,7 @@ export const MOTIF_LIBRARY = {
     playback: ["16n", "8n", "16n"],
   },
   restTika: {
+    introducedAtLevel: 4,
     type: "simple",
     duration: "4n",
     ticks: 1,
@@ -138,6 +158,7 @@ export const MOTIF_LIBRARY = {
 
   // ---- Compound time ----
   tum: {
+    introducedAtLevel: 2,
     type: "compound",
     duration: "4n.",
     ticks: 1,
@@ -145,6 +166,7 @@ export const MOTIF_LIBRARY = {
     playback: ["4n."],
   },
   tititi: {
+    introducedAtLevel: 2,
     type: "compound",
     duration: "4n.",
     ticks: 1,
@@ -152,6 +174,7 @@ export const MOTIF_LIBRARY = {
     playback: ["8n", "8n", "8n"],
   },
   tati: {
+    introducedAtLevel: 2,
     type: "compound",
     duration: "4n.",
     ticks: 1,
@@ -159,6 +182,7 @@ export const MOTIF_LIBRARY = {
     playback: ["4n", "8n"],
   },
   tumRest: {
+    introducedAtLevel: 2,
     type: "compound",
     duration: "4n.",
     ticks: 1,
@@ -166,6 +190,7 @@ export const MOTIF_LIBRARY = {
     playback: [],
   },
   tikaTikaTi: {
+    introducedAtLevel: 3,
     type: "compound",
     duration: "4n.",
     ticks: 1,
@@ -173,6 +198,7 @@ export const MOTIF_LIBRARY = {
     playback: ["16n", "16n", "16n", "16n", "8n"],
   },
   toom: {
+    introducedAtLevel: 3,
     type: "compound",
     duration: "2n.",
     ticks: 2,
@@ -180,6 +206,7 @@ export const MOTIF_LIBRARY = {
     playback: ["2n."],
   },
   toomRest: {
+    introducedAtLevel: 3,
     type: "compound",
     duration: "2n.",
     ticks: 2,
@@ -187,6 +214,7 @@ export const MOTIF_LIBRARY = {
     playback: [],
   },
   tiTikaTi: {
+    introducedAtLevel: 4,
     type: "compound",
     duration: "4n.",
     ticks: 1,

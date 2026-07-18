@@ -11,6 +11,7 @@
 
 import {
   MOTIF_LIBRARY,
+  MOTIF_POOLS,
   levelRules,
   CADENCE_MOTIFS,
   IRREGULAR_METRE_GROUPINGS,
@@ -381,6 +382,41 @@ Object.keys(levelRules).forEach((levelKey) => {
     );
   }
 });
+
+// ============================================================================
+// 7. MOTIF_LIBRARY introducedAtLevel tagging
+// ============================================================================
+// Every motif's introducedAtLevel must match whichever MOTIF_POOLS.simpleLN/
+// compoundLN array actually contains it — the pools are the authoritative
+// source (see the doc comment above MOTIF_LIBRARY), so this just confirms
+// the two stay in sync rather than drifting apart as motifs are added later.
+section("MOTIF_LIBRARY introducedAtLevel tagging");
+{
+  const poolLevelFor = {};
+  Object.entries(MOTIF_POOLS).forEach(([poolName, ids]) => {
+    const level = parseInt(poolName.match(/\d+$/)[0], 10);
+    ids.forEach((id) => {
+      poolLevelFor[id] = level;
+    });
+  });
+
+  const motifIds = Object.keys(MOTIF_LIBRARY);
+  assert(
+    motifIds.length === Object.keys(poolLevelFor).length,
+    `every MOTIF_LIBRARY entry (${motifIds.length}) appears in exactly one MOTIF_POOLS array (${Object.keys(poolLevelFor).length})`,
+  );
+  motifIds.forEach((id) => {
+    assert(
+      poolLevelFor[id] !== undefined,
+      `${id}: appears in some MOTIF_POOLS array`,
+    );
+    assert(
+      MOTIF_LIBRARY[id].introducedAtLevel === poolLevelFor[id],
+      `${id}: introducedAtLevel (${MOTIF_LIBRARY[id].introducedAtLevel}) matches its MOTIF_POOLS level (${poolLevelFor[id]})`,
+    );
+  });
+  console.log(`  Checked ${motifIds.length} motifs against their pool of origin.`);
+}
 
 // ============================================================================
 // Summary
