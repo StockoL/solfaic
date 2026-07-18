@@ -12,7 +12,7 @@
  * ============================================================================
  */
 
-import { MAX_LEVEL, MOTIF_LIBRARY } from "./data.js";
+import { MAX_LEVEL, MOTIF_LIBRARY, allowedTonics } from "./data.js";
 import { renderRhythmSVG } from "./rhythm-notation.js";
 import { resolveSolfegeColor, sortSyllablesAscending } from "./core.js";
 import { getPresentationContent } from "./engine.js";
@@ -211,6 +211,64 @@ function renderRhythmWorkshopPanel(levelId) {
   );
 }
 
+function renderMelodicWorkshopPanel(levelId) {
+  const container = DOM.melodicWorkshopContent;
+  if (!container) return;
+  container.innerHTML = "";
+
+  const newSyllables = sortSyllablesAscending(
+    getPresentationContent(levelId).newSyllables,
+  );
+  if (newSyllables.length === 0) {
+    renderNoNewContentMessage(container, "solfège");
+    return;
+  }
+
+  let selectedSyllable = newSyllables[0];
+
+  const reel = document.createElement("div");
+  reel.className = "cluster";
+  newSyllables.forEach((syllable, i) => {
+    const pad = buildSolfegeDisplayPad(syllable);
+    pad.setAttribute("role", "option");
+    pad.setAttribute("tabindex", "0");
+    pad.setAttribute("aria-selected", i === 0 ? "true" : "false");
+    if (i === 0) pad.classList.add("is-selected");
+    pad.addEventListener("click", () => {
+      reel.querySelectorAll(".solfege-pad").forEach((p) => {
+        p.classList.remove("is-selected");
+        p.setAttribute("aria-selected", "false");
+      });
+      pad.classList.add("is-selected");
+      pad.setAttribute("aria-selected", "true");
+      selectedSyllable = syllable;
+    });
+    reel.appendChild(pad);
+  });
+  container.appendChild(reel);
+
+  container.appendChild(
+    buildPlayButton("Play Ostinato", () => {
+      const selectedPad = reel.querySelector(".solfege-pad.is-selected");
+      playOstinatoWithPulse(
+        [selectedSyllable],
+        4,
+        currentLevelTonic,
+        [selectedPad],
+      );
+    }),
+  );
+}
+
+/**
+ * Drawn once per level render, not once per Play click — a tonic is the
+ * exercise's singing register, and resampling it on every button press
+ * inside the same level-select would be a jarring, pointless key change
+ * mid-browse. Shared between Melodic Workshop and Example so both speak
+ * in the same key for a given level view.
+ */
+let currentLevelTonic = null;
+
 function renderAllPanels(levelId) {
   const isAvailable = levelId <= MAX_LEVEL;
 
@@ -223,8 +281,12 @@ function renderAllPanels(levelId) {
     return;
   }
 
+  currentLevelTonic =
+    allowedTonics[Math.floor(Math.random() * allowedTonics.length)];
+
   renderPresentationPanel(levelId);
   renderRhythmWorkshopPanel(levelId);
+  renderMelodicWorkshopPanel(levelId);
 
   // Remaining section render functions are wired in as they're built —
   // each guards on its own container's presence like the rest of this

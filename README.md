@@ -354,6 +354,14 @@ Classroom's level dropdown now reveals a Presentation panel alongside the existi
 
 ![Presentation panel showing Level 1's new motif cards and ascending solfège circles](./docs/screenshots/v2_presentation_panel.png)
 
+### Rhythm & Melodic Workshop
+
+Two more Classroom panels turn Presentation's "here's what's new" moment into conscious, repeated practice — select-to-drill reels of that level's new content (rhythm motifs in one, solfège syllables in the other), each with a "Play Ostinato" button that loops the selected item a fixed number of times. A new `AudioEngine.playOstinato` method drives both, deliberately simpler than the Practice Room's `playSequence` since there's no bar/form/cadence structure or count-in to schedule — just "this one thing, repeated" — and the same beat-pulse highlight the practice workspace already used gets reused here, synced to whichever pad is currently sounding via a new `audio-ostinato-beat` event. Melodic Workshop draws one tonic per level view (not per click) so repeated plays don't jump register mid-browse, and shares Presentation's "no new solfège this level" message for Level 4 rather than showing an empty reel.
+
+![Rhythm Workshop, showing a selected motif pad and its Play Ostinato button](./docs/screenshots/v2_rhythm_workshop.png)
+
+![Melodic Workshop, showing a selected solfège circle and its Play Ostinato button](./docs/screenshots/v2_melodic_workshop.png)
+
 <p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 6. <a name="deployment"></a> 🌐 Deployment Guide

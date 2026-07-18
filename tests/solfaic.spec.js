@@ -443,9 +443,16 @@ test.describe("Solfaic Interactive Application Suite", () => {
       // "some call happened" — confirms the exact content/repeatCount
       // classroom.js actually passed, not just that a click fired.
       await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
         const audio = await import("/src/js/audio.js");
+        // @ts-ignore -- test-only global bridging the page's callback back to the Node/Playwright side
         window.__ostinatoCalls = [];
-        audio.AudioEngine.playOstinato = (content, repeatCount, tonic) => {
+        audio.AudioEngine.playOstinato = (
+          /** @type {any} */ content,
+          /** @type {any} */ repeatCount,
+          /** @type {any} */ tonic,
+        ) => {
+          // @ts-ignore
           window.__ostinatoCalls.push({ content, repeatCount, tonic });
           return Promise.resolve();
         };
@@ -453,6 +460,7 @@ test.describe("Solfaic Interactive Application Suite", () => {
 
       await page.locator("#rhythm-workshop-content button").click();
 
+      // @ts-ignore -- __ostinatoCalls is a test-only global set above
       const calls = await page.evaluate(() => window.__ostinatoCalls);
       expect(calls).toHaveLength(1);
       expect(calls[0].repeatCount).toBe(4);
@@ -460,10 +468,73 @@ test.describe("Solfaic Interactive Application Suite", () => {
       // selected pad — not the first pad, confirming selection state (not
       // a hardcoded default) drives what actually plays.
       const { MOTIF_LIBRARY } = await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
         const data = await import("/src/js/data.js");
         return { MOTIF_LIBRARY: data.MOTIF_LIBRARY };
       });
       expect(MOTIF_LIBRARY[calls[0].content].label).toBe(selectedId);
+    });
+
+    test("Melodic Workshop shows Level 3's one new syllable and plays the selected one", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await page.locator("#btn-level-dropdown").click();
+      await page
+        .locator(".level-select__item")
+        .filter({ hasText: "Level 3" })
+        .click();
+
+      // Level 3 introduces exactly one new syllable (fa) -- see the engine
+      // harness's own getNewlyIntroducedSyllables coverage for this level.
+      await expect(
+        page.locator("#melodic-workshop-content .solfege-pad"),
+      ).toHaveCount(1);
+      await expect(
+        page.locator("#melodic-workshop-content .solfege-pad"),
+      ).toHaveAttribute("aria-label", "fa");
+
+      await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const audio = await import("/src/js/audio.js");
+        // @ts-ignore -- test-only global bridging the page's callback back to the Node/Playwright side
+        window.__ostinatoCalls = [];
+        audio.AudioEngine.playOstinato = (
+          /** @type {any} */ content,
+          /** @type {any} */ repeatCount,
+          /** @type {any} */ tonic,
+        ) => {
+          // @ts-ignore
+          window.__ostinatoCalls.push({ content, repeatCount, tonic });
+          return Promise.resolve();
+        };
+      });
+      await page.locator("#melodic-workshop-content button").click();
+
+      // @ts-ignore -- __ostinatoCalls is a test-only global set above
+      const calls = await page.evaluate(() => window.__ostinatoCalls);
+      expect(calls).toHaveLength(1);
+      expect(calls[0].content).toEqual(["fa"]);
+      expect(calls[0].repeatCount).toBe(4);
+      expect(typeof calls[0].tonic).toBe("string");
+    });
+
+    test("Melodic Workshop shows the 'no new solfège' message at Level 4, not empty content", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await page.locator("#btn-level-dropdown").click();
+      await page
+        .locator(".level-select__item")
+        .filter({ hasText: "Level 4" })
+        .click();
+
+      await expect(
+        page.locator("#melodic-workshop-content .solfege-pad"),
+      ).toHaveCount(0);
+      await expect(
+        page.locator("#melodic-workshop-content .text-muted"),
+      ).toContainText("No new solfège this level");
     });
   });
 });
