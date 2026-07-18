@@ -7,15 +7,15 @@ const { test, expect } = require("@playwright/test");
 
 test.describe("Solfaic Interactive Application Suite", () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the app root (Base URL is handled by Playwright config)
-    await page.goto("/");
+    // The interactive trainer lives on practice.html; "/" is now a marketing landing page.
+    await page.goto("/practice.html");
   });
 
   test.describe("1. Initialization & UI Routing", () => {
     test("App initializes with Level 1 defaults", async ({ page }) => {
       await expect(page).toHaveTitle(/Solfaic/);
       await expect(page.locator("#ui-level-badge")).toContainText("Level 1");
-      await expect(page.locator("#ui-plays-remaining")).toContainText("3 / 3");
+      await expect(page.locator("#ui-plays-remaining")).toContainText("3/3");
 
       // Ensure the motif selector is populated
       const motifPads = page.locator(".motif-pad");
@@ -23,24 +23,47 @@ test.describe("Solfaic Interactive Application Suite", () => {
       expect(await motifPads.count()).toBeGreaterThan(0);
     });
 
-    test("Custom Dropdown navigates to Level 3 successfully", async ({
+    // The level dropdown no longer lives on practice.html or drives
+    // startLevel() — it moved to classroom.html, where it filters the
+    // curriculum guide/reference table instead of switching the active
+    // practice exercise (see core.js's Level Select wiring). Practice Room
+    // itself has no in-page level switcher; it always boots at Level 1
+    // (see app.js's hardcoded startLevel(1)) and only ever advances via the
+    // 3-streak celebration modal.
+    test("Classroom's level dropdown filters the curriculum guide and reference table", async ({
       page,
     }) => {
-      // Open the custom dropdown
-      await page.locator("#btn-level-dropdown").click();
+      await page.goto("/classroom.html");
 
-      // Select Level 3
+      // Level 2, not 3 — Level 3 has a guide but no reference-matrix rows
+      // documented yet, which would make "at least one visible row" a
+      // false failure unrelated to the filter itself.
+      await page.locator("#btn-level-dropdown").click();
       await page
-        .locator(".dropdown-item")
-        .filter({ hasText: "Level 3" })
+        .locator(".level-select__item")
+        .filter({ hasText: "Level 2" })
         .click();
 
-      // Verify state changes
-      await expect(page.locator("#ui-level-badge")).toContainText("Level 3");
+      // The matching level guide is shown, others hidden.
+      await expect(page.locator("#level-guide-2")).toBeVisible();
+      await expect(page.locator("#level-guide-1")).toBeHidden();
+
+      // The reference matrix table is filtered down to Level 2's rows only.
+      await expect(page.locator("#matrix-filter-status")).toContainText(
+        "Showing Level 2 only.",
+      );
+      const visibleRows = page.locator(
+        ".curriculum-table tbody tr:not([hidden])",
+      );
+      expect(await visibleRows.count()).toBeGreaterThan(0);
+      for (const row of await visibleRows.all()) {
+        await expect(row).toHaveAttribute("data-level", "2");
+      }
 
       // Verify dropdown closed
-      await expect(page.locator("#menu-level-dropdown")).not.toHaveClass(
-        /is-open/,
+      await expect(page.locator("#menu-level-dropdown")).toHaveAttribute(
+        "data-state",
+        "closed",
       );
     });
   });
@@ -111,9 +134,15 @@ test.describe("Solfaic Interactive Application Suite", () => {
       // 4. Submit the sequence
       await page.locator("#btn-submit").click();
 
-      // 5. Verify the validation engine ran (cards will turn green or red)
-      const firstEvaluatedCard = page.locator(".workspace-card").first();
-      await expect(firstEvaluatedCard).toHaveClass(/(is-success|is-error)/);
+      // 5. Verify the validation engine ran — feedback lands as a
+      // data-feedback attribute on the parent .workspace-box, not a class
+      // on .workspace-card (that changed with the two-phase rhythm/pitch
+      // rework; see buildWorkspaceBox in core.js).
+      const firstEvaluatedBox = page.locator(".workspace-box").first();
+      await expect(firstEvaluatedBox).toHaveAttribute(
+        "data-feedback",
+        /(success|error)/,
+      );
     });
   });
 
