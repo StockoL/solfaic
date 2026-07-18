@@ -498,6 +498,7 @@ V2's build ran in five loosely sequential phases, each building directly on the 
 3. **CUBE CSS rebuild & the accessible palette rollout** — migrating from V1's single stylesheet to a four-layer cascade architecture, then auditing and darkening every text-bearing button/badge/status colour to a verified WCAG AA 4.5:1 minimum, while deliberately keeping the hero particle field and focus ring on the brighter, pre-darkened tokens.
 4. **Two-phase workspace & shared notation rendering** — rebuilding the practice workspace around a metre-aware grid and a single shared duration table that drives both the rhythm SVG and the paired solfège entry columns, so the two never drift out of alignment.
 5. **Test harness build-out** — a Node harness for the two pure-function engines (`tests/engine-verification.mjs`), followed by a full Playwright rewrite of the E2E suite to match the two-phase rhythm/pitch flow and the current page structure.
+6. **Classroom content sprint** — Presentation, Rhythm Workshop, Melodic Workshop, Example, and Interval Detective, all built on existing generated content or new engine logic rather than needing real repertoire or video. A new `AudioEngine.playOstinato` method and a small level-of-introduction/interval-naming data layer (`introducedAtLevel`, `getNewlyIntroducedSyllables`, `INTERVAL_NAMES`) underpin all five, wired to Classroom's level dropdown via a `classroom-level-changed` event rather than a direct module import.
 
 ### Notable Bugs Caught & Fixed
 
@@ -531,6 +532,11 @@ V2's build ran in five loosely sequential phases, each building directly on the 
 - Fixing the row above surfaced a second-order bug: the Grid composition's default `1fr` columns divide a row's full width evenly by however many columns exist, and 3/4 only fits 3 boxes per row without splitting a bar — so those 3 columns rendered wider than every other metre's 4. Since `.workspace-card--rhythm`'s `aspect-ratio: 4/1` ties height directly to width, that extra width became extra height on every card, compounding across a multi-bar phrase into a workspace that scrolled far longer than the same content needed in any other metre.
 - _Fix:_ Column tracks now size against a constant 4-box reference instead of the row's actual column count, so box size stays identical across every metre; 3/4's row is simply narrower and centred rather than stretched.
 
+**A global keyboard shortcut router silently broke native button activation everywhere**
+
+- Practice Room's Space=replay/Enter=submit shortcuts were wired as a page-wide `keydown` listener that called `e.preventDefault()` unconditionally, before checking whether those shortcuts even applied. That suppressed the browser's native Enter/Space-activates-a-focused-button behaviour for every button on every page — including Classroom's own controls — not just the two it was meant for. Only surfaced by testing a real keyboard press directly; a simulated click bypasses native keyboard activation entirely and would have passed regardless.
+- _Fix:_ The router now skips entirely when focus is already on a native interactive element (button, link, form control), letting the browser's own correct behaviour apply instead of being overridden.
+
 <p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 9. <a name="testing"></a> 🧪 Testing & Quality Assurance Portfolio
@@ -548,6 +554,9 @@ The rhythm and melodic engines are pure functions with no DOM dependency, so the
 - `countSoundingNotes` ↔ `generatePitchLine` pairing, 100 trials: confirms the pitch line's length always matches the rhythm timeline's actual sounding-note count, `restMask`-aware, across all four playable levels.
 - `resolveSolfegeToNote`: confirmed against 6 known solfège-token/tonic pairs, plus a full accounting check on `SOLFEGE_DEGREES` (14 syllables: 7 diatonic, upper `do'`, and 6 chromatic alterations).
 - **Sample phrase printout:** 5 generated rhythm+pitch phrases per level logged in full, for a human legibility check numbers alone can't provide — does a generated Level 2 phrase actually look like something a Level 2 student would plausibly be asked to sing?
+- `introducedAtLevel` **tagging:** every `MOTIF_LIBRARY` entry's level tag is checked against `MOTIF_POOLS`' own pool-of-origin, and that all 23 motifs are accounted for exactly once.
+- **Melodic level-of-introduction, 4 levels:** `getNewlyIntroducedSyllables` matches known values exactly — Level 3 introduces only `fa` (the example Classroom's own scope doc uses), Level 4 introduces none at all despite having new rhythm content, confirming the two tracks are genuinely independent.
+- **Interval Detective, 200 trials per level:** `pickIntervalPair` always draws two distinct syllables from the level's cumulative toneset, in both ascending and descending order across trials; `resolveIntervalName` checked against known semitone distances; `evaluateIntervalGuess` confirmed order-independent and rejecting of wrong/incomplete guesses.
 
 ### 2. Automated End-to-End Testing (Playwright)
 
@@ -562,6 +571,7 @@ Runs across three browser/device configurations — Desktop Chromium, Mobile Chr
 - **Escalating Feedback & Remediation:** a first wrong submission shows the "Try Again" modal without disturbing the streak; a second wrong submission on the same still-incorrect board names what to practise, reveals the correct answer on the board, and resets the exercise.
 - **Solfège Card Colours:** every reachable syllable resolves to a real, non-empty colour, and no two syllables active in the same toneset ever share one — confirming the palette reads as genuinely distinguishable, not verified by contrast math alone.
 - **Metre-Aware Workspace Grid:** the grid's actual column count is re-derived independently from the live session's `ticksPerBar` and compared against the page's rendered `--grid-placement`, confirming bars pack multiple-per-row where they fit rather than always reserving one row per bar.
+- **Classroom Level Panels:** Presentation, both Workshops, Example, and Interval Detective all verified per level — not just that markup renders, but that audio actually plays the intended content. `AudioEngine.playOstinato`/`playSequence` are intercepted directly on the page's live module instance (a dynamic `import()` inside `page.evaluate` resolves to the same cached ES module the app itself is running, so the spy sees real calls, not a mock standing in for untested code) to confirm the exact motif/syllable/interval pair passed matches what's on screen, rather than only checking "some call happened." Also covers Level 4's "nothing new this level" message (distinct from the Level 5+ unavailable state) and a real keyboard-press regression test for the Workshop pads' Space-key activation.
 
 ### 3. Manual Testing Matrix (Outstanding — to complete before project close)
 
