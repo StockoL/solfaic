@@ -79,19 +79,16 @@ test.describe("Solfaic Interactive Application Suite", () => {
 
     // The level dropdown no longer lives on practice.html or drives
     // startLevel() — it moved to classroom.html, where it filters the
-    // curriculum guide/reference table instead of switching the active
-    // practice exercise (see core.js's Level Select wiring). Practice Room
-    // itself has no in-page level switcher; it always boots at Level 1
-    // (see app.js's hardcoded startLevel(1)) and only ever advances via the
-    // 3-streak celebration modal.
-    test("Classroom's level dropdown filters the curriculum guide and reference table", async ({
+    // curriculum guide instead of switching the active practice exercise
+    // (see core.js's Level Select wiring). Practice Room itself has no
+    // in-page level switcher; it always boots at Level 1 (see app.js's
+    // hardcoded startLevel(1)) and only ever advances via the 3-streak
+    // celebration modal.
+    test("Classroom's level dropdown filters the curriculum guide", async ({
       page,
     }) => {
       await page.goto("/classroom.html");
 
-      // Level 2, not 3 — Level 3 has a guide but no reference-matrix rows
-      // documented yet, which would make "at least one visible row" a
-      // false failure unrelated to the filter itself.
       await page.locator("#btn-level-dropdown").click();
       await page
         .locator(".level-select__item")
@@ -101,18 +98,6 @@ test.describe("Solfaic Interactive Application Suite", () => {
       // The matching level guide is shown, others hidden.
       await expect(page.locator("#level-guide-2")).toBeVisible();
       await expect(page.locator("#level-guide-1")).toBeHidden();
-
-      // The reference matrix table is filtered down to Level 2's rows only.
-      await expect(page.locator("#matrix-filter-status")).toContainText(
-        "Showing Level 2 only.",
-      );
-      const visibleRows = page.locator(
-        ".curriculum-table tbody tr:not([hidden])",
-      );
-      expect(await visibleRows.count()).toBeGreaterThan(0);
-      for (const row of await visibleRows.all()) {
-        await expect(row).toHaveAttribute("data-level", "2");
-      }
 
       // Verify dropdown closed
       await expect(page.locator("#menu-level-dropdown")).toHaveAttribute(
@@ -141,7 +126,6 @@ test.describe("Solfaic Interactive Application Suite", () => {
         .click();
       expect(await page.locator(".level-guide:visible").count()).toBe(0);
       await expect(page.locator("#level-guide-empty-state")).toBeVisible();
-      await expect(page.locator("#matrix-empty-state")).toBeVisible();
     });
   });
 
@@ -360,9 +344,79 @@ test.describe("Solfaic Interactive Application Suite", () => {
 
       expect(Number(gridPlacement)).toBe(expectedPlacement);
     });
+
+    // Safety net for the iPhone-only "workspace boxes render inconsistent
+    // sizes, varying per row" bug — NOT a substitute for the on-device
+    // Safari Web Inspector session that bug actually needs. Chromium (what
+    // this project runs) doesn't reproduce WebKit's own subpixel-rounding
+    // behaviour, and Practice Room always boots at Level 1 (2 bars, never
+    // enough boxes to paginate), so this only ever exercises single-page,
+    // single-row consistency here. Still worth having: it locks in that
+    // every box shares one column-track sizing formula, so a future change
+    // that reintroduced per-row/per-page size drift in ANY engine would
+    // be caught, even though it can't catch the specific WebKit bug itself.
+    test("Every rendered workspace box shares the same computed width", async ({
+      page,
+    }) => {
+      await page.goto("/practice.html");
+      await page.waitForSelector(".workspace-box");
+
+      const widths = await page
+        .locator(".workspace-box")
+        .evaluateAll((boxes) =>
+          boxes
+            .filter((box) => getComputedStyle(box).display !== "none")
+            .map((box) => box.getBoundingClientRect().width),
+        );
+
+      expect(widths.length).toBeGreaterThan(0);
+      const [first, ...rest] = widths;
+      for (const width of rest) {
+        expect(Math.abs(width - first)).toBeLessThanOrEqual(1);
+      }
+    });
   });
 
   test.describe("9. Classroom Level Panels", () => {
+    test("Preparation/Presentation/Practice tabs show the correct content, and Preparation is unavailable at every level", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+
+      // Presentation is the default active tab.
+      await expect(page.locator("#tab-presentation")).toHaveAttribute(
+        "aria-selected",
+        "true",
+      );
+      await expect(page.locator("#tabpanel-presentation")).toBeVisible();
+      await expect(page.locator("#tabpanel-preparation")).toBeHidden();
+      await expect(page.locator("#tabpanel-practice")).toBeHidden();
+
+      // Preparation: no content exists for any level yet, so it shows the
+      // unavailable state even at Level 1, unlike Presentation/Practice.
+      await page.locator("#tab-preparation").click();
+      await expect(page.locator("#tab-preparation")).toHaveAttribute(
+        "aria-selected",
+        "true",
+      );
+      await expect(page.locator("#tab-presentation")).toHaveAttribute(
+        "aria-selected",
+        "false",
+      );
+      await expect(page.locator("#tabpanel-preparation")).toBeVisible();
+      await expect(page.locator("#tabpanel-presentation")).toBeHidden();
+      await expect(
+        page.locator("#tabpanel-preparation .panel-unavailable"),
+      ).toBeVisible();
+
+      // Practice bundles the four drill panels behind its own tab.
+      await page.locator("#tab-practice").click();
+      await expect(page.locator("#tabpanel-practice")).toBeVisible();
+      await expect(page.locator("#tabpanel-preparation")).toBeHidden();
+      await expect(page.locator("#panel-rhythm-workshop")).toBeVisible();
+      await expect(page.locator("#panel-interval-detective")).toBeVisible();
+    });
+
     test("Presentation shows Level 1's 3 new motifs and 5 new syllables as real notation/colour circles", async ({
       page,
     }) => {
@@ -379,6 +433,90 @@ test.describe("Solfaic Interactive Application Suite", () => {
         .locator("#presentation-content .motif-pad svg")
         .count();
       expect(svgCount).toBe(3);
+    });
+
+    // Regression test for the tum-ti rendering bug: playback was already
+    // correct, but the shared display-pad builder only ever rendered a
+    // tied motif's first box, silently dropping its tie-arc continuation.
+    // Locks in the specific distinction that matters -- only motifs with
+    // MOTIF_LIBRARY[id].tieContinuation (tum-ti, syncopa v2) get a second
+    // box, not every 2-tick motif (too/too-rest span 2 ticks too, but their
+    // single held notehead already conveys the full duration on its own).
+    test("tum-ti and syncopa render both boxes in Presentation and Rhythm Workshop; too stays a single box", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await page.locator("#btn-level-dropdown").click();
+      await page
+        .locator(".level-select__item")
+        .filter({ hasText: "Level 2" })
+        .click();
+
+      for (const containerId of [
+        "presentation-content",
+        "rhythm-workshop-content",
+      ]) {
+        const container = page.locator(`#${containerId}`);
+        for (const label of ["tum-ti", "syncopa"]) {
+          const pair = container.locator(
+            `.motif-pad-pair:has(.motif-pad[aria-label="${label}"])`,
+          );
+          await expect(pair).toHaveCount(1);
+          await expect(pair.locator("svg")).toHaveCount(2);
+          await expect(pair.locator(".motif-pad-extension")).toHaveCount(1);
+        }
+
+        // too spans 2 ticks like tum-ti/syncopa but has no tieContinuation
+        // — single box, no pair wrapper, exactly one SVG.
+        const tooPad = container.locator('.motif-pad[aria-label="too"]');
+        await expect(tooPad).toHaveCount(1);
+        await expect(
+          container.locator('.motif-pad-pair:has(.motif-pad[aria-label="too"])'),
+        ).toHaveCount(0);
+        await expect(tooPad.locator("svg")).toHaveCount(1);
+      }
+    });
+
+    test("Rhythm Workshop groups Level 2's new motifs into Simple Time and Compound Time", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await page.locator("#tab-practice").click();
+      await page.locator("#btn-level-dropdown").click();
+      await page
+        .locator(".level-select__item")
+        .filter({ hasText: "Level 2" })
+        .click();
+
+      const container = page.locator("#rhythm-workshop-content");
+      await expect(container.getByRole("heading", { name: "Simple Time" })).toBeVisible();
+      await expect(container.getByRole("heading", { name: "Compound Time" })).toBeVisible();
+
+      const { MOTIF_LIBRARY } = await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const data = await import("/src/js/data.js");
+        return { MOTIF_LIBRARY: data.MOTIF_LIBRARY };
+      });
+
+      // Every pad rendered under each heading actually matches that
+      // group's type — not just that two headings happen to exist.
+      for (const [headingText, expectedType] of [
+        ["Simple Time", "simple"],
+        ["Compound Time", "compound"],
+      ]) {
+        const heading = container.getByRole("heading", { name: headingText });
+        const section = heading.locator("xpath=..");
+        const labels = await section
+          .locator(".motif-pad[aria-label]")
+          .evaluateAll((pads) => pads.map((p) => p.getAttribute("aria-label")));
+        expect(labels.length).toBeGreaterThan(0);
+        for (const label of labels) {
+          const motif = Object.values(MOTIF_LIBRARY).find(
+            (m) => /** @type {any} */ (m).label === label,
+          );
+          expect(/** @type {any} */ (motif).type).toBe(expectedType);
+        }
+      }
     });
 
     test("Presentation shows the 'no new solfège' message at Level 4, not empty circles or the unavailable badge", async ({
@@ -406,7 +544,7 @@ test.describe("Solfaic Interactive Application Suite", () => {
       ).toHaveCount(0);
     });
 
-    test("Level 5 shows the shared 'not yet available' state across all five panels", async ({
+    test("Level 5 shows the shared 'not yet available' state across all level-driven panels, plus Preparation", async ({
       page,
     }) => {
       await page.goto("/classroom.html");
@@ -416,7 +554,12 @@ test.describe("Solfaic Interactive Application Suite", () => {
         .filter({ hasText: "Level 5" })
         .click();
 
-      await expect(page.locator(".panel-unavailable")).toHaveCount(5);
+      // 5 level-driven panels (Presentation, both Workshops, Example,
+      // Interval Detective) plus Preparation, which renders this same
+      // state unconditionally regardless of level -- toHaveCount counts
+      // DOM presence, not tab visibility, so Preparation's copy counts
+      // here even while its tabpanel sits hidden.
+      await expect(page.locator(".panel-unavailable")).toHaveCount(6);
       const badges = page.locator(".panel-unavailable .badge");
       for (const badge of await badges.all()) {
         await expect(badge).toContainText("Not yet available");
@@ -427,6 +570,7 @@ test.describe("Solfaic Interactive Application Suite", () => {
       page,
     }) => {
       await page.goto("/classroom.html");
+      await page.locator("#tab-practice").click();
       await expect(
         page.locator("#rhythm-workshop-content .motif-pad"),
       ).toHaveCount(3);
@@ -478,75 +622,72 @@ test.describe("Solfaic Interactive Application Suite", () => {
       expect(MOTIF_LIBRARY[calls[0].content].label).toBe(selectedId);
     });
 
-    test("Melodic Workshop shows Level 3's one new syllable and plays the selected one", async ({
+    test("Melodic Workshop is a keyboard: every cumulative syllable is playable, not just what's new", async ({
       page,
     }) => {
       await page.goto("/classroom.html");
+      await page.locator("#tab-practice").click();
       await page.locator("#btn-level-dropdown").click();
       await page
         .locator(".level-select__item")
         .filter({ hasText: "Level 3" })
         .click();
 
-      // Level 3 introduces exactly one new syllable (fa) -- see the engine
-      // harness's own getNewlyIntroducedSyllables coverage for this level.
+      // Level 3's cumulative toneset is do/re/mi/fa/so/la (6 syllables),
+      // not just the one syllable (fa) newly introduced there -- the whole
+      // point of the keyboard redesign is showing the full toneset a lone
+      // new syllable has no melodic context on its own.
+      const keys = page.locator("#melodic-workshop-content .solfege-pad");
+      await expect(keys).toHaveCount(6);
       await expect(
-        page.locator("#melodic-workshop-content .solfege-pad"),
-      ).toHaveCount(1);
+        page.locator('#melodic-workshop-content .solfege-pad[aria-label="fa"]'),
+      ).toBeVisible();
+
+      // No selection state and no Play button any more -- every pad is
+      // independently, immediately clickable.
       await expect(
-        page.locator("#melodic-workshop-content .solfege-pad"),
-      ).toHaveAttribute("aria-label", "fa");
+        page.locator("#melodic-workshop-content").getByRole("button", {
+          name: "Play Ostinato",
+        }),
+      ).toHaveCount(0);
+      await expect(keys.first()).toBeEnabled();
 
       await page.evaluate(async () => {
         // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
         const audio = await import("/src/js/audio.js");
         // @ts-ignore -- test-only global bridging the page's callback back to the Node/Playwright side
-        window.__ostinatoCalls = [];
-        audio.AudioEngine.playOstinato = (
-          /** @type {any} */ content,
-          /** @type {any} */ repeatCount,
+        window.__playNoteCalls = [];
+        audio.AudioEngine.playNote = (
+          /** @type {any} */ syllable,
           /** @type {any} */ tonic,
         ) => {
           // @ts-ignore
-          window.__ostinatoCalls.push({ content, repeatCount, tonic });
+          window.__playNoteCalls.push({ syllable, tonic });
           return Promise.resolve();
         };
       });
-      await page
-        .locator("#melodic-workshop-content")
-        .getByRole("button", { name: "Play Ostinato" })
-        .click();
 
-      // @ts-ignore -- __ostinatoCalls is a test-only global set above
-      const calls = await page.evaluate(() => window.__ostinatoCalls);
+      const faKey = page.locator(
+        '#melodic-workshop-content .solfege-pad[aria-label="fa"]',
+      );
+      await faKey.click();
+
+      // @ts-ignore -- __playNoteCalls is a test-only global set above
+      const calls = await page.evaluate(() => window.__playNoteCalls);
       expect(calls).toHaveLength(1);
-      expect(calls[0].content).toEqual(["fa"]);
-      expect(calls[0].repeatCount).toBe(4);
+      expect(calls[0].syllable).toBe("fa");
       expect(typeof calls[0].tonic).toBe("string");
-    });
 
-    test("Melodic Workshop shows the 'no new solfège' message at Level 4, not empty content", async ({
-      page,
-    }) => {
-      await page.goto("/classroom.html");
-      await page.locator("#btn-level-dropdown").click();
-      await page
-        .locator(".level-select__item")
-        .filter({ hasText: "Level 4" })
-        .click();
-
-      await expect(
-        page.locator("#melodic-workshop-content .solfege-pad"),
-      ).toHaveCount(0);
-      await expect(
-        page.locator("#melodic-workshop-content .text-muted"),
-      ).toContainText("No new solfège this level");
+      // Clicking pulses the clicked pad directly (no shared ostinato-beat
+      // event round-trip needed for a single immediate note).
+      await expect(faKey).toHaveClass(/is-pulsing/);
     });
 
     test("Example plays a freshly generated phrase and reports its metre/bars, across every playable level", async ({
       page,
     }) => {
       await page.goto("/classroom.html");
+      await page.locator("#tab-practice").click();
 
       for (const level of [1, 2, 3, 4]) {
         if (level > 1) {
@@ -570,6 +711,7 @@ test.describe("Solfaic Interactive Application Suite", () => {
       page,
     }) => {
       await page.goto("/classroom.html");
+      await page.locator("#tab-practice").click();
       await page.locator("#btn-level-dropdown").click();
       await page
         .locator(".level-select__item")
@@ -593,6 +735,7 @@ test.describe("Solfaic Interactive Application Suite", () => {
       // Playwright .click() bypasses the native keyboard path entirely
       // and would pass even with the bug present.
       await page.goto("/classroom.html");
+      await page.locator("#tab-practice").click();
       const secondPad = page.locator("#rhythm-workshop-content .motif-pad").nth(1);
       await secondPad.focus();
       await page.keyboard.press("Space");
@@ -604,6 +747,7 @@ test.describe("Solfaic Interactive Application Suite", () => {
       page,
     }) => {
       await page.goto("/classroom.html");
+      await page.locator("#tab-practice").click();
       await expect(
         page.locator("#interval-detective-content .solfege-pad"),
       ).toHaveCount(5); // Level 1's cumulative toneset: so, mi, la, do, re
@@ -657,10 +801,69 @@ test.describe("Solfaic Interactive Application Suite", () => {
       ).toHaveClass(/is-correct/);
     });
 
+    // Only the reference (first) syllable should highlight in sync with
+    // playback -- the second plays with no highlight, matching how
+    // interval training is actually taught (one known reference, one
+    // unknown to identify). The pulse targets array is internal to
+    // classroom.js and never crosses into AudioEngine.playOstinato's own
+    // arguments, so this dispatches the same audio-ostinato-beat
+    // CustomEvent classroom.js's own listener reacts to, exercising the
+    // actual pulseOstinatoTarget contract directly. playOstinato itself is
+    // mocked to a never-resolving promise (matching the interception
+    // pattern other tests in this file already use) rather than left real
+    // -- playOstinatoWithPulse's finally block clears activeOstinatoTargets
+    // the moment the real call settles, and on WebKit specifically Tone.js
+    // throws synchronously during scheduling (a pre-existing engine
+    // compatibility issue), clearing the targets before this test's dispath
+    // before this test's dispatch.
+    test("Interval Detective highlights only the reference syllable during playback", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await page.locator("#tab-practice").click();
+      const container = page.locator("#interval-detective-content");
+
+      await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const audio = await import("/src/js/audio.js");
+        audio.AudioEngine.playOstinato = () => new Promise(() => {});
+      });
+
+      await container.getByRole("button", { name: "Play Interval" }).click();
+
+      const pads = container.locator(".solfege-pad");
+      expect(await pads.count()).toBeGreaterThan(0);
+      const pulsing = container.locator(".solfege-pad.is-pulsing");
+
+      await page.evaluate(() => {
+        document.dispatchEvent(
+          new CustomEvent("audio-ostinato-beat", { detail: { subIndex: 0 } }),
+        );
+      });
+      // subIndex 0 -> the reference pad (whichever the click just targeted
+      // internally) pulses; exactly one pad should carry it.
+      await expect(pulsing).toHaveCount(1);
+      const rawSyllable = await pulsing.getAttribute("data-syllable");
+      expect(rawSyllable).not.toBeNull();
+      const referenceSyllable = /** @type {string} */ (rawSyllable);
+
+      await page.evaluate(() => {
+        document.dispatchEvent(
+          new CustomEvent("audio-ostinato-beat", { detail: { subIndex: 1 } }),
+        );
+      });
+      // subIndex 1 resolves to `null` in the targets array -- no pad should
+      // pick up a fresh pulse, and the reference pad from subIndex 0 is the
+      // only one that ever carried the class.
+      await expect(pulsing).toHaveCount(1);
+      await expect(pulsing).toHaveAttribute("data-syllable", referenceSyllable);
+    });
+
     test("Interval Detective names what to practise on a wrong guess, without crashing the flow", async ({
       page,
     }) => {
       await page.goto("/classroom.html");
+      await page.locator("#tab-practice").click();
       await page
         .locator("#interval-detective-content")
         .getByRole("button", { name: "Play Interval" })
@@ -686,6 +889,7 @@ test.describe("Solfaic Interactive Application Suite", () => {
       page,
     }) => {
       await page.goto("/classroom.html");
+      await page.locator("#tab-practice").click();
       await page.locator("#btn-level-dropdown").click();
       await page
         .locator(".level-select__item")
