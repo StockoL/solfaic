@@ -94,17 +94,19 @@
       >
         <h1 id="classroom-heading">Classroom</h1>
         <p>
-          Learn the Kodály rhythm syllables and notation rules below, then test
-          what you've learned in the Practice Room. Open a level below to see
-          just its syllables in the reference matrix.
+          Learn each level's rhythm and melody concepts here before testing
+          yourself in the Practice Room. Every level is organised into three
+          phases — Preparation, Presentation, and Practice — mirroring how
+          these ideas are actually taught: experienced first, named second,
+          and practised for as long as you like afterward.
         </p>
       </section>
 
       <section class="classroom__levels flow" aria-label="Level guides">
         <h2>Level Guides</h2>
         <p class="classroom__levels-hint">
-          Select a level to see its guide below and filter the reference
-          matrix to just its syllables.
+          Select a level to see its guide, and the Preparation, Presentation,
+          and Practice content below, update to match.
         </p>
 
         <div class="level-select" id="ui-level-selector">
@@ -253,277 +255,100 @@
       </section>
 
       <!--
-        Presentation, Rhythm Workshop, Melodic Workshop, Example, and
-        Interval Detective — rendered entirely by classroom.js in response
-        to the classroom-level-changed event core.js's level dropdown
-        dispatches. One root per level's content, not one section repeated
-        per level, since these are data-driven off data.js/engine.js rather
-        than hand-authored prose like the Level Guides above.
+        Preparation, Presentation, and Practice — a folder-tab strip over
+        one shared content region. Presentation and Practice (which bundles
+        Rhythm Workshop, Melodic Workshop, Example, and Interval Detective)
+        are rendered by classroom.js in response to the classroom-level-changed
+        event core.js's level dropdown dispatches; Preparation is level-
+        independent (no prep content exists yet for any level) and rendered
+        once on init. Tab-switching itself is wired in classroom.js's
+        initialiseClassroomPanels().
       -->
       <section
         class="classroom__panels flow"
         id="classroom-panels-root"
         aria-label="Level content"
       >
-        <div class="classroom-panel" id="panel-presentation">
-          <h2>Presentation</h2>
-          <div id="presentation-content"></div>
+        <div class="classroom-tabs" role="tablist" aria-label="Level phase">
+          <button
+            type="button"
+            class="classroom-tab"
+            id="tab-preparation"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tabpanel-preparation"
+            data-variant="secondary"
+            tabindex="-1"
+          >
+            Preparation
+          </button>
+          <button
+            type="button"
+            class="classroom-tab"
+            id="tab-presentation"
+            role="tab"
+            aria-selected="true"
+            aria-controls="tabpanel-presentation"
+            data-variant="primary"
+          >
+            Presentation
+          </button>
+          <button
+            type="button"
+            class="classroom-tab"
+            id="tab-practice"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tabpanel-practice"
+            data-variant="success"
+            tabindex="-1"
+          >
+            Practice
+          </button>
         </div>
-        <div class="classroom-panel" id="panel-rhythm-workshop">
-          <h2>Rhythm Workshop</h2>
-          <div id="rhythm-workshop-content"></div>
-        </div>
-        <div class="classroom-panel" id="panel-melodic-workshop">
-          <h2>Melodic Workshop</h2>
-          <div id="melodic-workshop-content"></div>
-        </div>
-        <div class="classroom-panel" id="panel-example">
-          <h2>Example</h2>
-          <div id="example-content"></div>
-        </div>
-        <div class="classroom-panel" id="panel-interval-detective">
-          <h2>Interval Detective</h2>
-          <div id="interval-detective-content"></div>
-        </div>
-      </section>
 
-      <section class="classroom__matrix flow" aria-labelledby="matrix-heading">
-        <h2 id="matrix-heading">Kodály Reference Matrix</h2>
-
-        <p
-          id="matrix-filter-status"
-          class="matrix-filter-status"
-          data-filtered="true"
-          role="status"
-          aria-live="polite"
+        <div
+          class="classroom-tabpanel"
+          id="tabpanel-preparation"
+          role="tabpanel"
+          aria-labelledby="tab-preparation"
+          hidden
         >
-          Showing Level 1 only.
-        </p>
+          <div id="preparation-content"></div>
+        </div>
 
-        <div class="curriculum-table-wrap center" style="--center-max-width: 50rem">
-          <table class="curriculum-table">
-          <thead>
-            <tr>
-              <th scope="col">Syllable</th>
-              <th scope="col">Notation</th>
-              <th scope="col">Value &amp; Name</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr data-level="1">
-              <td><span class="syllable-token">ta</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="198" y="15" width="4" height="70" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                1 Beat Crotchet <br /><small class="text-muted"
-                  >(Single Sound)</small
-                >
-              </td>
-            </tr>
-            <tr data-level="1">
-              <td><span class="syllable-token">ti-ti</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="98" y="15" width="4" height="70" />
-                    <rect x="298" y="15" width="4" height="70" />
-                    <rect x="98.5" y="15" width="203" height="8" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                1 Beat Pair of Quavers <br /><small class="text-muted"
-                  >(Dual Sounds)</small
-                >
-              </td>
-            </tr>
-            <tr data-level="1">
-              <td><span class="syllable-token">ta-rest</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M 205 20 L 195 40 L 210 55 L 195 80"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="3"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                1 Beat Rest <br /><small class="text-muted"
-                  >(Silent Space)</small
-                >
-              </td>
-            </tr>
-            <tr data-level="2">
-              <td><span class="syllable-token">too</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <ellipse
-                      cx="191"
-                      cy="85"
-                      rx="12"
-                      ry="8"
-                      transform="rotate(-20 191 85)"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="3"
-                    />
-                    <rect x="198.5" y="15" width="3" height="70" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                2 Beat Minim <br /><small class="text-muted"
-                  >(Sustained Tone)</small
-                >
-              </td>
-            </tr>
-            <tr data-level="2">
-              <td><span class="syllable-token">ti-ka-ti-ka</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="48" y="15" width="4" height="70" />
-                    <rect x="148" y="15" width="4" height="70" />
-                    <rect x="248" y="15" width="4" height="70" />
-                    <rect x="348" y="15" width="4" height="70" />
-                    <rect x="48.5" y="15" width="303" height="8" />
-                    <rect x="48.5" y="27" width="303" height="8" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                1 Beat Semiquavers <br /><small class="text-muted"
-                  >(Quad Sounds)</small
-                >
-              </td>
-            </tr>
-            <tr data-level="2">
-              <td><span class="syllable-token">ti-ti-ka</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="98" y="15" width="4" height="70" />
-                    <rect x="248" y="15" width="4" height="70" />
-                    <rect x="348" y="15" width="4" height="70" />
-                    <rect x="98.5" y="15" width="253" height="8" />
-                    <rect x="248.5" y="27" width="103" height="8" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                1 Beat Syncopation <br /><small class="text-muted"
-                  >(Quaver, 2 Semis)</small
-                >
-              </td>
-            </tr>
-            <tr data-level="2">
-              <td><span class="syllable-token">ti-ka-ti</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="48" y="15" width="4" height="70" />
-                    <rect x="148" y="15" width="4" height="70" />
-                    <rect x="298" y="15" width="4" height="70" />
-                    <rect x="48.5" y="15" width="253" height="8" />
-                    <rect x="48.5" y="27" width="103" height="8" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                1 Beat Syncopation <br /><small class="text-muted"
-                  >(2 Semis, Quaver)</small
-                >
-              </td>
-            </tr>
-            <tr data-level="2">
-              <td><span class="syllable-token">ti-ti-ti</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="64.67" y="15" width="4" height="70" />
-                    <rect x="198" y="15" width="4" height="70" />
-                    <rect x="331.33" y="15" width="4" height="70" />
-                    <rect x="65.17" y="15" width="269.66" height="8" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                Compound Beat <br /><small class="text-muted"
-                  >(Three Quavers)</small
-                >
-              </td>
-            </tr>
-            <tr data-level="2">
-              <td><span class="syllable-token">tum</span></td>
-              <td>
-                <div class="table-svg-preview">
-                  <svg
-                    viewBox="0 0 400 100"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <rect x="198" y="15" width="4" height="70" />
-                    <circle cx="210" cy="78" r="4" />
-                  </svg>
-                </div>
-              </td>
-              <td>
-                Dotted Crotchet <br /><small class="text-muted"
-                  >(Compound Single)</small
-                >
-              </td>
-            </tr>
-          </tbody>
-          </table>
+        <div
+          class="classroom-tabpanel"
+          id="tabpanel-presentation"
+          role="tabpanel"
+          aria-labelledby="tab-presentation"
+        >
+          <div id="presentation-content" class="flow"></div>
+        </div>
 
-          <p id="matrix-empty-state" class="matrix-empty-state" hidden>
-            No reference notation documented for this level yet — check back
-            soon.
-          </p>
+        <div
+          class="classroom-tabpanel"
+          id="tabpanel-practice"
+          role="tabpanel"
+          aria-labelledby="tab-practice"
+          hidden
+        >
+          <div class="classroom-panel" id="panel-rhythm-workshop">
+            <h2>Rhythm Workshop</h2>
+            <div id="rhythm-workshop-content" class="flow"></div>
+          </div>
+          <div class="classroom-panel" id="panel-melodic-workshop">
+            <h2>Melodic Workshop</h2>
+            <div id="melodic-workshop-content" class="flow"></div>
+          </div>
+          <div class="classroom-panel" id="panel-example">
+            <h2>Example</h2>
+            <div id="example-content" class="flow"></div>
+          </div>
+          <div class="classroom-panel" id="panel-interval-detective">
+            <h2>Interval Detective</h2>
+            <div id="interval-detective-content" class="flow"></div>
+          </div>
         </div>
       </section>
 

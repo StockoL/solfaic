@@ -31,7 +31,7 @@
 @import url("./blocks/level-select.css") layer(blocks);
 @import url("./blocks/modal.css") layer(blocks);
 @import url("./blocks/badge.css") layer(blocks);
-@import url("./blocks/curriculum-table.css") layer(blocks);
+@import url("./blocks/classroom-tabs.css") layer(blocks);
 @import url("./blocks/hero.css") layer(blocks);
 @import url("./blocks/footer.css") layer(blocks);
 @import url("./blocks/practice-header.css") layer(blocks);

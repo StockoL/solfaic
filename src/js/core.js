@@ -1187,45 +1187,20 @@ export function initialiseCoreUI() {
   }
 
   // Level Select (Classroom's Level Guides dropdown) — selecting a level
-  // shows that level's guide content and doubles as a filter for the
-  // Kodály Reference Matrix table below it, so there's exactly one control
-  // doing both jobs instead of two separate, easy-to-desync pickers.
+  // shows that level's guide content and tells the rest of the app which
+  // level's Presentation/Practice content to render.
   const levelSelectTrigger = document.getElementById("btn-level-dropdown");
   const levelSelectMenu = document.getElementById("menu-level-dropdown");
-  const matrixTable = document.querySelector(".curriculum-table");
-  const matrixEmptyState = document.getElementById("matrix-empty-state");
-  const matrixStatus = document.getElementById("matrix-filter-status");
   const levelGuideEmptyState = document.getElementById(
     "level-guide-empty-state",
   );
 
-  const filterMatrixByLevel = (levelId) => {
-    if (!matrixTable) return;
-    const rows = matrixTable.querySelectorAll("tbody tr");
-    let visibleCount = 0;
-
-    rows.forEach((row) => {
-      const matches = row.getAttribute("data-level") === levelId;
-      row.hidden = !matches;
-      if (matches) visibleCount++;
-    });
-
-    if (matrixStatus) {
-      matrixStatus.textContent = `Showing Level ${levelId} only.`;
-      matrixStatus.setAttribute("data-filtered", "true");
-    }
-
-    if (matrixEmptyState) matrixEmptyState.hidden = visibleCount > 0;
-    matrixTable.hidden = visibleCount === 0;
-  };
-
   // applyLevelSelection is the ONE place a level selection's content
-  // effects happen — guide toggle, empty-state, matrix filter, and telling
-  // the rest of the app (classroom.js's Presentation/Workshops/Example/
-  // Interval Detective panels) via a CustomEvent, rather than each new
-  // per-level section growing its own independent listener directly on
-  // the dropdown. Called both on click and on initial load, so every
-  // consumer sees one consistent entry point.
+  // effects happen — guide toggle, empty-state, and telling the rest of
+  // the app (classroom.js's Presentation/Practice panels) via a
+  // CustomEvent, rather than each new per-level section growing its own
+  // independent listener directly on the dropdown. Called both on click
+  // and on initial load, so every consumer sees one consistent entry point.
   const applyLevelSelection = (levelId) => {
     let guideMatched = false;
     document.querySelectorAll(".level-guide").forEach((guide) => {
@@ -1234,8 +1209,6 @@ export function initialiseCoreUI() {
       if (matches) guideMatched = true;
     });
     if (levelGuideEmptyState) levelGuideEmptyState.hidden = guideMatched;
-
-    filterMatrixByLevel(levelId);
 
     document.dispatchEvent(
       new CustomEvent("classroom-level-changed", {
