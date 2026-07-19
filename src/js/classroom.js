@@ -470,14 +470,16 @@ function renderIntervalDetectivePanel(levelId) {
       const padA = grid.querySelector(
         `.solfege-pad[data-syllable="${currentTarget.syllableA}"]`,
       );
-      const padB = grid.querySelector(
-        `.solfege-pad[data-syllable="${currentTarget.syllableB}"]`,
-      );
+      // Only the reference (first) syllable highlights in sync with
+      // playback — the second plays with no highlight at all, so the
+      // student identifies it relative to the now-known first note rather
+      // than being asked for two unknowns cold. `null` here relies on
+      // pulseOstinatoTarget's existing guard against a falsy target.
       playOstinatoWithPulse(
         [currentTarget.syllableA, currentTarget.syllableB],
         1,
         currentLevelTonic,
-        [padA, padB],
+        [padA, null],
       );
     }),
   );
