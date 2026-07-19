@@ -27,8 +27,7 @@
 .workspace-grid {
   grid-template-columns: repeat(
     var(--grid-placement, 4),
-    var(--workspace-box-size, clamp(4.5rem, 18vw, 5.5rem))
-      /* calc((100% - 3 * var(--gutter, 1rem)) / 4) */
+    clamp(4.5rem, 18vw, 5.5rem)
   );
   justify-content: center;
 }
