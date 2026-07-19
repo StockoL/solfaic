@@ -5,10 +5,13 @@
 /*
  * Folder-tab metaphor: each tab's OWN colour (secondary/primary/success,
  * via data-variant, same attribute-override recipe as button.css/badge.css)
- * shows as a muted, receded fill when inactive, and as a solid fill when
- * active. The active tab drops its bottom border and the panel below picks
- * up a matching top border in the same colour, so the seam between them
- * reads as one continuous edge rather than two separate boxes touching.
+ * shows as a tinted fill at rest, so it actually reads as a distinct tab
+ * against the page background rather than blending into it, and as a
+ * solid fill on hover/focus or once active (the same treatment doing both
+ * jobs, rather than a third, in-between hover colour). The active tab
+ * drops its bottom border and the panel below picks up a matching top
+ * border in the same colour, so the seam between them reads as one
+ * continuous edge rather than two separate boxes touching.
  */
 /*
  * Layout (display/wrap/gap) comes entirely from the .cluster composition
@@ -24,7 +27,7 @@
 .classroom-tab {
   --tab-color: var(--color-text-muted);
   padding: var(--space-xs) var(--space-m);
-  background-color: var(--color-surface-sunken);
+  background-color: color-mix(in srgb, var(--tab-color) 15%, var(--color-surface-sunken));
   color: var(--tab-color);
   border: 1px solid var(--color-border-subtle);
   border-bottom-color: var(--color-border-subtle);
@@ -50,19 +53,15 @@
 }
 
 .classroom-tab:hover,
-.classroom-tab:focus-visible {
-  background-color: color-mix(in srgb, var(--tab-color) 15%, var(--color-surface-sunken));
-}
-
+.classroom-tab:focus-visible,
 .classroom-tab[aria-selected="true"] {
   background-color: var(--tab-color);
   color: var(--color-surface-card);
   border-color: var(--tab-color);
-  border-bottom-color: transparent;
 }
 
-.classroom-tab[aria-selected="true"]:hover {
-  background-color: var(--tab-color);
+.classroom-tab[aria-selected="true"] {
+  border-bottom-color: transparent;
 }
 
 .classroom-tabpanel {
