@@ -94,6 +94,21 @@ export const AudioEngine = {
       envelope: { attack: 0.01, decay: 0.5 },
     }).toDestination();
 
+    // Its own voice, deliberately separate from `synth`/`chime` above —
+    // both of those are monophonic and get triggered at Transport-scheduled
+    // times by playSequence/playOstinato, which requires each successive
+    // trigger's start time to strictly increase. playNote's immediate,
+    // unscheduled triggerAttackRelease calls (Tone.now()-based) would
+    // otherwise clash with that ordering the moment a scheduled sequence
+    // runs after a keyboard click, throwing "Start time must be strictly
+    // greater than previous start time." A dedicated voice sidesteps the
+    // conflict entirely rather than trying to keep one shared voice's timing
+    // consistent across two different playback models.
+    this.keyboardSynth = new Tone.Synth({
+      oscillator: { type: "triangle" },
+      envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 0.1 },
+    }).toDestination();
+
     Tone.Transport.bpm.value = 85;
     this.isInitialized = true;
   },
@@ -113,18 +128,21 @@ export const AudioEngine = {
 
   /**
    * Melodic Workshop's "keyboard" — one syllable, played once, immediately.
-   * Deliberately NOT built on playOstinato: there's no repeat count or
-   * loop here, so none of Transport's cancel/schedule/Promise-timeout
-   * machinery is needed, just the same immediate triggerAttackRelease
-   * playStartingNote already uses. A short "8n" suits a rapid click-around-
-   * the-keyboard interaction better than playStartingNote's sustained "2n",
-   * which is tuned for that modal's "give the student time to listen"
-   * purpose specifically.
+   * Deliberately NOT built on playOstinato: there's no repeat count or loop
+   * here, so none of Transport's cancel/schedule/Promise-timeout machinery
+   * is needed, just an immediate triggerAttackRelease. Runs on its own
+   * dedicated `keyboardSynth` rather than the shared `synth` playSequence/
+   * playOstinato schedule notes on via Transport — mixing an immediate,
+   * Tone.now()-based trigger with that voice's Transport-scheduled ones
+   * throws "Start time must be strictly greater than previous start time"
+   * the moment a scheduled sequence runs shortly after a keyboard click,
+   * since the two playback models don't share a timeline. A short "8n"
+   * suits a rapid click-around-the-keyboard interaction.
    */
   async playNote(syllable, tonic) {
     await this.init();
     const note = resolveSolfegeToNote(syllable, tonic);
-    this.synth.triggerAttackRelease(note, "8n");
+    this.keyboardSynth.triggerAttackRelease(note, "8n");
   },
 
   /**
