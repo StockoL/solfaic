@@ -196,7 +196,7 @@ This table's names and hex values are the exact `atomic-tangerine`/`golden-polle
 
 ### III. Structure
 
-- **Multi-Page Information Architecture:** V1's single-page application is now three purpose-built pages — Home (orientation), Classroom (learning the curriculum before testing), and Practice Room (the dictation engine itself) — replacing a single overloaded view with a deliberate learn-then-test flow. Classroom's level selector filters _which curriculum content is being browsed_ (the reference matrix, the level guides); it has no connection to the active practice session — Practice Room's level is never manually selected.
+- **Multi-Page Information Architecture:** V1's single-page application is now three purpose-built pages — Home (orientation), Classroom (learning the curriculum before testing), and Practice Room (the dictation engine itself) — replacing a single overloaded view with a deliberate learn-then-test flow. Classroom's level selector filters _which curriculum content is being browsed_ (the level guide, the Preparation/Presentation/Practice panels); it has no connection to the active practice session — Practice Room's level is never manually selected.
 - **Two-Phase Exercise Resolution:** Each exercise is dictated once and answered twice — rhythm first, then solfège layered over the same confirmed rhythm — rather than treated as two separate listening events.
 - **The Audio Signal Chain, extended:** V1's count-in-then-playback sequence now includes a movable-do resolution step between generation and sound, plus a dedicated starting-note cue at the rhythm-to-pitch transition, giving the student a stable reference pitch before the second phase begins.
 
@@ -374,7 +374,7 @@ V1 claimed an "AAA-accessible high-contrast schema" without a documented basis f
 
 V1's single-page application is now three purpose-built pages — Home, Classroom, and Practice Room — replacing one overloaded view with a deliberate learn-then-test information architecture. The Practice Room specifically strips away all navigation chrome in favour of a thin, focus-mode header, protecting concentration during an actual exercise.
 
-![The Classroom page, with standard nav chrome, a Level Guide, and the Kodály reference matrix filtered to Level 1's syllables](./docs/screenshots/v2_classroom_page.png)
+![The Classroom page, with standard nav chrome and its Level Guide above the Preparation/Presentation/Practice tabs](./docs/screenshots/v2_classroom_page.png)
 
 ### Dual-Purpose Rest Cards & the Anacrusis Mechanism
 
@@ -402,21 +402,33 @@ V1's own stated pedagogical principle — real motifs from curated pools, not ar
 
 ### Mastery-Gated Progression
 
-Practice Room has no level switcher of its own — a session always begins at Level 1, and advancing to the next level happens only by completing three exercises correctly in a row, surfaced through the celebration modal. This is a deliberate constraint, not a missing feature: it prevents a student from skipping ahead to content they haven't actually demonstrated mastery of. Classroom's level dropdown is a separate, unrelated control — it filters which level's curriculum guide and reference-matrix rows are currently being viewed, with no effect on the active practice session at all.
+Practice Room has no level switcher of its own — a session always begins at Level 1, and advancing to the next level happens only by completing three exercises correctly in a row, surfaced through the celebration modal. This is a deliberate constraint, not a missing feature: it prevents a student from skipping ahead to content they haven't actually demonstrated mastery of. Classroom's level dropdown is a separate, unrelated control — it filters which level's curriculum guide and per-level panels are currently being viewed, with no effect on the active practice session at all.
+
+### Preparation, Presentation, and Practice Tabs
+
+Classroom's level content originally stacked five panels — Presentation, Rhythm Workshop, Melodic Workshop, Example, Interval Detective — as one continuous scroll beneath the Level Guide, alongside a static Kodály reference matrix. Nothing distinguished "the bit that names what's new" from "the bit you actually drill," so returning to a specific level meant scrolling and re-reading headings to relocate whichever panel was actually relevant.
+
+That flat list is now a three-tab folder strip — Preparation, Presentation, Practice — mirroring how these ideas are actually taught: experienced first, named second, and practised for as long as you like afterward. Presentation keeps its existing content unchanged; Practice bundles the four hands-on drills (Rhythm Workshop, Melodic Workshop, Example, Interval Detective) behind a single tab, so switching between "here's what's new" and "go practise it" is one click rather than scrolling past unrelated content to find it. Preparation shows a plain "not yet available" state at every level — a genuine placeholder, not a hidden bug, since no pre-exposure content has been built for any level yet. Each tab is coloured from the existing accessible palette (deep gold/tangerine/teal, no new tokens), and an active tab's fill merges directly into its panel below with no seam, reading as one continuous surface rather than two boxes touching. The now-redundant reference matrix — fully superseded by Presentation's real generated notation — was deleted entirely rather than kept in sync as a second source of truth.
+
+![The Classroom page's Preparation/Presentation/Practice tab strip, Presentation active by default](./docs/screenshots/v2_classroom_page.png)
 
 ### Presentation
 
-Classroom's level dropdown now reveals a Presentation panel alongside the existing Level Guide and reference matrix — the explicit "here's what's new" moment for whichever level is selected, isolating only the motif(s)/syllable(s) genuinely introduced at that level rather than its full cumulative pool. Rhythm content renders as real stick notation (the same `renderRhythmSVG` the practice reel itself uses, not a separate illustration), and melody as the same colour-coded solfège circles used throughout the app, sorted low-to-high by pitch rather than left in their pedagogically-ordered (not pitch-ordered) source data. The two tracks are independent: Level 4 has new rhythm motifs but no new syllable, and Presentation says so plainly instead of rendering an empty circle row. Levels 5-9 show a clear "not yet available" state rather than a broken or hidden section, since those levels' generation algorithms don't exist yet.
+Behind its own tab, Presentation is the explicit "here's what's new" moment for whichever level is selected, isolating only the motif(s)/syllable(s) genuinely introduced at that level rather than its full cumulative pool. Rhythm content renders as real stick notation (the same `renderRhythmSVG` the practice reel itself uses, not a separate illustration), and melody as the same colour-coded solfège circles used throughout the app, sorted low-to-high by pitch rather than left in their pedagogically-ordered (not pitch-ordered) source data. The two tracks are independent: Level 4 has new rhythm motifs but no new syllable, and Presentation says so plainly instead of rendering an empty circle row. Levels 5-9 show a clear "not yet available" state rather than a broken or hidden section, since those levels' generation algorithms don't exist yet.
 
 ![Presentation panel showing Level 1's new motif cards and ascending solfège circles](./docs/screenshots/v2_presentation_panel.png)
 
-### Rhythm & Melodic Workshop
+### Rhythm Workshop
 
-Two more Classroom panels turn Presentation's "here's what's new" moment into conscious, repeated practice — select-to-drill reels of that level's new content (rhythm motifs in one, solfège syllables in the other), each with a "Play Ostinato" button that loops the selected item a fixed number of times. A new `AudioEngine.playOstinato` method drives both, deliberately simpler than the Practice Room's `playSequence` since there's no bar/form/cadence structure or count-in to schedule — just "this one thing, repeated" — and the same beat-pulse highlight the practice workspace already used gets reused here, synced to whichever pad is currently sounding via a new `audio-ostinato-beat` event. Melodic Workshop draws one tonic per level view (not per click) so repeated plays don't jump register mid-browse, and shares Presentation's "no new solfège this level" message for Level 4 rather than showing an empty reel.
+Behind the Practice tab, a select-to-drill reel of that level's new rhythm motifs, with a "Play Ostinato" button that loops the selected motif a fixed number of times via `AudioEngine.playOstinato` — deliberately simpler than the Practice Room's `playSequence`, since there's no bar/form/cadence structure or count-in to schedule, just "this one thing, repeated." Motifs are grouped under Simple Time / Compound Time headings (`MOTIF_LIBRARY[id].type`, already stored per motif) rather than one undifferentiated row, so metre membership reads at a glance. A motif tied across two grid boxes (`tum-ti`, `syncopa`) renders both — the same tie-arc continuation the main Practice Room workspace already draws correctly — rather than silently showing only the first box, a rendering-only gap fixed at its shared root so Presentation's copy of the same motifs is correct too.
 
-![Rhythm Workshop, showing a selected motif pad and its Play Ostinato button](./docs/screenshots/v2_rhythm_workshop.png)
+![Rhythm Workshop at Level 2, showing the Simple/Compound grouping and tum-ti/syncopa's tied second box](./docs/screenshots/v2_rhythm_workshop.png)
 
-![Melodic Workshop, showing a selected solfège circle and its Play Ostinato button](./docs/screenshots/v2_melodic_workshop.png)
+### Melodic Workshop
+
+A keyboard, not a drill reel: every syllable in the level's **cumulative** toneset (not just what's new) renders as its own always-playable pad, click one and hear it immediately via a new, deliberately Transport-free `AudioEngine.playNote` — no selection state, no repeat count. A lone new-to-level syllable had no melodic context on its own in the original select-then-loop design (Level 3's `fa` specifically is close to useless in isolation); showing the full toneset a student already knows, free to explore, replaces that entirely rather than patching it.
+
+![Melodic Workshop at Level 3, showing every cumulative syllable as an independently clickable key](./docs/screenshots/v2_melodic_workshop.png)
 
 ### Example
 
