@@ -412,6 +412,7 @@ function renderIntervalDetectivePanel(levelId) {
   const toneset = sortSyllablesAscending(getCumulativeToneset(levelId));
   let currentTarget = null;
   let guessedSyllables = [];
+  let highlightTimeout = null;
 
   const feedback = document.createElement("p");
   feedback.className = "text-muted";
@@ -428,6 +429,28 @@ function renderIntervalDetectivePanel(levelId) {
       pad.classList.remove("is-selected", "is-correct", "is-incorrect");
       pad.setAttribute("aria-pressed", "false");
     });
+  }
+
+  /**
+   * The reference syllable's highlight needs to actually register, not
+   * blink past in the same instant the shared beat-synced pulse
+   * (pulseElement/is-pulsing) does for Rhythm Workshop's own, unrelated
+   * purpose — so this holds a full 2s on a JS timer instead of a CSS
+   * animation's fixed duration, on its own is-highlighted class kept
+   * separate from is-selected (the student's own guess marker), rather
+   * than routing through the shared ostinato-pulse mechanism at all.
+   */
+  function highlightReferencePad(pad) {
+    if (highlightTimeout) clearTimeout(highlightTimeout);
+    grid
+      .querySelectorAll(".solfege-pad.is-highlighted")
+      .forEach((p) => p.classList.remove("is-highlighted"));
+    if (!pad) return;
+    pad.classList.add("is-highlighted");
+    highlightTimeout = setTimeout(() => {
+      pad.classList.remove("is-highlighted");
+      highlightTimeout = null;
+    }, 2000);
   }
 
   function evaluateGuess() {
@@ -470,16 +493,18 @@ function renderIntervalDetectivePanel(levelId) {
       const padA = grid.querySelector(
         `.solfege-pad[data-syllable="${currentTarget.syllableA}"]`,
       );
-      // Only the reference (first) syllable highlights in sync with
-      // playback — the second plays with no highlight at all, so the
-      // student identifies it relative to the now-known first note rather
-      // than being asked for two unknowns cold. `null` here relies on
-      // pulseOstinatoTarget's existing guard against a falsy target.
+      // Only the reference (first) syllable highlights — for a full 2s,
+      // not the shared brief beat-pulse — so the student identifies the
+      // second relative to the now-known first note rather than being
+      // asked for two unknowns cold. No shared pulse targets needed here
+      // any more; highlightReferencePad handles it independently.
+      highlightReferencePad(padA);
+
       playOstinatoWithPulse(
         [currentTarget.syllableA, currentTarget.syllableB],
         1,
         currentLevelTonic,
-        [padA, null],
+        [],
       );
     }),
   );

@@ -127,6 +127,21 @@
   outline-offset: 2px;
 }
 
+/*
+ * Interval Detective's reference-syllable highlight — held for a full 2s
+ * on a JS timer (classroom.js's highlightReferencePad), not the shared
+ * is-pulsing beat-flash, so it actually registers rather than blinking
+ * past unnoticed. A glow in the pad's own colour, deliberately distinct
+ * from is-selected's thin ring so the two don't read as the same thing
+ * if the reference pad later becomes part of the student's own guess.
+ */
+.solfege-pad.is-highlighted {
+  box-shadow:
+    0 0 0 4px var(--color-surface-card),
+    0 0 0 7px var(--pad-color, var(--color-action-primary)),
+    0 0 16px 4px color-mix(in srgb, var(--pad-color, var(--color-action-primary)) 60%, transparent);
+}
+
 .motif-pad__svg {
   display: flex;
   align-items: center;
