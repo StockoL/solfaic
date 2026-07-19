@@ -372,17 +372,25 @@ V1's single-page application is now three purpose-built pages — Home, Classroo
 
 Rather than building a separate mechanism for pickup notes, the anacrusis reuses the exact same rest-initial motif cards (`rest-ti`, `rest-tika`) that already exist as ordinary mid-phrase rhythm content. Mid-phrase, they're just a card like any other — silence for the first half of the beat, a note for the second. At the very start of a phrase, that identical shape _is_ a pickup note: the rest counts the student in, and the sounding note lands right on the threshold into bar one, which is exactly what a musical anacrusis is. No second feature was built; an existing card was simply given a second job. An anacrusis adds precisely one beat to the exercise, never a full bar — the underlying phrase form is untouched, only a single pickup beat is prepended ahead of it.
 
+![A Level 3 exercise opening on the rest-ti anacrusis card — the same card that's ordinary mid-phrase content everywhere else](./docs/screenshots/v2_anacrusis_pickup.png)
+
 ### One Source of Truth for Notation
 
 Every rhythm card's stick-notation SVG and its paired solfège entry card are computed from the same input: a single per-motif table of relative note-duration weights. Column boundaries, stem positions, and beam groupings are all derived proportionally from that one table — meaning the rhythm card's third stem and the solfège card's third entry column are guaranteed to land in the same place, for _any_ motif, without two separately-authored assets ever needing to be hand-tuned into agreement. This was the fix for a real bug during development: tied motifs spanning two grid boxes (a dotted note whose sound continues into the next box) initially left the solfège card with no entry column at all in the continuation box, because nothing tracked which portion of a motif's duration belonged to which box. The fix generalised the whole rendering system rather than patching the one motif that exposed the problem.
+
+![tum-ti's two boxes: the dotted-crotchet stem paired with "so", and the tie-arc continuation correctly leaving its first cell blank before "mi"'s real column](./docs/screenshots/v2_notation_alignment.png)
 
 ### Workspace Pagination for Longer Phrases
 
 An 8-bar exercise in a busy metre can generate more individual rhythm cards than comfortably fit on one screen. Rather than shrinking cards to force a fit, or truncating longer phrases, the workspace paginates horizontally — dot navigation moves between pages of the same exercise, keeping every card at a consistent, legible size regardless of how long the underlying phrase is.
 
+![A longer exercise's workspace, with dot navigation at the bottom moving between pages of the same phrase](./docs/screenshots/v2_workspace_pagination.png)
+
 ### Tap-and-Hold Focus Editing
 
 Selecting the correct card from a scrolling reel on a small touchscreen is a fundamentally different interaction problem than doing it with a mouse. Tap-and-hold on any workspace card opens a focused "vignette" view — the single card enlarged, with its own mirrored reel for making a selection up close — before returning to the full board. A deliberate second interaction mode for a problem that a single, one-size-fits-all interface handles poorly.
+
+![The vignette view: a single workspace card enlarged and spotlit, with its own mirrored reel below for selecting up close](./docs/screenshots/v2_tap_hold_vignette.png)
 
 ### Irregular Metres Without a Second Generator
 
@@ -395,6 +403,8 @@ V1's own stated pedagogical principle — real motifs from curated pools, not ar
 ### Mastery-Gated Progression
 
 Practice Room has no level switcher of its own — a session always begins at Level 1, and advancing to the next level happens only by completing three exercises correctly in a row, surfaced through the celebration modal. This is a deliberate constraint, not a missing feature: it prevents a student from skipping ahead to content they haven't actually demonstrated mastery of. Classroom's level dropdown is a separate, unrelated control — it filters which level's curriculum guide and per-level panels are currently being viewed, with no effect on the active practice session at all.
+
+![The celebration modal marking a 3-streak mastery gate cleared — the only way Practice Room ever advances a level](./docs/screenshots/v2_confetti_celebration.png)
 
 ### Preparation, Presentation, and Practice Tabs
 
