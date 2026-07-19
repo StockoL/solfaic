@@ -10,9 +10,15 @@
  * up a matching top border in the same colour, so the seam between them
  * reads as one continuous edge rather than two separate boxes touching.
  */
+/*
+ * Layout (display/wrap/gap) comes entirely from the .cluster composition
+ * already on this element in the markup — Cluster's own flex-wrap is what
+ * lets Practice drop to a second row on narrow viewports instead of
+ * overflowing, so this block only tunes its gap rather than redeclaring
+ * display/wrap itself.
+ */
 .classroom-tabs {
-  display: flex;
-  gap: var(--space-3xs);
+  --gutter: var(--space-3xs);
 }
 
 .classroom-tab {
