@@ -27,7 +27,8 @@
 .workspace-grid {
   grid-template-columns: repeat(
     var(--grid-placement, 4),
-    calc((100% - 3 * var(--gutter, 1rem)) / 4)
+    var(--workspace-box-size, clamp(4.5rem, 18vw, 5.5rem))
+      /* calc((100% - 3 * var(--gutter, 1rem)) / 4) */
   );
   justify-content: center;
 }
@@ -156,7 +157,8 @@
 
 .workspace-box.is-focused .workspace-card {
   border-color: var(--color-action-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-action-primary) 30%, transparent);
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--color-action-primary) 30%, transparent);
 }
 
 .workspace-box[data-feedback="success"] .workspace-card {
@@ -169,7 +171,11 @@
 
 .workspace-box[data-feedback="corrected"] .workspace-card {
   border-color: var(--color-action-secondary);
-  background-color: color-mix(in srgb, var(--color-action-secondary) 8%, var(--color-surface-card));
+  background-color: color-mix(
+    in srgb,
+    var(--color-action-secondary) 8%,
+    var(--color-surface-card)
+  );
 }
 
 .workspace-box.is-shaking {
@@ -177,9 +183,16 @@
 }
 
 @keyframes workspace-box-shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
 }
 
 /*
@@ -193,8 +206,12 @@
 }
 
 @keyframes workspace-box-pulse {
-  0% { transform: scale(1.06); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .workspace-box__container {
@@ -255,7 +272,8 @@
  * fully silent — renderTieArcSVG() draws the arc + trailing stem directly,
  * so the plain "—" dash text is suppressed here to avoid doubling up.
  */
-.workspace-box[data-state="extension"] .workspace-card--rhythm.is-tie-arc::after {
+.workspace-box[data-state="extension"]
+  .workspace-card--rhythm.is-tie-arc::after {
   content: none;
 }
 
@@ -282,7 +300,8 @@
   }
   50% {
     border-color: var(--color-status-danger);
-    box-shadow: 0 0 10px 3px color-mix(in srgb, var(--color-status-danger) 60%, transparent);
+    box-shadow: 0 0 10px 3px
+      color-mix(in srgb, var(--color-status-danger) 60%, transparent);
   }
 }
 
@@ -345,7 +364,11 @@
     var(--color-status-success) 12%,
     transparent
   );
-  color: color-mix(in srgb, var(--color-status-success) 70%, var(--color-graphite));
+  color: color-mix(
+    in srgb,
+    var(--color-status-success) 70%,
+    var(--color-graphite)
+  );
 }
 
 .solfege-card__cell[data-feedback="error"] {
@@ -354,7 +377,11 @@
     var(--color-status-danger) 18%,
     transparent
   );
-  color: color-mix(in srgb, var(--color-status-danger) 70%, var(--color-graphite));
+  color: color-mix(
+    in srgb,
+    var(--color-status-danger) 70%,
+    var(--color-graphite)
+  );
   outline: 2px solid var(--color-status-danger);
   outline-offset: -1px;
   border-radius: 3px;
