@@ -417,6 +417,41 @@ test.describe("Solfaic Interactive Application Suite", () => {
       await expect(page.locator("#panel-interval-detective")).toBeVisible();
     });
 
+    // The tab strip is too wide to sit on one line on a narrow viewport
+    // (Preparation + Presentation + Practice overflow it), and previously
+    // ran off-screen instead of wrapping. .classroom-tabs now carries the
+    // .cluster composition class (the same flex-wrap layout primitive used
+    // for every other reel/group in this app), rather than a bespoke fix,
+    // so Practice should drop to a second row instead of overflowing.
+    test("The tab strip wraps to a second row on a narrow viewport instead of overflowing", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 320, height: 700 });
+      await page.goto("/classroom.html");
+
+      const preparationBox = await page.locator("#tab-preparation").boundingBox();
+      const presentationBox = await page.locator("#tab-presentation").boundingBox();
+      const practiceBox = await page.locator("#tab-practice").boundingBox();
+      expect(preparationBox).not.toBeNull();
+      expect(presentationBox).not.toBeNull();
+      expect(practiceBox).not.toBeNull();
+
+      // Preparation and Presentation still share the first row...
+      expect(
+        Math.abs(
+          /** @type {any} */ (preparationBox).y - /** @type {any} */ (presentationBox).y,
+        ),
+      ).toBeLessThan(5);
+      // ...while Practice wraps below them, not off the right edge of the
+      // viewport (which would leave its x + width beyond 320).
+      expect(/** @type {any} */ (practiceBox).y).toBeGreaterThan(
+        /** @type {any} */ (preparationBox).y + 5,
+      );
+      expect(
+        /** @type {any} */ (practiceBox).x + /** @type {any} */ (practiceBox).width,
+      ).toBeLessThanOrEqual(320);
+    });
+
     test("Presentation shows Level 1's 3 new motifs and 5 new syllables as real notation/colour circles", async ({
       page,
     }) => {
@@ -517,6 +552,43 @@ test.describe("Solfaic Interactive Application Suite", () => {
           expect(/** @type {any} */ (motif).type).toBe(expectedType);
         }
       }
+    });
+
+    // .classroom-panel's separator border lives on the NEXT panel's top
+    // edge, not this one's own bottom edge -- without a matching
+    // padding-block-end, a panel's own last content (Melodic Workshop's
+    // solfege circles, Example's Play button) sat flush against the
+    // following panel's border line with no gap at all.
+    test("Practice tab panels don't touch the separator rule of the panel after them", async ({
+      page,
+    }) => {
+      await page.goto("/classroom.html");
+      await page.locator("#tab-practice").click();
+
+      const melodicLastPad = page
+        .locator("#melodic-workshop-content .solfege-pad")
+        .last();
+      const examplePanelBox = await page.locator("#panel-example").boundingBox();
+      const melodicPadBox = await melodicLastPad.boundingBox();
+      expect(examplePanelBox).not.toBeNull();
+      expect(melodicPadBox).not.toBeNull();
+      const melodicGap =
+        /** @type {any} */ (examplePanelBox).y -
+        (/** @type {any} */ (melodicPadBox).y + /** @type {any} */ (melodicPadBox).height);
+      expect(melodicGap).toBeGreaterThan(15);
+
+      const exampleButtonBox = await page
+        .locator("#example-content button")
+        .boundingBox();
+      const intervalPanelBox = await page
+        .locator("#panel-interval-detective")
+        .boundingBox();
+      expect(exampleButtonBox).not.toBeNull();
+      expect(intervalPanelBox).not.toBeNull();
+      const exampleGap =
+        /** @type {any} */ (intervalPanelBox).y -
+        (/** @type {any} */ (exampleButtonBox).y + /** @type {any} */ (exampleButtonBox).height);
+      expect(exampleGap).toBeGreaterThan(15);
     });
 
     test("Presentation shows the 'no new solfège' message at Level 4, not empty circles or the unavailable badge", async ({
@@ -801,22 +873,18 @@ test.describe("Solfaic Interactive Application Suite", () => {
       ).toHaveClass(/is-correct/);
     });
 
-    // Only the reference (first) syllable should highlight in sync with
-    // playback -- the second plays with no highlight, matching how
-    // interval training is actually taught (one known reference, one
-    // unknown to identify). The pulse targets array is internal to
-    // classroom.js and never crosses into AudioEngine.playOstinato's own
-    // arguments, so this dispatches the same audio-ostinato-beat
-    // CustomEvent classroom.js's own listener reacts to, exercising the
-    // actual pulseOstinatoTarget contract directly. playOstinato itself is
-    // mocked to a never-resolving promise (matching the interception
-    // pattern other tests in this file already use) rather than left real
-    // -- playOstinatoWithPulse's finally block clears activeOstinatoTargets
-    // the moment the real call settles, and on WebKit specifically Tone.js
-    // throws synchronously during scheduling (a pre-existing engine
-    // compatibility issue), clearing the targets before this test's dispath
-    // before this test's dispatch.
-    test("Interval Detective highlights only the reference syllable during playback", async ({
+    // Only the reference (first) syllable should highlight -- the second
+    // plays with no highlight, matching how interval training is actually
+    // taught (one known reference, one unknown to identify). The
+    // highlight is applied directly in the "Play Interval" click handler
+    // (highlightReferencePad) rather than through the shared, brief
+    // is-pulsing beat-flash Rhythm Workshop uses, specifically so it can
+    // hold for a full 2s instead of blinking past in the same instant.
+    // playOstinato is mocked to a never-resolving promise (matching the
+    // interception pattern other tests in this file already use) purely
+    // to avoid a real, pre-existing WebKit/Tone.js scheduling error
+    // unrelated to the highlight this test actually checks.
+    test("Interval Detective highlights only the reference syllable, held for a full 2s", async ({
       page,
     }) => {
       await page.goto("/classroom.html");
@@ -831,32 +899,24 @@ test.describe("Solfaic Interactive Application Suite", () => {
 
       await container.getByRole("button", { name: "Play Interval" }).click();
 
-      const pads = container.locator(".solfege-pad");
-      expect(await pads.count()).toBeGreaterThan(0);
-      const pulsing = container.locator(".solfege-pad.is-pulsing");
-
-      await page.evaluate(() => {
-        document.dispatchEvent(
-          new CustomEvent("audio-ostinato-beat", { detail: { subIndex: 0 } }),
-        );
-      });
-      // subIndex 0 -> the reference pad (whichever the click just targeted
-      // internally) pulses; exactly one pad should carry it.
-      await expect(pulsing).toHaveCount(1);
-      const rawSyllable = await pulsing.getAttribute("data-syllable");
+      const highlighted = container.locator(".solfege-pad.is-highlighted");
+      // Exactly one pad highlights, immediately -- the second syllable
+      // never gets one at all.
+      await expect(highlighted).toHaveCount(1);
+      const rawSyllable = await highlighted.getAttribute("data-syllable");
       expect(rawSyllable).not.toBeNull();
       const referenceSyllable = /** @type {string} */ (rawSyllable);
 
-      await page.evaluate(() => {
-        document.dispatchEvent(
-          new CustomEvent("audio-ostinato-beat", { detail: { subIndex: 1 } }),
-        );
-      });
-      // subIndex 1 resolves to `null` in the targets array -- no pad should
-      // pick up a fresh pulse, and the reference pad from subIndex 0 is the
-      // only one that ever carried the class.
-      await expect(pulsing).toHaveCount(1);
-      await expect(pulsing).toHaveAttribute("data-syllable", referenceSyllable);
+      // Still highlighted well short of 2s -- this is the whole point of
+      // the fix: the old shared is-pulsing flash faded in ~250ms and would
+      // already be long gone by this point.
+      await page.waitForTimeout(1700);
+      await expect(highlighted).toHaveCount(1);
+      await expect(highlighted).toHaveAttribute("data-syllable", referenceSyllable);
+
+      // Gone comfortably after the 2s mark.
+      await page.waitForTimeout(600);
+      await expect(container.locator(".solfege-pad.is-highlighted")).toHaveCount(0);
     });
 
     test("Interval Detective names what to practise on a wrong guess, without crashing the flow", async ({
