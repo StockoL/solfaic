@@ -26,6 +26,7 @@ The underlying software architecture is intentionally decoupled and extensible, 
 7. [🤝 Credits & Acknowledgements](#credits)
 8. [🏗️ Development Log & Engineering Phases](#dev-log)
 9. [🧪 Testing & Quality Assurance Portfolio](#testing)
+10. [📜 Legacy: Version 1](#legacy)
 
 ---
 
@@ -129,6 +130,57 @@ _Focus: legibility, keyboard operability, and assistive-technology compatibility
 
 </details>
 
+### Initial V2 Planning Document
+
+Before the five planes below were worked out in detail, a short planning document ([`docs/v2-initial-planning.pdf`](./docs/v2-initial-planning.pdf)) sketched V2's revised sitemap, workspace card geometry, and starting design-system decisions. Much of what follows in this section is the elaboration of that document rather than a from-scratch redesign — most of its concrete calls (the palette, the type/space scale, the CUBE reorganisation) survived into the shipped app essentially unchanged.
+
+<details>
+<summary><b>🔍 Expand Initial V2 Planning Notes & Wireframes</b></summary>
+
+**Revised sitemap** — three pages, replacing V1's single view:
+
+- **Home:** a traditional nav (hamburger on mobile) for Home/Classroom/Practice Room, a hero with a "Practice Now"/"Start" CTA, a footer, and a logo animation "drawn on" navigating the 8 colours used for the solfège buttons — the earliest record of both the colour-coded solfège idea and an animated brand moment, each committed to writing well before either was actually built.
+
+  ![Initial V2 home page wireframe](./docs/wireframes/v2-wireframe-home.png)
+
+- **Classroom:** a new home for the existing Kodály reference matrix, plus "introductory learning content for each level (togglable) including video explanations." The Classroom page and its reference matrix shipped in V2 as planned; video explanations did not — they remain deferred pending real recorded material, not because the idea came later. The five per-level Classroom panels built in the most recent sprint (Presentation, both Workshops, Example, Interval Detective) are this same "introductory learning content" intention, fulfilled through generated audio and notation rather than the video this document originally specified.
+
+  ![Initial V2 Classroom page wireframe](./docs/wireframes/v2-wireframe-classroom.png)
+
+- **Practice Room:** a stripped-back "focus mode" — workspace grid, back/replay/submit buttons, a very thin header, and a new horizontally-scrolling **reel** for browsing input cards, explicitly specified to animate cards on and off "like a rolodex."
+
+  ![Initial V2 Practice Room wireframe](./docs/wireframes/v2-wireframe-practice.png)
+
+**Workspace card geometry** — the plan hand-enumerated column layouts case by case (`ta`: one centred column; `ta-ti`: three unequal columns, the first two merged; `ti-tika`: four unequal columns, first two merged, then two smaller ones; and so on), with the constraint that a rhythm card's stick positions must vertically align with its solfège card's letters beneath it.
+
+![Initial box-design sketch enumerating column layouts for the ta/ti-tika family of motifs](./docs/wireframes/v2-box-design.png)
+
+That case-by-case enumeration is exactly what `rhythm-notation.js` later replaced with a single weight-proportional formula, deriving any motif's column layout from one shared duration-weight table instead of hand-tuning each case individually — see [One Source of Truth for Notation](#features).
+
+**Card behaviours (UX)** — several interaction rules were specified up front, including that "users can select from the reel during playback." That rule did carry through: only the Replay and Submit buttons themselves lock against re-entry while audio is sounding (`sessionState.currentState === "PLAYING"`); reel and workspace selection are deliberately left unguarded, exactly as planned.
+
+**Colour palette** — three candidate directions were considered ([option 1](https://coolors.co/202020-63768d-e01a4f-f15946-f9c22e), [option 2](https://coolors.co/4c5454-ff715b-ffffff-1ea896-523f38), [option 3](https://coolors.co/202020-f9c22e-1be7ff-6eeb83-ff5714)) before settling on a bespoke palette, worked out in the same document:
+
+| Token                 | Name             | Hex       | Purpose                                        |
+| :-------------------- | :--------------- | :-------- | :---------------------------------------------- |
+| Surface (background)  | Alabaster Grey   | `#DDDDDD` | Soft, warm off-white to reduce glare             |
+| Surface (card/UI)     | White            | `#FFFFFF` | Crisp "sheet music" container effect             |
+| Primary (Brand)       | Atomic Tangerine | `#FF6B35` | Hero colour for primary actions/buttons          |
+| Secondary (Accent)    | Golden Pollen    | `#FFC857` | Active states, highlights, secondary tools       |
+| Success               | Muted Teal       | `#82B895` | Legible success state on light backgrounds       |
+| Text (Primary)        | Graphite         | `#2D2D2D` | High legibility, softer than harsh black          |
+| Text (Muted)          | Charcoal         | `#545454` | Secondary text, labels, helper info               |
+
+This table's names and hex values are the exact `atomic-tangerine`/`golden-pollen`/`muted-teal`/`graphite`/`charcoal`/`alabaster-grey` primitives in the shipped `design-tokens.json` — the palette shipped essentially as planned. What the plan didn't yet anticipate: the later accessibility audit (Development Log, phase 3) found several of these values too light for text at AA contrast, and added separately-derived "deep" variants for anything text-bearing, keeping these original values as decoration-only `accent-vivid-*` tokens rather than replacing them outright.
+
+**Typography** — five display/body pairing ideas were sketched against the brand wordmark, one of them "Solfaic and Poppins." The paired display face changed (Galindo, not this document's own hand-lettered "Solfaic," was the eventual heading typeface), but Poppins carried straight through as the shipped body copy face. The fluid type and space scales specified alongside — generated via [utopia.fyi](https://utopia.fyi) at a 1.2 ratio between 320px and 1240px — were carried into `design-tokens.json` unchanged, custom `space-s-l` pair included.
+
+**File directory & CUBE CSS** — the plan opens by citing V1's own file sizes as the reason for the rewrite: 1,630 lines of CSS and 1,619 lines of JavaScript, both in single monolithic files. Adopting Andy Bell's CUBE CSS methodology and splitting into a proper `src/` tree (see [System Architecture & Logic Maps](#architecture) and the repository layout in [Credits & Acknowledgements](#credits)) was the proposed fix — and is what actually shipped.
+
+**Background animation credit** — the hero particle-field concept (see "An Ambient, Branded Hero Animation" below) was sourced in this same document, crediting Louis Hoebregts' CodePen sketch as the starting reference (full credit in [Credits & Acknowledgements](#credits)).
+
+</details>
+
 ### I. Strategy
 
 - **User Goals:** To master both rhythmic and melodic (movable-do) dictation through an interactive, step-by-step training workspace, spanning a full pedagogical curriculum grounded in a real Kodály syllabus rather than an invented difficulty curve.
@@ -173,11 +225,15 @@ V1's specific examples (confetti, frustration-shake) mostly carried forward conc
   <video src="https://github.com/user-attachments/assets/3823e572-a5a2-4273-bf77-cca81b71c1b0" autoplay loop muted playsinline aria-label="Short looping video demonstration of Solfaic workspace showing a successful notation submission triggering a canvas-wide 3D confetti downpour celebration." width="100%" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></video>
 </div>
 
+<p align="center"><sub>Original source clip: <a href="./docs/animations/confetti-clip.mp4">docs/animations/confetti-clip.mp4</a></sub></p>
+
 - **Tactile Frustration Microgestures (Error Handling):** Attempting to submit an incomplete exercise causes the entire canvas row to execute an aggressive **horizontal frustration shake** (`is-shaking`), while empty slots flash with a **crimson halo pulse** (`is-empty-panic`).
 
 <div align="center">
   <video src="https://github.com/user-attachments/assets/2f392455-8e18-492f-8009-d7da8a6000f1" autoplay loop muted playsinline aria-label="Short looping video demonstration of Solfaic workspace showing the horizonal frustration shake triggered by the user when the workspace is incomplete." width="100%" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></video>
 </div>
+
+<p align="center"><sub>Original source clip: <a href="./docs/animations/is-shaking-clip.mp4">docs/animations/is-shaking-clip.mp4</a></sub></p>
 
 - **Touch-First Sensation Mapping:** Hover definitions are suppressed entirely on mobile to eliminate sticky layout scaling freezes. Touch inputs focus exclusively on the high-fidelity `:active` state, delivering a crisp, immediate touch-down spring compression feel (`scale(0.96)`) the precise millisecond a finger makes contact.
 
@@ -420,6 +476,7 @@ From the cloned root directory, after completing the Build Step above:
 ## 7. <a name="credits"></a> 🤝 Credits & Acknowledgements
 
 - **Tone.js (v14):** External framework used to script the transport sequence engine scheduler, now driving both rhythm playback and movable-do pitch resolution.
+- **Louis Hoebregts ([CodePen: Mamboleoo](https://codepen.io/Mamboleoo/pen/BxMQYQ)):** Source reference for the homepage's ambient hero particle-field animation concept, cited from V2's earliest planning stage.
 - **Josh Comeau ("Whimsical Animations" Course):** Directly inspired the confetti celebration and pushable CTA button's spring physics — deliberately reserved for once-per-page hero moments in V2, rather than applied throughout.
 - **Andy Bell (CUBE CSS Methodology):** The architectural foundation for the entire V2 presentation layer — Composition, Utility, Block, Exception, and native CSS cascade layers replacing V1's single stylesheet.
 - **LooseLeaf-ui (Prior Personal Design System):** The source library for V2's Compositions and several Blocks, adapted to Solfaic's specific tokens, semantics, and DOM structure rather than used verbatim.
@@ -498,7 +555,7 @@ V2's build ran in five loosely sequential phases, each building directly on the 
 3. **CUBE CSS rebuild & the accessible palette rollout** — migrating from V1's single stylesheet to a four-layer cascade architecture, then auditing and darkening every text-bearing button/badge/status colour to a verified WCAG AA 4.5:1 minimum, while deliberately keeping the hero particle field and focus ring on the brighter, pre-darkened tokens.
 4. **Two-phase workspace & shared notation rendering** — rebuilding the practice workspace around a metre-aware grid and a single shared duration table that drives both the rhythm SVG and the paired solfège entry columns, so the two never drift out of alignment.
 5. **Test harness build-out** — a Node harness for the two pure-function engines (`tests/engine-verification.mjs`), followed by a full Playwright rewrite of the E2E suite to match the two-phase rhythm/pitch flow and the current page structure.
-6. **Classroom content sprint** — Presentation, Rhythm Workshop, Melodic Workshop, Example, and Interval Detective, all built on existing generated content or new engine logic rather than needing real repertoire or video. A new `AudioEngine.playOstinato` method and a small level-of-introduction/interval-naming data layer (`introducedAtLevel`, `getNewlyIntroducedSyllables`, `INTERVAL_NAMES`) underpin all five, wired to Classroom's level dropdown via a `classroom-level-changed` event rather than a direct module import.
+6. **Classroom content sprint** — Presentation, Rhythm Workshop, Melodic Workshop, Example, and Interval Detective, all built on existing generated content or new engine logic rather than needing real repertoire or video. This fulfils "introductory learning content for each level" much as V2's initial planning document scoped it from day one — video explanations aside, which remain deferred pending real recorded material — rather than a new idea introduced at this stage. A new `AudioEngine.playOstinato` method and a small level-of-introduction/interval-naming data layer (`introducedAtLevel`, `getNewlyIntroducedSyllables`, `INTERVAL_NAMES`) underpin all five, wired to Classroom's level dropdown via a `classroom-level-changed` event rather than a direct module import.
 
 ### Notable Bugs Caught & Fixed
 
@@ -620,5 +677,24 @@ Playwright's Mobile Safari project runs the WebKit _engine_, not physical Safari
 
 - **Tone.js Cold-Start Lag:** On older mobile processors, the very first note triggered after initialisation can occasionally experience a ~50ms audio latency spike as the browser compiles the Web Audio API oscillator nodes. Subsequent playbacks run entirely in real-time.
 - **Anacrusis-affected exercises may under-size the submission board:** `app.js`'s `startLevel()` sizes the answer board from `bars × ticksPerBar` rather than the generated exercise's actual `totalTicks`. Levels 3 and 4 can generate an anacrusis (pickup beat), which adds one tick the board doesn't currently budget for — worth verifying directly before those levels see wider use.
+
+<p align="right">(<a href="#top">Back to top</a>)</p>
+
+## 10. <a name="legacy"></a> 📜 Legacy: Version 1
+
+Everything above describes V2. V1, in its own words, was "an interactive web application designed to isolate and build rhythmic dictation and metric internalisation through a pedagogical progressive 'ladder'" — a single-page, rhythm-only dictation tool, built as a deliberately decoupled module so a future pitch-training layer (V2's melodic engine) could be added without a structural rewrite.
+
+The complete V1 README is preserved as-is: **[docs/README-v1-archive.md](./docs/README-v1-archive.md)**.
+
+A few of its original design and QA artefacts:
+
+![Initial desktop wireframe for V1's single-page level view](./docs/wireframes/solfaic-wireframe-level-view-desktop.png)
+_The earliest desktop concept for V1's level-select and dictation view, before the three-page V2 restructure._
+
+![Initial mobile wireframe for V1's performance/workspace view](./docs/wireframes/solfaic-wireframe-performance-view-mobile.png)
+_The earliest sketch of the rhythm workspace itself, stacked for mobile._
+
+![V1's shipped desktop dashboard, showing the dual-column curriculum reference and rhythm workspace](./docs/screenshots/desktop_dashboard_screenshot.png)
+_What that concept looked like once built — V1's final single-page layout, since replaced by V2's Home/Classroom/Practice Room split._
 
 <p align="right">(<a href="#top">Back to top</a>)</p>
