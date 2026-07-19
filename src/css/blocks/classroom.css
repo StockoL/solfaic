@@ -60,9 +60,14 @@
  * block above them, so — unlike .level-guide, which has no box styling of
  * its own — each gets a plain top-border separator to read as distinct
  * sections rather than one long undifferentiated block of headings.
+ * padding-block (both sides, not just -start) matters here specifically:
+ * the border lives on the NEXT panel's top edge, not this one's bottom, so
+ * without a bottom padding too, a panel's own last content (Melodic
+ * Workshop's circles, Example's Play button) sits flush against that next
+ * panel's separator line with nothing to actually create the gap.
  */
 .classroom-panel {
-  padding-block-start: var(--space-l);
+  padding-block: var(--space-l);
   border-block-start: 1px solid var(--color-border-subtle);
 }
 
