@@ -417,39 +417,42 @@ test.describe("Solfaic Interactive Application Suite", () => {
       await expect(page.locator("#panel-interval-detective")).toBeVisible();
     });
 
-    // The tab strip is too wide to sit on one line on a narrow viewport
-    // (Preparation + Presentation + Practice overflow it), and previously
-    // ran off-screen instead of wrapping. .classroom-tabs now carries the
-    // .cluster composition class (the same flex-wrap layout primitive used
-    // for every other reel/group in this app), rather than a bespoke fix,
-    // so Practice should drop to a second row instead of overflowing.
-    test("The tab strip wraps to a second row on a narrow viewport instead of overflowing", async ({
+    // The tab strip is too wide to sit on one line on a narrow viewport,
+    // and previously ran off-screen instead of wrapping. .classroom-tabs
+    // now carries the .cluster composition class (the same flex-wrap
+    // layout primitive used for every other reel/group in this app),
+    // rather than a bespoke fix, so whichever tab(s) don't fit drop to a
+    // new row instead of overflowing. Exactly how many share the first
+    // row depends on rendered label width (font metrics genuinely differ
+    // by platform/CI runner), so this checks the invariant that actually
+    // matters -- nothing overflows the viewport, and wrapping actually
+    // happens -- rather than assuming a specific row layout.
+    test("The tab strip wraps onto multiple rows on a narrow viewport instead of overflowing", async ({
       page,
     }) => {
       await page.setViewportSize({ width: 320, height: 700 });
       await page.goto("/classroom.html");
 
-      const preparationBox = await page.locator("#tab-preparation").boundingBox();
-      const presentationBox = await page.locator("#tab-presentation").boundingBox();
-      const practiceBox = await page.locator("#tab-practice").boundingBox();
-      expect(preparationBox).not.toBeNull();
-      expect(presentationBox).not.toBeNull();
-      expect(practiceBox).not.toBeNull();
-
-      // Preparation and Presentation still share the first row...
-      expect(
-        Math.abs(
-          /** @type {any} */ (preparationBox).y - /** @type {any} */ (presentationBox).y,
+      const boxes = await Promise.all(
+        ["#tab-preparation", "#tab-presentation", "#tab-practice"].map((sel) =>
+          page.locator(sel).boundingBox(),
         ),
-      ).toBeLessThan(5);
-      // ...while Practice wraps below them, not off the right edge of the
-      // viewport (which would leave its x + width beyond 320).
-      expect(/** @type {any} */ (practiceBox).y).toBeGreaterThan(
-        /** @type {any} */ (preparationBox).y + 5,
       );
-      expect(
-        /** @type {any} */ (practiceBox).x + /** @type {any} */ (practiceBox).width,
-      ).toBeLessThanOrEqual(320);
+      for (const box of boxes) {
+        expect(box).not.toBeNull();
+        const b = /** @type {any} */ (box);
+        // No tab's right edge runs past the viewport -- the actual bug
+        // being guarded against, regardless of how the row breaks fall.
+        expect(b.x + b.width).toBeLessThanOrEqual(320);
+      }
+
+      // Wrapping genuinely happened -- not every tab sharing one row that
+      // simply happens to still fit at this width on whichever font
+      // metrics are in play.
+      const rowsUsed = new Set(
+        boxes.map((box) => Math.round(/** @type {any} */ (box).y / 5) * 5),
+      );
+      expect(rowsUsed.size).toBeGreaterThan(1);
     });
 
     test("Presentation shows Level 1's 3 new motifs and 5 new syllables as real notation/colour circles", async ({
