@@ -119,17 +119,6 @@ _Focus: legibility, keyboard operability, and assistive-technology compatibility
 
 ## 3. <a name="ux-strategy"></a> 🖼️ UX Design Strategy (The 5 Planes)
 
-### Initial Wireframes
-
-<details>
-<summary><b>🔍 Expand Initial UI Wireframes</b></summary>
-
-![Initial Desktop Concept](./docs/wireframes/solfaic-wireframe-level-view-desktop.png)
-![Initial Mobile Concept](./docs/wireframes/solfaic-wireframe-level-view-mobile.png)
-![Performance Workspace](./docs/wireframes/solfaic-wireframe-performance-view-mobile.png)
-
-</details>
-
 ### Initial V2 Planning Document
 
 Before the five planes below were worked out in detail, a short planning document ([`docs/v2-initial-planning.pdf`](./docs/v2-initial-planning.pdf)) sketched V2's revised sitemap, workspace card geometry, and starting design-system decisions. Much of what follows in this section is the elaboration of that document rather than a from-scratch redesign — most of its concrete calls (the palette, the type/space scale, the CUBE reorganisation) survived into the shipped app essentially unchanged.
@@ -161,15 +150,15 @@ That case-by-case enumeration is exactly what `rhythm-notation.js` later replace
 
 **Colour palette** — three candidate directions were considered ([option 1](https://coolors.co/202020-63768d-e01a4f-f15946-f9c22e), [option 2](https://coolors.co/4c5454-ff715b-ffffff-1ea896-523f38), [option 3](https://coolors.co/202020-f9c22e-1be7ff-6eeb83-ff5714)) before settling on a bespoke palette, worked out in the same document:
 
-| Token                 | Name             | Hex       | Purpose                                        |
-| :-------------------- | :--------------- | :-------- | :---------------------------------------------- |
-| Surface (background)  | Alabaster Grey   | `#DDDDDD` | Soft, warm off-white to reduce glare             |
-| Surface (card/UI)     | White            | `#FFFFFF` | Crisp "sheet music" container effect             |
-| Primary (Brand)       | Atomic Tangerine | `#FF6B35` | Hero colour for primary actions/buttons          |
-| Secondary (Accent)    | Golden Pollen    | `#FFC857` | Active states, highlights, secondary tools       |
-| Success               | Muted Teal       | `#82B895` | Legible success state on light backgrounds       |
-| Text (Primary)        | Graphite         | `#2D2D2D` | High legibility, softer than harsh black          |
-| Text (Muted)          | Charcoal         | `#545454` | Secondary text, labels, helper info               |
+| Token                | Name             | Hex       | Purpose                                    |
+| :------------------- | :--------------- | :-------- | :----------------------------------------- |
+| Surface (background) | Alabaster Grey   | `#DDDDDD` | Soft, warm off-white to reduce glare       |
+| Surface (card/UI)    | White            | `#FFFFFF` | Crisp "sheet music" container effect       |
+| Primary (Brand)      | Atomic Tangerine | `#FF6B35` | Hero colour for primary actions/buttons    |
+| Secondary (Accent)   | Golden Pollen    | `#FFC857` | Active states, highlights, secondary tools |
+| Success              | Muted Teal       | `#82B895` | Legible success state on light backgrounds |
+| Text (Primary)       | Graphite         | `#2D2D2D` | High legibility, softer than harsh black   |
+| Text (Muted)         | Charcoal         | `#545454` | Secondary text, labels, helper info        |
 
 This table's names and hex values are the exact `atomic-tangerine`/`golden-pollen`/`muted-teal`/`graphite`/`charcoal`/`alabaster-grey` primitives in the shipped `design-tokens.json` — the palette shipped essentially as planned. What the plan didn't yet anticipate: the later accessibility audit (Development Log, phase 3) found several of these values too light for text at AA contrast, and added separately-derived "deep" variants for anything text-bearing, keeping these original values as decoration-only `accent-vivid-*` tokens rather than replacing them outright.
 
@@ -217,25 +206,28 @@ This table's names and hex values are the exact `atomic-tangerine`/`golden-polle
 V1's specific examples (confetti, frustration-shake) mostly carried forward conceptually but are joined by new V2-specific whimsy:
 
 - **Colour-Coded Solfège Circles** turn an abstract pitch relationship into an immediate visual one.
+
+![The solfège reel, each syllable rendered as its own distinctly-coloured circle](./docs/screenshots/v2_colour_coded_solfege.png)
+
 - **A Tactile, Physical Primary CTA** - a Comeau-style 3D "pushable" button, reserved deliberately for once-per-page hero moments rather than applied everywhere, so the effect stays a moment of delight rather than becoming visual noise on frequently-clicked buttons like Submit.
+
+![The homepage's pushable CTA mid-press, its 3D front compressed toward the shadow beneath it](./docs/screenshots/v2_pushable_cta_pressed.png)
+
 - **An Ambient, Branded Hero Animation** — a particle field on the homepage, coloured from the same solfège palette used in the Practice Room, seeding the app's visual language before a student ever reaches an exercise.
+
+![The homepage hero, its ambient particle field seeding the solfège colour palette before any exercise begins](./docs/screenshots/v2_home_hero.png)
+
 - **Cinematic Confetti**, carried over from V1, now correctly layered so the celebration modal reads as sitting in front of the burst rather than beneath it.
 
-<div align="center">
-  <video src="https://github.com/user-attachments/assets/3823e572-a5a2-4273-bf77-cca81b71c1b0" autoplay loop muted playsinline aria-label="Short looping video demonstration of Solfaic workspace showing a successful notation submission triggering a canvas-wide 3D confetti downpour celebration." width="100%" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></video>
-</div>
-
-<p align="center"><sub>Original source clip: <a href="./docs/animations/confetti-clip.mp4">docs/animations/confetti-clip.mp4</a></sub></p>
+![The celebration modal reading as sitting in front of a dense, colourful confetti burst](./docs/screenshots/v2_confetti_celebration.png)
 
 - **Tactile Frustration Microgestures (Error Handling):** Attempting to submit an incomplete exercise causes the entire canvas row to execute an aggressive **horizontal frustration shake** (`is-shaking`), while empty slots flash with a **crimson halo pulse** (`is-empty-panic`).
 
-<div align="center">
-  <video src="https://github.com/user-attachments/assets/2f392455-8e18-492f-8009-d7da8a6000f1" autoplay loop muted playsinline aria-label="Short looping video demonstration of Solfaic workspace showing the horizonal frustration shake triggered by the user when the workspace is incomplete." width="100%" style="max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></video>
-</div>
-
-<p align="center"><sub>Original source clip: <a href="./docs/animations/is-shaking-clip.mp4">docs/animations/is-shaking-clip.mp4</a></sub></p>
+![Empty workspace slots mid-panic, each glowing with the crimson halo pulse](./docs/screenshots/v2_frustration_shake.png)
 
 - **Touch-First Sensation Mapping:** Hover definitions are suppressed entirely on mobile to eliminate sticky layout scaling freezes. Touch inputs focus exclusively on the high-fidelity `:active` state, delivering a crisp, immediate touch-down spring compression feel (`scale(0.96)`) the precise millisecond a finger makes contact.
+
+![A reel pad held mid-touch, scaled down to its :active state — subtle by design, a compression feel rather than a dramatic visual](./docs/screenshots/v2_touch_active_pad.png)
 
 <p align="right">(<a href="#top">Back to top</a>)</p>
 
