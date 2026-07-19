@@ -112,6 +112,22 @@ export const AudioEngine = {
   },
 
   /**
+   * Melodic Workshop's "keyboard" — one syllable, played once, immediately.
+   * Deliberately NOT built on playOstinato: there's no repeat count or
+   * loop here, so none of Transport's cancel/schedule/Promise-timeout
+   * machinery is needed, just the same immediate triggerAttackRelease
+   * playStartingNote already uses. A short "8n" suits a rapid click-around-
+   * the-keyboard interaction better than playStartingNote's sustained "2n",
+   * which is tuned for that modal's "give the student time to listen"
+   * purpose specifically.
+   */
+  async playNote(syllable, tonic) {
+    await this.init();
+    const note = resolveSolfegeToNote(syllable, tonic);
+    this.synth.triggerAttackRelease(note, "8n");
+  },
+
+  /**
    * Schedules and plays the rhythm sequence, singing `pitches` over it when
    * given — one solfège syllable per SOUNDING SUB-NOTE in timeline order
    * (restMask-aware), not one per rhythm event. A motif like "titi" is a

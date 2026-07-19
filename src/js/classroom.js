@@ -13,7 +13,7 @@
  */
 
 import { MAX_LEVEL, MOTIF_LIBRARY, allowedTonics } from "./data.js";
-import { renderRhythmSVG } from "./rhythm-notation.js";
+import { renderRhythmSVG, renderTieArcSVG } from "./rhythm-notation.js";
 import { resolveSolfegeColor, sortSyllablesAscending } from "./core.js";
 import {
   getPresentationContent,
@@ -27,6 +27,7 @@ import {
 import { AudioEngine } from "./audio.js";
 
 const DOM = {
+  preparationContent: document.getElementById("preparation-content"),
   presentationContent: document.getElementById("presentation-content"),
   rhythmWorkshopContent: document.getElementById("rhythm-workshop-content"),
   melodicWorkshopContent: document.getElementById("melodic-workshop-content"),
@@ -36,17 +37,27 @@ const DOM = {
   ),
 };
 
+const DEFAULT_UNAVAILABLE_MESSAGE =
+  "This level's generation algorithm hasn't been built yet — check back once it has.";
+
 /**
  * A level whose generation algorithm doesn't exist yet (Levels 5-9) — shown
  * instead of hiding the section outright, so a student can see what's
- * coming rather than finding a gap in the page.
+ * coming rather than finding a gap in the page. Also reused, with an
+ * overridden message, for the Preparation tab: unlike Presentation/Practice,
+ * Preparation has no content for ANY level yet, so its "not yet available"
+ * reason isn't about a missing generation algorithm at all — reusing the
+ * default copy there would state the wrong reason.
  */
-export function renderUnavailableState(container) {
+export function renderUnavailableState(
+  container,
+  message = DEFAULT_UNAVAILABLE_MESSAGE,
+) {
   if (!container) return;
   container.innerHTML = `
     <div class="panel-unavailable">
       <span class="badge">Not yet available</span>
-      <p>This level's generation algorithm hasn't been built yet — check back once it has.</p>
+      <p>${message}</p>
     </div>
   `;
 }
@@ -70,6 +81,44 @@ export function buildMotifDisplayPad(motifId) {
   pad.dataset.motifId = motifId;
   pad.innerHTML = `<div class="motif-pad__svg">${renderRhythmSVG(motifId)}</div><span class="motif-pad__label">${motifData.label}</span>`;
   return pad;
+}
+
+/**
+ * Box B for a motif tied across two boxes (tum-ti, syncopa v2) — purely
+ * decorative continuation, not independently selectable (the main Practice
+ * Room workspace doesn't wire clicks on its own extension boxes either), so
+ * this is a plain <div>, aria-hidden, not a second button.
+ */
+function buildMotifExtensionPad() {
+  const pad = document.createElement("div");
+  pad.className = "motif-pad-extension";
+  pad.setAttribute("aria-hidden", "true");
+  pad.innerHTML = `<div class="motif-pad__svg is-tie-arc">${renderTieArcSVG()}</div><span class="motif-pad__label">&nbsp;</span>`;
+  return pad;
+}
+
+/**
+ * Wraps buildMotifDisplayPad with box B when the motif needs one, so every
+ * call site (Presentation's rhythm cluster, Rhythm Workshop's reel) shows a
+ * tied motif's real second box instead of a single-box assumption that
+ * silently drops it — the bug this was written to fix. Returns the element
+ * to append (a pair-wrapper for tied motifs, or just the pad itself
+ * otherwise) alongside the actual interactive pad, since selection logic
+ * only ever targets box A.
+ */
+function buildMotifCard(motifId) {
+  const pad = buildMotifDisplayPad(motifId);
+  const motif = MOTIF_LIBRARY[motifId];
+
+  if (motif.ticks > 1 && motif.tieContinuation) {
+    const pair = document.createElement("div");
+    pair.className = "motif-pad-pair";
+    pair.appendChild(pad);
+    pair.appendChild(buildMotifExtensionPad());
+    return { element: pair, interactivePad: pad };
+  }
+
+  return { element: pad, interactivePad: pad };
 }
 
 /**
@@ -118,7 +167,7 @@ function renderPresentationPanel(levelId) {
   const rhythmCluster = document.createElement("div");
   rhythmCluster.className = "cluster";
   content.newMotifIds.forEach((motifId) => {
-    rhythmCluster.appendChild(buildMotifDisplayPad(motifId));
+    rhythmCluster.appendChild(buildMotifCard(motifId).element);
   });
   rhythmSection.appendChild(rhythmCluster);
   container.appendChild(rhythmSection);
@@ -152,9 +201,14 @@ function renderPresentationPanel(levelId) {
  */
 let activeOstinatoTargets = [];
 
-function pulseOstinatoTarget(subIndex) {
-  if (activeOstinatoTargets.length === 0) return;
-  const target = activeOstinatoTargets[subIndex % activeOstinatoTargets.length];
+/**
+ * Double-rAF remove/re-add of .is-pulsing, shared by the ostinato-driven
+ * beat highlight below and the Melodic Workshop keyboard's own per-click
+ * pulse (which has no audio-ostinato-beat event to listen for — a single
+ * immediate note has nothing to schedule against, so it just pulses itself
+ * directly in its own click handler instead).
+ */
+function pulseElement(target) {
   if (!target) return;
   target.classList.remove("is-pulsing");
   requestAnimationFrame(() => {
@@ -162,6 +216,11 @@ function pulseOstinatoTarget(subIndex) {
       target.classList.add("is-pulsing");
     });
   });
+}
+
+function pulseOstinatoTarget(subIndex) {
+  if (activeOstinatoTargets.length === 0) return;
+  pulseElement(activeOstinatoTargets[subIndex % activeOstinatoTargets.length]);
 }
 
 async function playOstinatoWithPulse(content, repeatCount, tonic, targets) {
@@ -203,6 +262,17 @@ function buildPlayButton(label, onClick) {
   return btn;
 }
 
+/**
+ * Simple/compound grouping, in that order — MOTIF_LIBRARY[id].type already
+ * stores this per motif, so this is purely a render-time partition, no new
+ * data modeling. A level whose new motifs are all one metre family (neither
+ * is guaranteed) just renders the one group that actually has content.
+ */
+const RHYTHM_METRE_GROUPS = [
+  { type: "simple", label: "Simple Time" },
+  { type: "compound", label: "Compound Time" },
+];
+
 function renderRhythmWorkshopPanel(levelId) {
   const container = DOM.rhythmWorkshopContent;
   if (!container) return;
@@ -215,68 +285,77 @@ function renderRhythmWorkshopPanel(levelId) {
   }
 
   let selectedMotifId = newMotifIds[0];
+  let isFirstPad = true;
 
-  const reel = document.createElement("div");
-  reel.className = "cluster";
-  newMotifIds.forEach((motifId, i) => {
-    const pad = buildMotifDisplayPad(motifId);
-    makeSelectablePad(pad, reel, "motif-pad", () => {
-      selectedMotifId = motifId;
+  RHYTHM_METRE_GROUPS.forEach(({ type, label }) => {
+    const motifIds = newMotifIds.filter(
+      (motifId) => MOTIF_LIBRARY[motifId].type === type,
+    );
+    if (motifIds.length === 0) return;
+
+    const section = document.createElement("div");
+    section.className = "flow";
+    section.innerHTML = `<h3>${label}</h3>`;
+
+    const cluster = document.createElement("div");
+    cluster.className = "cluster";
+    motifIds.forEach((motifId) => {
+      const { element, interactivePad } = buildMotifCard(motifId);
+      makeSelectablePad(interactivePad, container, "motif-pad", () => {
+        selectedMotifId = motifId;
+      });
+      if (isFirstPad) {
+        interactivePad.classList.add("is-selected");
+        interactivePad.setAttribute("aria-pressed", "true");
+        isFirstPad = false;
+      }
+      cluster.appendChild(element);
     });
-    if (i === 0) {
-      pad.classList.add("is-selected");
-      pad.setAttribute("aria-pressed", "true");
-    }
-    reel.appendChild(pad);
+    section.appendChild(cluster);
+    container.appendChild(section);
   });
-  container.appendChild(reel);
 
   container.appendChild(
     buildPlayButton("Play Ostinato", () => {
-      const selectedPad = reel.querySelector(".motif-pad.is-selected");
+      const selectedPad = container.querySelector(".motif-pad.is-selected");
       playOstinatoWithPulse(selectedMotifId, 4, null, [selectedPad]);
     }),
   );
 }
 
+/**
+ * A "keyboard": every syllable in the level's CUMULATIVE toneset (not just
+ * what's new) renders as an always-enabled, independently click-to-play
+ * pad, free experimentation with no selection state or repeat-count
+ * mechanism at all — a lone new-to-level syllable had no melodic context on
+ * its own (Level 3's fa specifically is close to useless in isolation), so
+ * this replaces that ostinato-loop entirely rather than patching it.
+ */
 function renderMelodicWorkshopPanel(levelId) {
   const container = DOM.melodicWorkshopContent;
   if (!container) return;
   container.innerHTML = "";
 
-  const newSyllables = sortSyllablesAscending(
-    getPresentationContent(levelId).newSyllables,
+  const invitation = document.createElement("p");
+  invitation.className = "text-muted";
+  invitation.textContent =
+    "Try playing a tune you already know using these notes!";
+  container.appendChild(invitation);
+
+  const keyboard = document.createElement("div");
+  keyboard.className = "cluster";
+  sortSyllablesAscending(getCumulativeToneset(levelId)).forEach(
+    (syllable) => {
+      const pad = buildSolfegeDisplayPad(syllable);
+      pad.disabled = false;
+      pad.addEventListener("click", () => {
+        AudioEngine.playNote(syllable, currentLevelTonic);
+        pulseElement(pad);
+      });
+      keyboard.appendChild(pad);
+    },
   );
-  if (newSyllables.length === 0) {
-    renderNoNewContentMessage(container, "solfège");
-    return;
-  }
-
-  let selectedSyllable = newSyllables[0];
-
-  const reel = document.createElement("div");
-  reel.className = "cluster";
-  newSyllables.forEach((syllable, i) => {
-    const pad = buildSolfegeDisplayPad(syllable);
-    makeSelectablePad(pad, reel, "solfege-pad", () => {
-      selectedSyllable = syllable;
-    });
-    if (i === 0) {
-      pad.classList.add("is-selected");
-      pad.setAttribute("aria-pressed", "true");
-    }
-    reel.appendChild(pad);
-  });
-  container.appendChild(reel);
-
-  container.appendChild(
-    buildPlayButton("Play Ostinato", () => {
-      const selectedPad = reel.querySelector(".solfege-pad.is-selected");
-      playOstinatoWithPulse([selectedSyllable], 4, currentLevelTonic, [
-        selectedPad,
-      ]);
-    }),
-  );
+  container.appendChild(keyboard);
 }
 
 /**
@@ -435,8 +514,43 @@ function renderAllPanels(levelId) {
   renderIntervalDetectivePanel(levelId);
 }
 
+/**
+ * Preparation/Presentation/Practice tab strip. Level-independent — unlike
+ * the panels above, switching tabs never re-renders anything, it just
+ * shows/hides whichever tabpanel matches, the same hidden-attribute
+ * pattern core.js already uses for .level-guide switching.
+ */
+function initialiseClassroomTabs() {
+  const tabs = document.querySelectorAll(".classroom-tab");
+  if (tabs.length === 0) return;
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => {
+        const isSelected = t === tab;
+        t.setAttribute("aria-selected", String(isSelected));
+        t.tabIndex = isSelected ? 0 : -1;
+        const panel = document.getElementById(
+          t.getAttribute("aria-controls"),
+        );
+        if (panel) panel.hidden = !isSelected;
+      });
+    });
+  });
+}
+
 export function initialiseClassroomPanels() {
   if (!document.getElementById("classroom-panels-root")) return;
+
+  initialiseClassroomTabs();
+
+  // Preparation has no content for any level yet, so unlike Presentation/
+  // Practice it's rendered exactly once here rather than per-level inside
+  // renderAllPanels.
+  renderUnavailableState(
+    DOM.preparationContent,
+    "Preparation content hasn't been built yet for any level — check back once it has.",
+  );
 
   document.addEventListener("classroom-level-changed", (e) => {
     renderAllPanels(e.detail.levelId);

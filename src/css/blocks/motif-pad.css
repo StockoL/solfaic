@@ -142,6 +142,48 @@
 }
 
 /*
+ * A tied motif (tum-ti, syncopa v2) spans two boxes — box A is the real,
+ * selectable .motif-pad exactly as above; box B is this purely decorative
+ * continuation, joined edge-to-edge with box A (zero gap between them,
+ * normal .cluster gap around the pair as a whole) so the two read as one
+ * motif rather than two separate reel items. Mirrors the dashed/muted,
+ * no-notehead treatment workspace.css already uses for the main Practice
+ * Room workspace's own extension boxes, adapted to this smaller pad scale
+ * rather than reusing that box-scoped selector directly.
+ */
+.motif-pad-pair {
+  display: flex;
+  scroll-snap-align: start;
+}
+
+.motif-pad-pair .motif-pad {
+  scroll-snap-align: none;
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+  border-inline-end: none;
+}
+
+/*
+ * Deliberately its own class rather than also carrying .motif-pad — it
+ * needs the same size/shape, but makeSelectablePad's groupClass queries
+ * (".motif-pad") drive real selection state across a whole reel, and this
+ * inert div should never be swept up in that, even harmlessly.
+ */
+.motif-pad-extension {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2xs);
+  inline-size: 6rem;
+  padding: var(--space-xs);
+  background-color: var(--color-surface-card);
+  border: 1px dashed var(--color-border-subtle);
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  color: var(--color-text-muted);
+}
+
+/*
  * Solfège pad — one filled circle per syllable, coloured via --pad-color
  * (set inline per-instance by resolveSolfegeColor() in core.js, since the
  * colour depends on which syllable this particular pad is, not something
