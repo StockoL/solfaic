@@ -43,3 +43,4 @@
 
 @import url("./utilities/animations.css") layer(utilities);
 @import url("./utilities/colors.css") layer(utilities);
+@import url("./utilities/accessibility.css") layer(utilities);

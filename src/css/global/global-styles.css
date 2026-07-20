@@ -117,7 +117,7 @@ a:not([class]):hover {
 /* Visually hide the skip link until it receives focus */
 .skip-link {
   position: absolute;
-  top: -auto;
+  top: 0;
   left: -10000px;
   width: 1px;
   height: 1px;
