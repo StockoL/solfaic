@@ -22,7 +22,6 @@ import {
 } from "../src/js/data.js";
 import {
   generateRhythmTimeline,
-  generateBarSequence,
   generateIrregularBar,
   countSoundingNotes,
   generatePitchLine,
