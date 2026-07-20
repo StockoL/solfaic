@@ -24,11 +24,22 @@
   --gutter: var(--space-3xs);
 }
 
+/*
+ * Rest-state text uses a darkened variant of --tab-color, not --tab-color
+ * itself — against the lightly-tinted rest background below, the full
+ * -strength colour only reaches ~3:1 (a real Lighthouse finding on the
+ * secondary/success variants; primary happened to dodge it only because
+ * it's the default active tab, whose text is white-on-solid instead).
+ * --tab-color stays full-strength for the background tint, the hover/
+ * selected solid fill, and the panel's top-border accent, all of which
+ * already pass contrast on their own.
+ */
 .classroom-tab {
   --tab-color: var(--color-text-muted);
+  --tab-text-color: color-mix(in srgb, var(--tab-color) 70%, black);
   padding: var(--space-xs) var(--space-m);
   background-color: color-mix(in srgb, var(--tab-color) 15%, var(--color-surface-sunken));
-  color: var(--tab-color);
+  color: var(--tab-text-color);
   border: 1px solid var(--color-border-subtle);
   border-bottom-color: var(--color-border-subtle);
   border-radius: 8px 8px 0 0;

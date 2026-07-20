@@ -70,16 +70,31 @@ h6 {
  * order (reset < global), not via specificity, to give unclassed prose
  * links a visible, on-brand treatment. Any component that wants a link to
  * blend in again just gives it a class and styles it in Blocks.
+ *
+ * --color-action-primary on its own only reaches 3.56:1 against
+ * --color-surface-base — under the 4.5:1 AA minimum the rest of the
+ * palette was darkened to meet (a real Lighthouse finding, not a
+ * hypothetical). Darkened here specifically via color-mix() rather than
+ * touching the shared token, since action-primary elsewhere (buttons,
+ * badges) is used against --color-surface-card and already passes there.
+ * The previous opacity-based :visited treatment made this worse, not
+ * better — opacity always washes toward whatever's behind it, so it can
+ * only reduce contrast further. Mixing toward --color-text-muted instead
+ * keeps a visible visited/unvisited distinction without dropping below AA.
  */
 
 a:not([class]) {
-  color: var(--color-action-primary);
+  color: color-mix(in srgb, var(--color-action-primary) 80%, black);
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
 
 a:not([class]):visited {
-  opacity: 0.85;
+  color: color-mix(
+    in srgb,
+    var(--color-action-primary) 40%,
+    var(--color-text-muted) 60%
+  );
 }
 
 a:not([class]):hover {

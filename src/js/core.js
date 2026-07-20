@@ -682,10 +682,12 @@ function buildWorkspaceBox(state, tickIndex) {
 
   const rhythmCard = document.createElement("div");
   rhythmCard.className = "workspace-card workspace-card--rhythm";
+  rhythmCard.setAttribute("role", "img");
   rhythmCard.setAttribute("aria-label", `Beat ${tickIndex + 1} rhythm slot`);
 
   const solfegeCard = document.createElement("div");
   solfegeCard.className = "workspace-card workspace-card--solfege";
+  solfegeCard.setAttribute("role", "img");
   solfegeCard.setAttribute("aria-label", `Beat ${tickIndex + 1} solfege slot`);
 
   if (isActive && isExtension) {
