@@ -499,6 +499,8 @@ From the cloned root directory, after completing the Build Step above:
 - **Phoenix Collective (Cyrilla Rowsell) / British Kodály Academy:** Source curriculum for the melodic engine's tonesets, cadence logic, and rhythm vocabulary across all 9 modelled levels — the pedagogical backbone of the entire melodic system.
 - **Google Fonts (Galindo, Poppins):** V2's typeface pairing, replacing V1's unspecified system font stack.
 
+**Custom vs. external code, stated plainly:** every line under `src/js/` and `src/css/` — the rhythm and melodic engines, the state/view logic, the CUBE CSS architecture and design tokens — is original to this project. The one external runtime dependency is Tone.js, loaded via CDN in `classroom.html`/`practice.html` with an inline comment crediting it at the point of inclusion; everything else listed above is a design, methodology, or pedagogical source that _informed_ the build rather than code pulled in directly.
+
 Licensed under the [MIT License](./LICENSE).
 
 ### AI Pair Programming & Academic Integrity
