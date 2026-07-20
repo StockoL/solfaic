@@ -707,13 +707,15 @@ Playwright's Mobile Safari project runs the WebKit _engine_, not physical Safari
 | WebKit (Safari iOS, physical device) | —        | ☐ Pending |
 | Gecko (Firefox)                      | —        | ☐ Pending |
 
-### 6. Validator Testing (Outstanding)
+### 6. Validator Testing
 
-| Validator                   | Result | Notes                                       |
-| --------------------------- | ------ | ------------------------------------------- |
-| W3C HTML Validator          | —      | ☐ Pending — check all 3 pages independently |
-| W3C CSS Validator           | —      | ☐ Pending                                   |
-| ESLint / JS static analysis | —      | ☐ Pending                                   |
+| Validator                   | Result  | Notes |
+| ---------------------------- | ------- | ----- |
+| W3C Nu HTML Validator         | ✅ Pass | Ran `index.html`, `classroom.html`, `practice.html`, and `404.html` individually. Zero errors on all four. A handful of `role="list"` warnings remain by design — `reset.css` re-adds list semantics WebKit otherwise strips once `list-style: none` is applied, so removing the role would trade a validator warning for a real screen-reader regression. |
+| W3C Jigsaw CSS Validator      | ✅ Pass | Every stylesheet's actual rules validate clean (checked by concatenating all layer files directly, bypassing a validator limitation described below). Remaining warnings are all expected: vendor-prefixed properties (`-webkit-`/`-moz-`) needed for cross-browser support, and "CSS variables aren't statically checked" notices, which apply to any `var()` usage by design. Fixed one real bug this surfaced: `top: -auto` on `.skip-link` was invalid CSS silently dropped by every browser, corrected to `top: 0`. |
+| ESLint / JS static analysis  | ✅ Pass | `eslint.config.js` (flat config) added, split by module system across `src/js/*` (browser ESM), `build-tokens.js` (Node CommonJS), and the test harness/spec files. `npm run lint` exits clean. |
+
+**A note on the CSS validator and Cascade Layers:** running Jigsaw directly against the live `src/css/index.css` reports every `@import` after the first as invalid, because the file opens with a bare `@layer reset, global, compositions, blocks, utilities;` statement declaring layer order — standard CSS Cascade Layers syntax, supported in every evergreen browser since 2022, but a spec addition the validator's parser predates. It reads the `@layer` line as a non-import statement and, under old CSS2.1 rules, flags every import after it as misplaced. Validating the actual rule content directly (all layer files concatenated, without the `@import`/`@layer` wrapper) confirms the real CSS is valid — the reported errors are a validator gap with a newer spec module, not a defect in this codebase.
 
 ### Known Issues
 
