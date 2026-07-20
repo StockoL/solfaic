@@ -1,8 +1,7 @@
 {
   "name": "solfaic",
   "version": "2.0.0",
-  "description": "[![GitHub license](https://img.shields.io/github/license/StockoL/solfaic?color=blue)](https://github.com/StockoL/solfaic/blob/main/LICENSE)\r [![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/StockoL/solfaic?color=success)](https://github.com/StockoL/solfaic)\r [![Lighthouse Performance](https://img.shields.io/badge/Lighthouse_Performance-98%25-brightgreen)](https://github.com/StockoL/solfaic)\r [![Lighthouse Accessibility](https://img.shields.io/badge/Lighthouse_Accessibility-100%25-brightgreen)](https://github.com/StockoL/solfaic)\r [![Lighthouse Best Practices](https://img.shields.io/badge/Lighthouse_Performance-100%25-brightgreen)](https://github.com/StockoL/solfaic)\r [![Lighthouse SEO](https://img.shields.io/badge/Lighthouse_Performance-100%25-brightgreen)](https://github.com/StockoL/solfaic)",
-  "main": "index.js",
+  "description": "An interactive solfège and rhythm dictation platform teaching Kodaly-based sight-singing through generative exercises.",
   "directories": {
     "doc": "docs"
   },
