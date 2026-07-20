@@ -32,6 +32,22 @@ module.exports = defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    /*
+     * Desktop WebKit/Firefox — real engine coverage beyond Chromium,
+     * separate from the two mobile projects below. Doesn't replace
+     * physical-device testing (a real iOS Safari has quirks this WebKit
+     * build won't reproduce - see Known Issues), but honestly closes the
+     * "different rendering engine" part of browser compatibility that's
+     * actually practical to automate.
+     */
+    {
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
+    },
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
     /* Test against mobile viewports to ensure the "Sponge" layout holds up! */
     {
       name: "Mobile Chrome",

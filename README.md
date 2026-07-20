@@ -708,16 +708,16 @@ Accessibility reached 100 across all three pages only after this audit surfaced 
 
 Performance is architecturally honest rather than optimised: this is a hand-authored static site with no bundler/minifier by design (see [System Architecture](#architecture)), so the unminified-CSS/unminified-JS/unused-code audits report real, expected findings rather than bugs — introducing a build step purely to raise this number would be a different architectural decision than the one this project deliberately made.
 
-### 5. Browser Compatibility (Outstanding — beyond Playwright's automated coverage)
+### 5. Browser Compatibility
 
-Playwright's Mobile Safari project runs the WebKit _engine_, not physical Safari on physical iOS — genuine device/browser-specific quirks (V1's own testing log found a real one: Safari's collapsing bottom toolbar interacting badly with `100dvh`) won't necessarily surface through emulation alone. Manual pass still needed:
+`playwright.config.js` now runs the full suite across five projects — Chromium, desktop WebKit, desktop Firefox, Mobile Chrome, and Mobile Safari — closing the "different rendering engine" part of this table with real automated coverage rather than Chromium alone:
 
-| Engine / Browser                     | Verified | Notes     |
-| ------------------------------------ | -------- | --------- |
-| Chromium (Chrome/Edge desktop)       | —        | ☐ Pending |
-| WebKit (Safari desktop)              | —        | ☐ Pending |
-| WebKit (Safari iOS, physical device) | —        | ☐ Pending |
-| Gecko (Firefox)                      | —        | ☐ Pending |
+| Engine / Browser                     | Verified                          | Notes                                                                                                                                                                          |
+| ------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Chromium (Chrome/Edge desktop)       | ✅ Automated (150/150 tests pass) | `chromium` project.                                                                                                                                                            |
+| WebKit (Safari desktop)              | ✅ Automated (150/150 tests pass) | `webkit` project, added this pass.                                                                                                                                             |
+| Gecko (Firefox)                      | ✅ Automated (150/150 tests pass) | `firefox` project, added this pass.                                                                                                                                            |
+| WebKit (Safari iOS, physical device) | ☐ Pending — genuinely needs real hardware | Playwright's Mobile Safari project runs the WebKit _engine_, not physical Safari on physical iOS — real device/browser-specific quirks (V1's own testing log found one: Safari's collapsing bottom toolbar interacting badly with `100dvh`) won't necessarily surface through emulation. This is also where the still-open iPhone workspace-grid sizing bug lives (see Known Issues) — automation can't close this row. |
 
 ### 6. Validator Testing
 
