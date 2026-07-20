@@ -456,6 +456,7 @@ Unlike V1's single static stylesheet, V2's CSS is generated from a token pipelin
 
 1. **Install dependencies:** `npm install` (Node.js required — this is now a genuine prerequisite, not just a convenience option for local serving).
 2. **Compile the design tokens:** `npm run build:tokens`. This reads `design-tokens.json` and generates `src/css/global/variables.css`. Re-run this any time `design-tokens.json` changes — the generated file is never hand-edited directly.
+3. **Bundle the CSS:** `npm run build:css`. `index.css`'s 26 separate `@import`s are all render-blocking — a Lighthouse audit confirmed this was the single biggest performance cost on every page. `build-css.js` reads that same import chain and concatenates every file it references, in order, into `src/css/bundle.css` (each file's content wrapped in the `@layer` its `@import` already declared, so cascade order is unaffected), and the HTML pages link to the bundle rather than `index.css` directly. `index.css` itself is untouched and stays the source of truth for adding or reordering imports — re-run this script any time it changes.
 
 ### Deployment Steps
 
@@ -468,13 +469,13 @@ To deploy the site to GitHub Pages:
 5. **Save & Build:** Click **Save** to trigger the GitHub Actions build workflow.
 6. **Live Link:** Appears at the top of the settings page after a few minutes.
 
-Note: the compiled `variables.css` should be committed to the repository (not generated on the fly by GitHub Pages, which doesn't run a build step) — run the build step locally and commit the output before pushing.
+Note: the compiled `variables.css` and `bundle.css` should both be committed to the repository (not generated on the fly by GitHub Pages, which doesn't run a build step) — run the build steps locally and commit the output before pushing.
 
 ### Local Deployment (Cloning)
 
 1. Navigate to the GitHub repository and click the green `<> Code` button to copy the HTTPS URL.
 2. Open your terminal and run: git clone `https://github.com/StockoL/solfaic.git`
-3. Run the **Build Step** above (`npm install`, then `npm run build:tokens`) before doing anything else.
+3. Run the **Build Step** above (`npm install`, then `npm run build:tokens` and `npm run build:css`) before doing anything else.
 4. Serve the project through a real local server — **this is no longer optional for a second, more fundamental reason than V1's Web Audio permissions requirement.** V2's JavaScript is loaded via ES modules (`<script type="module">`), which fail outright over the `file://` protocol regardless of audio permissions. Opening `index.html` by double-clicking it will not work at all.
 
 ### ⚡ Quick Local Spin-Up Alternatives
@@ -497,7 +498,7 @@ From the cloned root directory, after completing the Build Step above:
 - **Every Layout (Heydon Pickering):** Principles of intrinsic web design that originally informed V1's layout thinking, and which LooseLeaf-ui's own Compositions are themselves built on — a lineage carried forward into V2 rather than a direct source this time.
 - **Utopia.fyi:** Generated the fluid type and space scales driving V2's entire typography and spacing system.
 - **Phoenix Collective (Cyrilla Rowsell) / British Kodály Academy:** Source curriculum for the melodic engine's tonesets, cadence logic, and rhythm vocabulary across all 9 modelled levels — the pedagogical backbone of the entire melodic system.
-- **Google Fonts (Galindo, Poppins):** V2's typeface pairing, replacing V1's unspecified system font stack.
+- **Google Fonts (Galindo, Poppins):** V2's typeface pairing, replacing V1's unspecified system font stack. Both distributed under the SIL Open Font License 1.1 — full attribution and licensing detail in the [Lighthouse Scores](#testing) section, alongside the self-hosting process itself.
 
 **Custom vs. external code, stated plainly:** every line under `src/js/` and `src/css/` — the rhythm and melodic engines, the state/view logic, the CUBE CSS architecture and design tokens — is original to this project. The one external runtime dependency is Tone.js, loaded via CDN in `classroom.html`/`practice.html` with an inline comment crediting it at the point of inclusion; everything else listed above is a design, methodology, or pedagogical source that _informed_ the build rather than code pulled in directly.
 
@@ -524,7 +525,9 @@ Artificial Intelligence (LLMs) was utilised strictly as a "Pair Programmer" and 
 ├── LICENSE                     # MIT
 ├── design-tokens.json         # Single Source of Truth — colour, type, space, motion tokens
 ├── build-tokens.js            # Token compiler (Vanilla Node.js)
-├── package.json                # Build & test commands (build:tokens, verify:engine)
+├── build-css.js                # CSS bundler — concatenates index.css's @import chain (Vanilla Node.js)
+├── eslint.config.js             # ESLint flat config
+├── package.json                # Build & test commands (build:tokens, build:css, verify:engine, lint)
 │
 ├── index.html                  # Home
 ├── classroom.html              # Classroom — curriculum reference & level guides
@@ -540,11 +543,12 @@ Artificial Intelligence (LLMs) was utilised strictly as a "Pair Programmer" and 
 ├── tests/
 │   ├── engine-verification.mjs  # Node harness — pure-function engine checks (npm run verify:engine)
 │   └── solfaic.spec.js           # Playwright E2E suite
-├── playwright.config.js         # 3 browser/device projects (Desktop Chromium, Mobile Chrome, Mobile Safari)
+├── playwright.config.js         # 5 browser/device projects (Chromium, WebKit, Firefox, Mobile Chrome, Mobile Safari)
 │
 └── src/
     ├── css/
-    │   ├── index.css           # Orchestrator — declares the cascade layer order
+    │   ├── index.css           # Orchestrator — declares the cascade layer order, dev-time source of truth
+    │   ├── bundle.css           # Auto-generated by build-css.js — what the HTML actually links to
     │   ├── global/              # Reset, base typography, auto-generated variables.css
     │   ├── compositions/        # 10 layout primitives (Cluster, Spread, Grid, Reel...)
     │   ├── blocks/               # Visual components (Button, Nav, Accordion, Modal...)
@@ -692,21 +696,46 @@ Covers what automated coverage structurally can't: genuine human/perceptual judg
 
 ### 4. Lighthouse Scores
 
-Re-run against V2 (Chrome, headless, local server — not the V1 scores, which described a different single-page/single-stylesheet build):
+Re-run against V2 (Chrome, headless, local server — not the V1 scores, which described a different single-page/single-stylesheet build). Three real, measured passes, each investigated from an actual Lighthouse finding rather than guessed at:
 
-| Page             | Performance | Accessibility | Best Practices | SEO |
-| ---------------- | ----------- | -------------- | --------------- | --- |
-| `index.html`     | 82          | 100            | 100              | 100 |
-| `classroom.html` | 72          | 100            | 100              | 100 |
-| `practice.html`  | 90          | 100            | 100              | 100 |
+| Page             | Before | After CSS bundling | After font self-hosting | Accessibility | Best Practices | SEO |
+| ---------------- | ------ | ------------------- | ------------------------ | -------------- | --------------- | --- |
+| `index.html`     | 82     | 92                   | **93**                    | 100            | 100              | 100 |
+| `classroom.html` | 72     | 78                   | **87**                    | 100            | 100              | 100 |
+| `practice.html`  | 90     | 94                   | **91**                    | 100            | 100              | 100 |
 
-Accessibility reached 100 across all three pages only after this audit surfaced three real, previously-unnoticed contrast/ARIA bugs, all fixed as part of this pass:
+**CSS bundling:** the first audit's `render-blocking-insight`/`network-dependency-tree-insight` findings pointed at `index.css`'s 26 separate `@import`s, every one of them render-blocking. `build-css.js` (see Build Step) concatenates that chain, in the same order, into one `src/css/bundle.css` file, which the HTML links to instead — same cascade-layer semantics, one request instead of 26.
+
+**Font self-hosting:** bundling CSS surfaced a second finding — Cumulative Layout Shift sat at 0.81-0.86 on every page, and the `layout-shifts` audit's culprit list pointed entirely at Galindo/Poppins loading after first paint and reflowing the page on swap. Self-hosting both fonts with metric-matched fallback `@font-face`s (full process documented below) took CLS to 0 on index/classroom and 0.025 on practice, and is what's behind classroom.html's performance jump. `<link rel="modulepreload">` hints for the JS module graph were also added at this point (see `network-dependency-tree-insight`) — real and harmless (module identity is untouched, all 150 tests still pass), but measured no detectable effect locally, since its benefit is round-trip latency that near-zero-latency localhost testing doesn't have much of to begin with.
+
+Accessibility reached 100 across all three pages only after the first audit surfaced three real, previously-unnoticed contrast/ARIA bugs, all fixed as part of this pass:
 
 - **Unclassed prose links (footer's Privacy Policy/Terms of Service) at 3.56:1, and their `:visited` state making it worse via `opacity: 0.85`** — the accessible-palette work elsewhere in this README verified `action-primary` as button/badge text against `--color-surface-card`, but never checked it as plain link text against the darker `--color-surface-base` it actually renders on in the footer. Fixed by darkening via `color-mix()` specifically for this rule, and replacing the opacity-based visited state (opacity can only ever reduce contrast further, never fix it) with a solid color-mix toward `--color-text-muted`.
 - **Classroom tab strip's inactive/rest-state text on the secondary and success variants, ~2.9-3:1** — the same full-strength colour used for the hover/selected state's tinted rest-state background wasn't dark enough as text against its own lightly-tinted background. Darkened via a dedicated `--tab-text-color` for the rest state only, leaving the hover/selected solid-fill state (which already passed) untouched.
 - **Practice Room's workspace cards had `aria-label` on a plain `<div>` with no `role`** — an attribute screen readers silently ignore without a valid role to attach it to, meaning every rhythm/solfège slot was announcing nothing at all. Fixed with `role="img"`.
 
-Performance is architecturally honest rather than optimised: this is a hand-authored static site with no bundler/minifier by design (see [System Architecture](#architecture)), so the unminified-CSS/unminified-JS/unused-code audits report real, expected findings rather than bugs — introducing a build step purely to raise this number would be a different architectural decision than the one this project deliberately made.
+The remaining performance gap is architecturally honest rather than unaddressed. Two findings turned out to be testing artifacts rather than real gaps once checked against the live GitHub Pages deployment directly: it already serves gzip compression (confirmed via `Content-Encoding: gzip` on the deployed site), so `document-latency-insight`'s "no compression" finding was a local-dev-server artifact, not a production one. `cache-insight`, on the other hand, is a real and permanent limit — GitHub Pages caps `Cache-Control` at `max-age=600` (10 minutes) with no way to raise it short of a paid CDN in front of it, and its local-server equivalent is actually *more* generous (1 hour), so this isn't fixable from this repo at all. The rest — `unminified-css`/`unminified-javascript`/`unused-javascript` — is real and deliberately left open: minifying `bundle.css` is a safe, straightforward follow-on, but `src/js/*` stays genuinely unbundled on purpose, since several of the test suite's Classroom tests rely on `page.evaluate(() => import("/src/js/audio.js"))` resolving to the exact same live ES module instance the app itself runs, to intercept real `AudioEngine` calls rather than a mock standing in for untested code — flattening JS into one script would sever that and silently turn those tests into false positives.
+
+#### How the font self-hosting was actually done
+
+Worth documenting in full, since it's a genuinely reusable recipe beyond this project. The problem: `font-display: swap` (the default, sensible choice for not blocking render on a webfont) means the page first paints with a fallback font, then swaps to the real one once it loads — and if the fallback and the real font don't occupy the same line-box space, that swap visibly reflows the page. That reflow was the entire cause of the CLS finding above.
+
+1. **Get the actual font files, not a CDN link.** Google Fonts' CSS endpoint (`fonts.googleapis.com/css2?family=...`) negotiates a different `src: url(...)` file hash depending on the request's headers — fine for an ordinary `<link rel="stylesheet">` the browser re-requests fresh every time, but it makes `<link rel="preload">` unreliable, since a preload only pays off if its URL is a byte-for-byte match with what's actually fetched. The fix is to download the real files once and serve them from the repo instead (`assets/fonts/`). MDN's [`rel="preload"` reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/preload) covers the general technique, and specifically calls out that font preloads need the `crossorigin` attribute even for same-origin files, since fonts are always fetched in CORS mode regardless of origin.
+
+2. **Read the real font's metrics.** MDN's [`@font-face` reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@font-face) documents four descriptors built for exactly this problem: [`size-adjust`](https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/size-adjust), `ascent-override`, `descent-override`, and `line-gap-override` — together, they let a fallback font's line-box be scaled and offset to match a real font's, so the swap becomes visually invisible instead of a reflow. Computing them needs the real font's `unitsPerEm`, `ascent`, `descent`, `lineGap`, and `xAvgCharWidth` (from its OS/2 table) — `build-font-fallback.js` reads these directly out of the woff2 files via the `fontkit` library, then computes:
+
+   ```
+   sizeAdjust      = (font.xAvgCharWidth / font.unitsPerEm) / (fallback.xAvgCharWidth / fallback.unitsPerEm)
+   ascentOverride  = (font.ascent  / font.unitsPerEm) / sizeAdjust
+   descentOverride = abs(font.descent / font.unitsPerEm) / sizeAdjust
+   lineGapOverride = (font.lineGap / font.unitsPerEm) / sizeAdjust
+   ```
+
+   Arial is the fallback reference here — not a perfect stand-in for every OS's actual `system-ui` font (Segoe UI/San Francisco/Roboto all differ slightly), but a reasonable, well-precedented baseline for this technique (the same one tools like Next.js's built-in font optimisation default to).
+
+3. **Wire both into CSS.** Two `@font-face` rules per family: one for the real font (`src: url("...") format("woff2")`, `font-display: swap`), and one named e.g. `'Galindo Fallback'` with `src: local("Arial")` plus the four computed override values — no actual font file, just metrics borrowed from a font already on the user's system. The font stack then lists both: `font-family: 'Galindo', 'Galindo Fallback', system-ui, sans-serif`. The browser paints instantly with the metric-matched fallback, swaps to the real font once it's loaded, and — because the two now occupy the same space — nothing visibly moves.
+
+**Attribution:** Galindo and Poppins are both distributed via [Google Fonts](https://fonts.google.com/) — [Galindo's specimen page](https://fonts.google.com/specimen/Galindo) and [Poppins' specimen page](https://fonts.google.com/specimen/Poppins) — under the [SIL Open Font License, Version 1.1](https://openfontlicense.org/open-font-license-official-text/). Galindo is © 2012 Brian J. Bonislawsky, distributed as Astigmatic (AOETI); Poppins is © 2020 The Poppins Project Authors. Self-hosting is explicitly permitted under the OFL — Google's own CDN is a convenience, not a licensing requirement — but the license and copyright notice travel with the font files regardless of where they're served from, which is exactly what this section is doing.
 
 ### 5. Browser Compatibility
 
@@ -724,10 +753,10 @@ Performance is architecturally honest rather than optimised: this is a hand-auth
 | Validator                   | Result  | Notes |
 | ---------------------------- | ------- | ----- |
 | W3C Nu HTML Validator         | ✅ Pass | Ran `index.html`, `classroom.html`, `practice.html`, and `404.html` individually. Zero errors on all four. A handful of `role="list"` warnings remain by design — `reset.css` re-adds list semantics WebKit otherwise strips once `list-style: none` is applied, so removing the role would trade a validator warning for a real screen-reader regression. |
-| W3C Jigsaw CSS Validator      | ✅ Pass | Every stylesheet's actual rules validate clean (checked by concatenating all layer files directly, bypassing a validator limitation described below). Remaining warnings are all expected: vendor-prefixed properties (`-webkit-`/`-moz-`) needed for cross-browser support, and "CSS variables aren't statically checked" notices, which apply to any `var()` usage by design. Fixed one real bug this surfaced: `top: -auto` on `.skip-link` was invalid CSS silently dropped by every browser, corrected to `top: 0`. |
-| ESLint / JS static analysis  | ✅ Pass | `eslint.config.js` (flat config) added, split by module system across `src/js/*` (browser ESM), `build-tokens.js` (Node CommonJS), and the test harness/spec files. `npm run lint` exits clean. |
+| W3C Jigsaw CSS Validator      | ✅ Pass | `src/css/bundle.css` — the file HTML actually links to — validates with zero errors directly. Remaining warnings are all expected: vendor-prefixed properties (`-webkit-`/`-moz-`) needed for cross-browser support, and "CSS variables aren't statically checked" notices, which apply to any `var()` usage by design. Fixed one real bug this surfaced: `top: -auto` on `.skip-link` was invalid CSS silently dropped by every browser, corrected to `top: 0`. |
+| ESLint / JS static analysis  | ✅ Pass | `eslint.config.js` (flat config) added, split by module system across `src/js/*` (browser ESM), `build-tokens.js`/`build-css.js` (Node CommonJS), and the test harness/spec files. `npm run lint` exits clean. |
 
-**A note on the CSS validator and Cascade Layers:** running Jigsaw directly against the live `src/css/index.css` reports every `@import` after the first as invalid, because the file opens with a bare `@layer reset, global, compositions, blocks, utilities;` statement declaring layer order — standard CSS Cascade Layers syntax, supported in every evergreen browser since 2022, but a spec addition the validator's parser predates. It reads the `@layer` line as a non-import statement and, under old CSS2.1 rules, flags every import after it as misplaced. Validating the actual rule content directly (all layer files concatenated, without the `@import`/`@layer` wrapper) confirms the real CSS is valid — the reported errors are a validator gap with a newer spec module, not a defect in this codebase.
+**A note on the CSS validator and Cascade Layers:** `index.css` (the dev-time source, no longer linked directly from HTML) still trips Jigsaw's parser — it reports every `@import` after the first as invalid, because the file opens with a bare `@layer reset, global, compositions, blocks, utilities;` statement declaring layer order, standard CSS Cascade Layers syntax supported in every evergreen browser since 2022, but a spec addition the validator's parser predates. It reads that line as a non-import statement and, under old CSS2.1 rules, flags every import after it as misplaced. This stopped mattering in practice once `build-css.js` started concatenating the chain into `bundle.css` — the file actually served has no `@import`s left to misparse, which is what the validator table above checks.
 
 ### Known Issues
 
