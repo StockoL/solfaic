@@ -700,6 +700,55 @@ export const PITCH_LEVEL_RULES = {
 };
 
 /**
+ * Preparation tab content: real Kodály "prepare through familiar repertoire"
+ * — songs chosen to sit inside each level's actual PITCH_LEVEL_RULES
+ * toneset above, not arbitrary picks. Only levels with a real toneset get a
+ * list; Levels 5-9 keep the existing "not yet available" state.
+ */
+export const PREPARATION_SONGS = {
+  1: [
+    {
+      title: "Rain, Rain, Go Away",
+      note: "Built on so-mi-la — the falling so-mi call is the first interval most children sing.",
+    },
+    {
+      title: "Pease Pudding Hot",
+      note: "Stepwise do-re-mi — the other half of Level 1's toneset, moving by step rather than leap.",
+    },
+  ],
+  2: [
+    {
+      title: "Auld Lang Syne",
+      note: "A full do-re-mi-so-la melody resolving home to do — Level 2's whole toneset, cadence included.",
+    },
+    {
+      title: "Amazing Grace",
+      note: "Another genuinely pentatonic tune (no fa, no ti) that lands squarely in Level 2's five notes.",
+    },
+  ],
+  3: [
+    {
+      title: "Frère Jacques",
+      note: "Introduces fa naturally inside a do-re-mi-fa-so line — Level 3's do-mode toneset.",
+    },
+    {
+      title: "Scarborough Fair",
+      note: "A modal folk melody centred away from do — good preparation for Level 3's la-mode.",
+    },
+  ],
+  4: [
+    {
+      title: "Sakura",
+      note: "A pentatonic melody without fa, useful for hearing the same five notes centred differently.",
+    },
+    {
+      title: "Land of the Silver Birch",
+      note: "Another well-known pentatonic tune — Level 4 is about the modes these five notes can form, not new notes.",
+    },
+  ],
+};
+
+/**
  * Fully namespaced Markov weights for pitch generation — each melodic
  * group/mode is its own object so e.g. "mi" inside soMiLa and "mi" inside
  * doReMi never collide. A genuine first draft (see design doc); every row

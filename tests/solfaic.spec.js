@@ -378,7 +378,7 @@ test.describe("Solfaic Interactive Application Suite", () => {
   });
 
   test.describe("9. Classroom Level Panels", () => {
-    test("Preparation/Presentation/Practice tabs show the correct content, and Preparation is unavailable at every level", async ({
+    test("Preparation/Presentation/Practice tabs show the correct content, and Preparation lists real songs at Level 1", async ({
       page,
     }) => {
       await page.goto("/classroom.html");
@@ -392,8 +392,8 @@ test.describe("Solfaic Interactive Application Suite", () => {
       await expect(page.locator("#tabpanel-preparation")).toBeHidden();
       await expect(page.locator("#tabpanel-practice")).toBeHidden();
 
-      // Preparation: no content exists for any level yet, so it shows the
-      // unavailable state even at Level 1, unlike Presentation/Practice.
+      // Preparation: Level 1 has a real curated song list, not the
+      // unavailable state.
       await page.locator("#tab-preparation").click();
       await expect(page.locator("#tab-preparation")).toHaveAttribute(
         "aria-selected",
@@ -407,7 +407,13 @@ test.describe("Solfaic Interactive Application Suite", () => {
       await expect(page.locator("#tabpanel-presentation")).toBeHidden();
       await expect(
         page.locator("#tabpanel-preparation .panel-unavailable"),
-      ).toBeVisible();
+      ).toHaveCount(0);
+      await expect(
+        page.locator("#tabpanel-preparation .preparation-song-list li"),
+      ).toHaveCount(2);
+      await expect(
+        page.locator("#tabpanel-preparation"),
+      ).toContainText("Rain, Rain, Go Away");
 
       // Practice bundles the four drill panels behind its own tab.
       await page.locator("#tab-practice").click();

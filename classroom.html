@@ -232,13 +232,11 @@
 
       <!--
         Preparation, Presentation, and Practice — a folder-tab strip over
-        one shared content region. Presentation and Practice (which bundles
-        Rhythm Workshop, Melodic Workshop, Example, and Interval Detective)
-        are rendered by classroom.js in response to the classroom-level-changed
-        event core.js's level dropdown dispatches; Preparation is level-
-        independent (no prep content exists yet for any level) and rendered
-        once on init. Tab-switching itself is wired in classroom.js's
-        initialiseClassroomPanels().
+        one shared content region. All three (Practice bundles Rhythm
+        Workshop, Melodic Workshop, Example, and Interval Detective) are
+        rendered by classroom.js in response to the classroom-level-changed
+        event core.js's level dropdown dispatches. Tab-switching itself is
+        wired in classroom.js's initialiseClassroomPanels().
       -->
       <section
         class="classroom__panels flow"

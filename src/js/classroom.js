@@ -12,7 +12,12 @@
  * ============================================================================
  */
 
-import { MAX_LEVEL, MOTIF_LIBRARY, allowedTonics } from "./data.js";
+import {
+  MAX_LEVEL,
+  MOTIF_LIBRARY,
+  allowedTonics,
+  PREPARATION_SONGS,
+} from "./data.js";
 import { renderRhythmSVG, renderTieArcSVG } from "./rhythm-notation.js";
 import { resolveSolfegeColor, sortSyllablesAscending } from "./core.js";
 import {
@@ -152,6 +157,42 @@ function renderNoNewContentMessage(container, trackLabel) {
   message.className = "text-muted";
   message.textContent = `No new ${trackLabel} this level.`;
   container.appendChild(message);
+}
+
+/**
+ * Preparation, in the actual Kodály sense: exposure through familiar
+ * repertoire before anything is named. A plain curated list, not an
+ * interactive feature — real content that happens to be simple, rather
+ * than a placeholder dressed up to look like one.
+ */
+function renderPreparationPanel(levelId) {
+  const container = DOM.preparationContent;
+  if (!container) return;
+  container.innerHTML = "";
+
+  const songs = PREPARATION_SONGS[levelId];
+  if (!songs) {
+    renderUnavailableState(
+      container,
+      "No song list has been curated for this level yet — check back once it has.",
+    );
+    return;
+  }
+
+  const section = document.createElement("div");
+  section.className = "flow";
+  section.innerHTML =
+    "<p>Learn these songs before moving on to Presentation:</p>";
+
+  const list = document.createElement("ul");
+  list.className = "preparation-song-list flow";
+  songs.forEach(({ title, note }) => {
+    const item = document.createElement("li");
+    item.innerHTML = `<strong>${title}</strong> — ${note}`;
+    list.appendChild(item);
+  });
+  section.appendChild(list);
+  container.appendChild(section);
 }
 
 function renderPresentationPanel(levelId) {
@@ -523,6 +564,7 @@ function renderAllPanels(levelId) {
   const isAvailable = levelId <= MAX_LEVEL;
 
   if (!isAvailable) {
+    renderUnavailableState(DOM.preparationContent);
     renderUnavailableState(DOM.presentationContent);
     renderUnavailableState(DOM.rhythmWorkshopContent);
     renderUnavailableState(DOM.melodicWorkshopContent);
@@ -534,6 +576,7 @@ function renderAllPanels(levelId) {
   currentLevelTonic =
     allowedTonics[Math.floor(Math.random() * allowedTonics.length)];
 
+  renderPreparationPanel(levelId);
   renderPresentationPanel(levelId);
   renderRhythmWorkshopPanel(levelId);
   renderMelodicWorkshopPanel(levelId);
@@ -570,14 +613,6 @@ export function initialiseClassroomPanels() {
   if (!document.getElementById("classroom-panels-root")) return;
 
   initialiseClassroomTabs();
-
-  // Preparation has no content for any level yet, so unlike Presentation/
-  // Practice it's rendered exactly once here rather than per-level inside
-  // renderAllPanels.
-  renderUnavailableState(
-    DOM.preparationContent,
-    "Preparation content hasn't been built yet for any level — check back once it has.",
-  );
 
   document.addEventListener("classroom-level-changed", (e) => {
     renderAllPanels(e.detail.levelId);
