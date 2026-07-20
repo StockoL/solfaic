@@ -1,0 +1,5 @@
+/* Decorative icon on the 404 page - constrained so it never dominates the viewport */
+.error-page__icon {
+  width: var(--space-3xl);
+  height: auto;
+}
