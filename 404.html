@@ -9,28 +9,18 @@
       content="404 Page Not Found - Solfaic! is an interactive music theory learning platform that teaches solfege, sight-singing, and music composition through engaging lessons and exercises."
     />
 
-    <link rel="preload" href="src/css/index.css" as="style" />
-    <link rel="stylesheet" href="src/css/index.css" />
+    <link rel="preload" href="src/css/bundle.css" as="style" />
+    <link rel="stylesheet" href="src/css/bundle.css" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Galindo&family=Poppins:wght@400;500;600;700&display=swap"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Galindo&family=Poppins:wght@400;500;600;700&display=swap"
-      media="print"
-      onload="this.media = 'all'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Galindo&family=Poppins:wght@400;500;600;700&display=swap"
-      />
-    </noscript>
+    <!-- Self-hosted (see build-font-fallback.js) so the preload URL is always
+         guaranteed to match what's actually fetched — a remote Google Fonts
+         CDN URL depends on request-header negotiation and isn't stable
+         enough to preload reliably. -->
+    <link rel="preload" href="assets/fonts/galindo-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/poppins-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/poppins-500.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/poppins-600.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/poppins-700.woff2" as="font" type="font/woff2" crossorigin />
 
     <link
       rel="icon"

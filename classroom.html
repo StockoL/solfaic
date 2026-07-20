@@ -9,34 +9,37 @@
       content="Learn the Kodály syllables and notation, then step into the Practice Room to test your ear."
     />
 
-    <link rel="preload" href="src/css/index.css" as="style" />
-    <link rel="stylesheet" href="src/css/index.css" />
+    <link rel="preload" href="src/css/bundle.css" as="style" />
+    <link rel="stylesheet" href="src/css/bundle.css" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Galindo&family=Poppins:wght@400;500;600;700&display=swap"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Galindo&family=Poppins:wght@400;500;600;700&display=swap"
-      media="print"
-      onload="this.media = 'all'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Galindo&family=Poppins:wght@400;500;600;700&display=swap"
-      />
-    </noscript>
+    <!-- Self-hosted (see build-font-fallback.js) so the preload URL is always
+         guaranteed to match what's actually fetched — a remote Google Fonts
+         CDN URL depends on request-header negotiation and isn't stable
+         enough to preload reliably. -->
+    <link rel="preload" href="assets/fonts/galindo-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/poppins-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/poppins-500.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/poppins-600.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/fonts/poppins-700.woff2" as="font" type="font/woff2" crossorigin />
 
     <link
       rel="icon"
       type="image/svg+xml"
       href="assets/media/favicon-solfaic.svg"
     />
+
+    <!-- app.js's real module graph, fetched in parallel up front instead of
+         discovered one import at a time — doesn't concatenate anything, so
+         each file keeps its own URL/module identity (tests rely on that,
+         see README's Lighthouse notes). -->
+    <link rel="modulepreload" href="src/js/data.js" />
+    <link rel="modulepreload" href="src/js/state.js" />
+    <link rel="modulepreload" href="src/js/rhythm-notation.js" />
+    <link rel="modulepreload" href="src/js/audio.js" />
+    <link rel="modulepreload" href="src/js/engine.js" />
+    <link rel="modulepreload" href="src/js/core.js" />
+    <link rel="modulepreload" href="src/js/classroom.js" />
+    <link rel="modulepreload" href="src/js/app.js" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
