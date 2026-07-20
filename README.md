@@ -690,15 +690,23 @@ Covers what automated coverage structurally can't: genuine human/perceptual judg
 | MT-06 | Cross-tonic audio correctness              | Manually trigger playback across a wider tonic sample than the engine harness's 6 spot-checked cases   | No audibly wrong note anywhere in the `allowedTonics` set, including enharmonic spelling edge cases                                | —             | ☐ Pending |
 | MT-07 | Genuine physical-device rendering          | Load the app on at least one real iOS and one real Android device                                      | Layout, fonts, and animation match desktop/emulated behaviour; no device-specific rendering bugs                                   | —             | ☐ Pending |
 
-### 4. Lighthouse Scores (Outstanding)
+### 4. Lighthouse Scores
 
-Not yet re-run against V2. V1's scores (98/100/100/100) was a single-page app with a single stylesheet and are not carried forward here, since they don't describe the current three-page, token-driven build. Placeholder table, to fill in per page once run:
+Re-run against V2 (Chrome, headless, local server — not the V1 scores, which described a different single-page/single-stylesheet build):
 
 | Page             | Performance | Accessibility | Best Practices | SEO |
-| ---------------- | ----------- | ------------- | -------------- | --- |
-| `index.html`     | —           | —             | —              | —   |
-| `classroom.html` | —           | —             | —              | —   |
-| `practice.html`  | —           | —             | —              | —   |
+| ---------------- | ----------- | -------------- | --------------- | --- |
+| `index.html`     | 82          | 100            | 100              | 100 |
+| `classroom.html` | 72          | 100            | 100              | 100 |
+| `practice.html`  | 90          | 100            | 100              | 100 |
+
+Accessibility reached 100 across all three pages only after this audit surfaced three real, previously-unnoticed contrast/ARIA bugs, all fixed as part of this pass:
+
+- **Unclassed prose links (footer's Privacy Policy/Terms of Service) at 3.56:1, and their `:visited` state making it worse via `opacity: 0.85`** — the accessible-palette work elsewhere in this README verified `action-primary` as button/badge text against `--color-surface-card`, but never checked it as plain link text against the darker `--color-surface-base` it actually renders on in the footer. Fixed by darkening via `color-mix()` specifically for this rule, and replacing the opacity-based visited state (opacity can only ever reduce contrast further, never fix it) with a solid color-mix toward `--color-text-muted`.
+- **Classroom tab strip's inactive/rest-state text on the secondary and success variants, ~2.9-3:1** — the same full-strength colour used for the hover/selected state's tinted rest-state background wasn't dark enough as text against its own lightly-tinted background. Darkened via a dedicated `--tab-text-color` for the rest state only, leaving the hover/selected solid-fill state (which already passed) untouched.
+- **Practice Room's workspace cards had `aria-label` on a plain `<div>` with no `role`** — an attribute screen readers silently ignore without a valid role to attach it to, meaning every rhythm/solfège slot was announcing nothing at all. Fixed with `role="img"`.
+
+Performance is architecturally honest rather than optimised: this is a hand-authored static site with no bundler/minifier by design (see [System Architecture](#architecture)), so the unminified-CSS/unminified-JS/unused-code audits report real, expected findings rather than bugs — introducing a build step purely to raise this number would be a different architectural decision than the one this project deliberately made.
 
 ### 5. Browser Compatibility (Outstanding — beyond Playwright's automated coverage)
 
