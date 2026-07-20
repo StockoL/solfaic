@@ -48,6 +48,15 @@
   --button-border: var(--color-action-primary);
 }
 
+/* Applied while Tone.js is initialising or mid-playback, so the user sees
+   something is happening during the async gap rather than an unresponsive
+   button. */
+.button.is-locked {
+  cursor: wait;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 /*
  * The Pushable — reserved for hero-level CTAs only (Home's "Practice Now",
  * Classroom's "Go to Practice Room"). NOT used for Practice Room's
