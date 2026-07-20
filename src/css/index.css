@@ -2,10 +2,13 @@
  * ============================================================================
  * SOLFAIC V2 - CSS ORCHESTRATOR
  * ============================================================================
- * The only file linked directly from HTML. Declares the cascade layer order
+ * The dev-time source of truth for the cascade — declares the layer order
  * up front (this is what makes specificity predictable under CUBE CSS —
  * later layers always beat earlier ones, regardless of selector weight) and
- * imports each tier into its layer.
+ * imports each tier into its layer. HTML no longer links this file directly:
+ * its 26 separate @imports are all render-blocking, so build-css.js reads
+ * this exact chain and concatenates it into src/css/bundle.css, which is
+ * what actually ships. Add/reorder imports here, then run `npm run build:css`.
  * ============================================================================
  */
 
@@ -13,6 +16,7 @@
 
 @import url("./global/reset.css") layer(reset);
 @import url("./global/variables.css") layer(global);
+@import url("./global/font-faces.css") layer(global);
 @import url("./global/global-styles.css") layer(global);
 
 @import url("./compositions/center.css") layer(compositions);

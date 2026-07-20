@@ -41,8 +41,8 @@
   --color-solfege-ti: var(--color-status-danger);
 
   /* -- TYPOGRAPHY ---------------------------------------------------------- */
-  --font-family-heading: 'Galindo', system-ui, sans-serif;
-  --font-family-body: 'Poppins', system-ui, sans-serif;
+  --font-family-heading: 'Galindo', 'Galindo Fallback', system-ui, sans-serif;
+  --font-family-body: 'Poppins', 'Poppins Fallback', system-ui, sans-serif;
   --size-step--2: clamp(0.6944rem, 0.6341rem + 0.3019vw, 0.8681rem);
   --size-step--1: clamp(0.8333rem, 0.7609rem + 0.3623vw, 1.0417rem);
   --size-step-0: clamp(1rem, 0.913rem + 0.4348vw, 1.25rem);

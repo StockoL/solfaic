@@ -48,8 +48,8 @@
   },
   "_comment_typography": "Two-typeface pairing (Galindo/display, Poppins/body) plus the fluid type scale. PROCESS: scale generated via https://utopia.fyi/type/calculator?c=320,16,1.2,1240,20,1.2,5,2,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12 — re-run there and paste back in if the scale ever needs to change.",
   "typography": {
-    "font-family-heading": "'Galindo', system-ui, sans-serif",
-    "font-family-body": "'Poppins', system-ui, sans-serif",
+    "font-family-heading": "'Galindo', 'Galindo Fallback', system-ui, sans-serif",
+    "font-family-body": "'Poppins', 'Poppins Fallback', system-ui, sans-serif",
     "step--2": "clamp(0.6944rem, 0.6341rem + 0.3019vw, 0.8681rem)",
     "step--1": "clamp(0.8333rem, 0.7609rem + 0.3623vw, 1.0417rem)",
     "step-0": "clamp(1rem, 0.913rem + 0.4348vw, 1.25rem)",
