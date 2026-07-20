@@ -58,12 +58,31 @@
           Looks like that note doesn't exist in our score. Let's get you back on
           track.
         </p>
+        <p role="status" aria-live="polite">
+          Redirecting to Lesson 1 in
+          <span id="redirect-countdown">5</span> seconds&hellip;
+        </p>
 
         <a href="index.html" class="button" data-variant="primary"
           >Back to Lesson 1</a
         >
       </div>
     </main>
+
+    <script>
+      (() => {
+        let secondsLeft = 5;
+        const countdownEl = document.getElementById("redirect-countdown");
+        const timer = setInterval(() => {
+          secondsLeft -= 1;
+          countdownEl.textContent = secondsLeft;
+          if (secondsLeft <= 0) {
+            clearInterval(timer);
+            location.href = "index.html";
+          }
+        }, 1000);
+      })();
+    </script>
 
     <footer class="site-footer">
       <!-- Wrapper controls the max-width, Spread pushes items to opposite ends -->
