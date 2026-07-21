@@ -68,6 +68,50 @@ function barsPerRow(ticksPerBar) {
   return Math.max(1, Math.floor(WORKSPACE_ROW_REFERENCE_COLUMNS / ticksPerBar));
 }
 
+/**
+ * True when tickIndex is the last tick of its own bar — mirrors engine.js's
+ * evaluateSubmission's identical bar-boundary logic (kept as its own copy
+ * rather than a cross-import: core.js is deliberately rendering-only and
+ * doesn't otherwise depend on engine.js's business logic). An anacrusis
+ * (see generateRhythmTimeline) sits at index 0 as its own complete 1-tick
+ * pickup bar, shifting bar 0 proper to start at index 1, so every
+ * subsequent bar boundary needs that one-tick offset accounted for too.
+ */
+function isLastTickOfBar(tickIndex, ticksPerBar, hasAnacrusis) {
+  if (hasAnacrusis) {
+    if (tickIndex === 0) return true;
+    return (tickIndex - 1) % ticksPerBar === ticksPerBar - 1;
+  }
+  return tickIndex % ticksPerBar === ticksPerBar - 1;
+}
+
+/**
+ * True when tickIndex is the first tick of its own bar — the bar-number
+ * label's counterpart to isLastTickOfBar above, same anacrusis-offset
+ * reasoning.
+ */
+function isFirstTickOfBar(tickIndex, ticksPerBar, hasAnacrusis) {
+  if (hasAnacrusis) {
+    if (tickIndex === 0) return true;
+    return (tickIndex - 1) % ticksPerBar === 0;
+  }
+  return tickIndex % ticksPerBar === 0;
+}
+
+/**
+ * 1-indexed bar number for tickIndex, matching isFirstTickOfBar's own
+ * boundaries. An anacrusis pickup isn't a numbered bar in real notation
+ * (it's a partial bar before bar 1), so it deliberately has no defined
+ * return here — callers should skip labelling it via isFirstTickOfBar
+ * combined with an explicit anacrusis check, not by calling this for it.
+ */
+function barNumberForTick(tickIndex, ticksPerBar, hasAnacrusis) {
+  if (hasAnacrusis) {
+    return Math.floor((tickIndex - 1) / ticksPerBar) + 1;
+  }
+  return Math.floor(tickIndex / ticksPerBar) + 1;
+}
+
 // ============================================================================
 // LONG-PRESS HELPER
 // ============================================================================
@@ -684,6 +728,30 @@ function buildWorkspaceBox(state, tickIndex) {
   box.className = "workspace-box";
   box.setAttribute("data-tick-index", tickIndex);
 
+  // Barlines/bar numbers: every bar's own last tick gets a closing edge,
+  // resembling sheet music's barlines — including a bar that ends mid-row
+  // (2/4 packs 2 bars per row), not just a row's own last box. A row's
+  // first box also gets an opening edge; nothing else needs one, since a
+  // bar's closing edge already IS the next bar's opening edge visually
+  // (real barlines mark the boundary once, not twice) — see
+  // isLastTickOfBar's own doc comment for why a plain tickIndex %
+  // ticksPerBar isn't enough once an anacrusis is involved.
+  const columnsPerRow =
+    barsPerRow(state.activeConfig.ticksPerBar) * state.activeConfig.ticksPerBar;
+  const isRowStart = tickIndex % columnsPerRow === 0;
+  const isBarEnd = isLastTickOfBar(
+    tickIndex,
+    state.activeConfig.ticksPerBar,
+    state.activeConfig.hasAnacrusis,
+  );
+  if (isRowStart && isBarEnd) {
+    box.setAttribute("data-bar-edge", "both");
+  } else if (isRowStart) {
+    box.setAttribute("data-bar-edge", "start");
+  } else if (isBarEnd) {
+    box.setAttribute("data-bar-edge", "end");
+  }
+
   const isActive = tickIndex < state.activeConfig.totalTicks;
   const token = isActive ? state.userSubmission[tickIndex] : null;
   const isExtension = typeof token === "string" && token.endsWith("_ext");
@@ -758,6 +826,27 @@ function buildWorkspaceBox(state, tickIndex) {
     );
   } else if (isActive) {
     rhythmCard.classList.add("is-placeholder");
+  }
+
+  // Every bar gets its own number now that barlines mark every bar
+  // boundary (not just each row's outer edge) — an anacrusis pickup is
+  // deliberately skipped, since it isn't a numbered bar in real notation,
+  // just a partial one before bar 1.
+  const hasAnacrusis = state.activeConfig.hasAnacrusis;
+  const isAnacrusisTick = hasAnacrusis && tickIndex === 0;
+  if (
+    !isAnacrusisTick &&
+    isFirstTickOfBar(tickIndex, state.activeConfig.ticksPerBar, hasAnacrusis)
+  ) {
+    const barNumber = document.createElement("span");
+    barNumber.className = "workspace-box__bar-number";
+    barNumber.setAttribute("aria-hidden", "true");
+    barNumber.textContent = barNumberForTick(
+      tickIndex,
+      state.activeConfig.ticksPerBar,
+      hasAnacrusis,
+    );
+    box.appendChild(barNumber);
   }
 
   container.appendChild(rhythmCard);

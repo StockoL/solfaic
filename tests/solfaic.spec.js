@@ -523,6 +523,111 @@ test.describe("Solfaic Interactive Application Suite", () => {
       await expect(page.locator(".workspace-page")).toHaveCount(2);
     });
 
+    test("Each row gets its own barline pair and a sequential, italicised bar number", async ({
+      page,
+    }) => {
+      // Synthetic 4-bar, 3/4 exercise (3 boxes/row, matching barsPerRow's
+      // 1-bar-per-row for 3/4) — 2 full rows to confirm numbering is
+      // per-row, not just present on the very first box.
+      const { barEdges, barNumbers } = await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const core = await import("/src/js/core.js");
+        const totalTicks = 6; // 2 rows of 3 (ticksPerBar) boxes
+        core.renderWorkspace({
+          activeConfig: { totalTicks, ticksPerBar: 3, bars: 2 },
+          userSubmission: Array(totalTicks).fill(null),
+          slotStates: Array(totalTicks).fill("idle"),
+          pitchSubmission: [],
+          pitchSlotStates: [],
+          exercisePhase: "RHYTHM",
+          selectedSlotIndex: null,
+        });
+        const boxes = Array.from(document.querySelectorAll(".workspace-box"));
+        return {
+          barEdges: boxes.map((box) => box.getAttribute("data-bar-edge")),
+          barNumbers: Array.from(
+            document.querySelectorAll(".workspace-box__bar-number"),
+          ).map((el) => el.textContent),
+        };
+      });
+
+      // 6 boxes, indices 0-2 = row 1 (3/row), indices 3-5 = row 2.
+      expect(barEdges).toEqual([
+        "start",
+        null,
+        "end",
+        "start",
+        null,
+        "end",
+      ]);
+      expect(barNumbers).toEqual(["1", "2"]);
+    });
+
+    test("A metre packing more than one bar per row (2/4) still gets a barline at every bar boundary, not just the row's outer edges", async ({
+      page,
+    }) => {
+      // 2/4 packs 2 bars into one 4-box row (barsPerRow(2) === 2) — the
+      // exact case that was missing its mid-row barline: bar 1 ends at
+      // box index 1, bar 2 (a second, independent bar) starts at index 2
+      // in the SAME row, so index 1 needs its own closing edge even
+      // though it isn't the row's last box.
+      const { barEdges, barNumbers } = await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const core = await import("/src/js/core.js");
+        const totalTicks = 4; // 1 row, 2 bars of 2 ticks each
+        core.renderWorkspace({
+          activeConfig: { totalTicks, ticksPerBar: 2, bars: 2 },
+          userSubmission: Array(totalTicks).fill(null),
+          slotStates: Array(totalTicks).fill("idle"),
+          pitchSubmission: [],
+          pitchSlotStates: [],
+          exercisePhase: "RHYTHM",
+          selectedSlotIndex: null,
+        });
+        const boxes = Array.from(document.querySelectorAll(".workspace-box"));
+        return {
+          barEdges: boxes.map((box) => box.getAttribute("data-bar-edge")),
+          barNumbers: Array.from(
+            document.querySelectorAll(".workspace-box__bar-number"),
+          ).map((el) => el.textContent),
+        };
+      });
+
+      expect(barEdges).toEqual(["start", "end", null, "end"]);
+      expect(barNumbers).toEqual(["1", "2"]);
+    });
+
+    test("The workspace grid doesn't overflow its track on a narrow (iPhone SE-width) viewport, even at the widest 4-box row", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 320, height: 568 });
+      await page.goto("/practice.html");
+      await page.waitForSelector(".workspace-box");
+
+      const overflow = await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const core = await import("/src/js/core.js");
+        const totalTicks = 4; // 4/4, the widest row any metre reaches
+        core.renderWorkspace({
+          activeConfig: { totalTicks, ticksPerBar: 4, bars: 1 },
+          userSubmission: Array(totalTicks).fill(null),
+          slotStates: Array(totalTicks).fill("idle"),
+          pitchSubmission: [],
+          pitchSlotStates: [],
+          exercisePhase: "RHYTHM",
+          selectedSlotIndex: null,
+        });
+        const track = document.querySelector(".workspace-pager__track");
+        return track.scrollWidth - track.clientWidth;
+      });
+
+      // The barlines added real width (a border plus padding) to the
+      // outer boxes on top of what was already a tight fit at this width
+      // — regression test for the overflow that resulted, which pushed
+      // the row's own closing barline out past the visible viewport.
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+
     // Safety net for the iPhone-only "workspace boxes render inconsistent
     // sizes, varying per row" bug — NOT a substitute for the on-device
     // Safari Web Inspector session that bug actually needs. Chromium (what

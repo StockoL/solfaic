@@ -1905,7 +1905,7 @@ body.practice-room {
 .workspace-grid {
   grid-template-columns: repeat(
     var(--grid-placement, 4),
-    calc((100% - 3 * var(--gutter, 1rem)) / 4)
+    clamp(3.3rem, 17vw, 5.5rem)
   );
   justify-content: center;
 }
@@ -1938,13 +1938,17 @@ body.practice-room {
  * get clipped by its overflow. Padding lives here on the page rather than
  * on .workspace-pager__track itself so the track's own scroll/clientWidth
  * arithmetic (used by initialiseWorkspacePager()'s scrollByPage) stays
- * untouched.
+ * untouched. Block-start gets extra room on top of that same 13px baseline
+ * specifically for the first row's own .workspace-box__bar-number, which
+ * floats above its box via a negative top offset and would otherwise get
+ * clipped by this same overflow.
  */
 .workspace-page {
   flex: 0 0 100%;
   scroll-snap-align: start;
   min-inline-size: 0;
-  padding: 13px 6px;
+  padding-block: calc(13px + 1.1em) 13px;
+  padding-inline: 6px;
 }
 
 .workspace-pager__nav {
@@ -2009,9 +2013,45 @@ body.practice-room {
 /* --- Box --- */
 
 .workspace-box {
+  position: relative;
   transition:
     opacity var(--dur-fast) ease,
     transform var(--dur-fast) var(--spring-smooth);
+}
+
+/*
+ * Barlines — a row is one bar (or, for metres packing more than one bar
+ * per row, the row's own outer edge), so its first/last box gets a solid
+ * vertical rule resembling sheet music's barlines either side of a bar.
+ * Deliberately solid and full-height (not the cards' own light dashed
+ * borders) so it reads as a structural staff line, not another card edge;
+ * padding keeps it from crowding the card content it now sits next to.
+ */
+.workspace-box[data-bar-edge="start"],
+.workspace-box[data-bar-edge="both"] {
+  border-inline-start: 2px solid var(--color-text-base);
+  padding-inline-start: var(--space-2xs);
+}
+
+.workspace-box[data-bar-edge="end"],
+.workspace-box[data-bar-edge="both"] {
+  border-inline-end: 2px solid var(--color-text-base);
+  padding-inline-end: var(--space-2xs);
+}
+
+/*
+ * Bar number — floats above the row-start box rather than taking up
+ * in-flow space, so it can't stretch that box (and, via CSS Grid's default
+ * row-stretch, every other box sharing its row) taller than its siblings.
+ */
+.workspace-box__bar-number {
+  position: absolute;
+  inset-inline-start: 0;
+  top: -1.1em;
+  font-size: var(--size-step--2);
+  font-style: italic;
+  color: var(--color-text-muted);
+  line-height: 1;
 }
 
 .workspace-box[data-state="disabled"] {
