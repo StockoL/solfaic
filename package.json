@@ -10,7 +10,8 @@
     "build:fonts": "node build-font-fallback.js",
     "build:css": "node build-css.js",
     "verify:engine": "node tests/engine-verification.mjs",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "playwright test"
   },
   "repository": {
     "type": "git",

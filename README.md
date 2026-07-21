@@ -486,6 +486,38 @@ From the cloned root directory, after completing the Build Step above:
 - **Python 3.x:** `python -m http.server 8000`
 - **VS Code:** the Live Server extension remains the simplest option for active development
 
+### 🚀 Quick Start
+
+The fastest path from a fresh clone to a running, linted, tested build:
+
+```bash
+npm install
+npm run build:tokens && npm run build:css
+npx http-server -p 8080          # or any static server — see above
+npm run lint
+npm test                          # see "Running the Suite Locally" below for details
+```
+
+### ✅ Deployment Verification
+
+| Item                                | Status                | Notes                                                                                                                                        |
+| ------------------------------------ | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live URL reachable                   | ✅ Verified 2026-07-21 | `https://stockol.github.io/solfaic/` returns `200 OK`, `Content-Encoding: gzip`, matching the compression note in the Lighthouse section above. |
+| Deployed build matches `main`        | ☐ Pending each release | Re-confirm the committed `bundle.css`/`variables.css` were rebuilt (see Build Step) before pushing, since GitHub Pages serves them as-is.       |
+| Cross-browser spot check (desktop)   | ☐ Pending              | Load the deployed URL itself (not just localhost) in Chrome, Firefox, and Safari.                                                              |
+| Cross-device spot check (mobile)     | ☐ Pending              | At least one real iOS and one real Android device against the deployed URL — this is also where the iPhone grid bug (Known Issues) would need chasing directly. |
+
+### 📋 Release Checklist
+
+Before shipping a new version:
+
+1. `npm run lint` — must exit clean.
+2. `npm run verify:engine` — engine harness must report 0 failures.
+3. `npm test` — full Playwright suite, all 5 browser/device projects.
+4. `npm run build:tokens && npm run build:css` — rebuild, then confirm `src/css/global/variables.css` and `src/css/bundle.css` show as changed (or unchanged, if nothing token/import-related moved) before committing.
+5. Spot-check the deployed URL after the Pages build finishes (see Deployment Verification above).
+6. Update the Development Log with anything notable from this release.
+
 <p align="right">(<a href="#top">Back to top</a>)</p>
 
 ## 7. <a name="credits"></a> 🤝 Credits & Acknowledgements
@@ -657,6 +689,8 @@ The "Video coming soon" placeholder has also been deleted from each Level Guide 
 
 This section outlines the holistic verification suite executed to guarantee the engineering integrity, mathematical precision, and cross-platform accessibility of Solfaic.
 
+**Key user journeys, screenshotted:** the three states most worth seeing directly — a first practice attempt, an incorrect submission, and the rhythm→pitch phase transition — are already captured in [Core Features](#features) above: the [Level 1 workspace grid](./docs/screenshots/v2_workspace_metre_grid.png), the ["Not quite!" escalating feedback modal](./docs/screenshots/v2_escalating_feedback.png), and the [Starting Note phase transition](./docs/screenshots/v2_two_phase_starting_note.png), respectively.
+
 ### Why Playwright, and Why Tests Came First
 
 **Why Playwright, not Jest.** This was actually decided back in V1, for a reason that's still just as true now: Jest runs in a simulated Node environment (`jsdom`) with no real soundcard and no real `window.AudioContext`. Getting Jest to touch anything audio-related at all means mocking the entire Web Audio API — which V1's own README called out plainly as "an industry anti-pattern," and V2 inherited that reasoning rather than re-litigating it. Every race condition documented in this README's bug log (the audio-lock race, the keyboard/scheduled-playback synth conflict) is a *timing* bug against a *real* Tone.js transport — a mocked audio context wouldn't have real timing to get wrong, so it wouldn't have caught any of them. Playwright spins up an actual Chromium/WebKit/Firefox engine with a real audio stack, so the tests are exercising the same failure modes a real user actually hits.
@@ -682,18 +716,31 @@ The rhythm and melodic engines are pure functions with no DOM dependency, so the
 
 ### 2. Automated End-to-End Testing (Playwright)
 
-Runs across three browser/device configurations — Desktop Chromium, Mobile Chrome (Pixel 5 viewport), and Mobile Safari (iPhone 12 viewport, WebKit engine) — via `playwright.config.js`, continuing V1's original commitment to verifying the responsive "Sponge" layout actually holds up under real engine differences, not just Chromium alone.
+Runs across five browser/device configurations — desktop Chromium, WebKit, and Firefox, plus Mobile Chrome (Pixel 5 viewport) and Mobile Safari (iPhone 12 viewport, WebKit engine) — via `playwright.config.js`, continuing V1's original commitment to verifying the responsive "Sponge" layout actually holds up under real engine differences, not just Chromium alone.
 
 - **A note on testing generative UI:** rhythm and pitch generation draw from `Math.random()` at every step, so the exercise a test needs to solve correctly is normally unknowable from outside the page. The suite solves this by forcing `Math.random` to a constant via `page.addInitScript()` before navigation — every "random" draw becomes reproducible, so re-invoking the same generator function reveals the exact target the live page is already holding, without needing to inspect or mock internal state directly.
 - **Initialization & UI Routing:** confirms Practice Room boots to Level 1 defaults with a populated reel; confirms the level dropdown, now relocated to Classroom, correctly filters the level guide to a single level's content.
 - **Input & Interaction Mechanics:** motif pad clicks fill the next open slot; number-key shortcuts and Backspace correctly inject and clear motifs.
 - **Validation & Error Workflows:** an incomplete board triggers the empty-panic shake; a complete submission runs evaluation, with feedback landing as a `data-feedback` attribute on the workspace box (updated from an earlier class-based approach, following the two-phase rhythm/pitch rework).
-- **Audio Context & Thread Locking:** playback correctly locks the replay button against double-firing.
+- **Audio Context & Thread Locking:** playback correctly locks the replay button against double-firing; exhausting the listen budget (`maxPlays`) shows the out-of-plays modal rather than a native `alert()` (the button's own `pointer-events: none` lock makes it unreachable to a real click by then, so the guard is exercised via a direct event dispatch — the same defensive path a bypass would take); a stubbed `AudioEngine.playSequence` rejection confirms a failed playback unlocks the UI and shows an audio-error modal, rather than leaving the board locked forever.
 - **Two-Phase Rhythm → Pitch Flow:** a correct rhythm submission triggers the Starting Note modal, swaps the reel from rhythm motifs to solfège syllables, and leaves the confirmed rhythm boxes visible but read-only while the pitch phase is worked.
 - **Escalating Feedback & Remediation:** a first wrong submission shows the "Try Again" modal without disturbing the streak; a second wrong submission on the same still-incorrect board names what to practise, reveals the correct answer on the board, and resets the exercise.
 - **Solfège Card Colours:** every reachable syllable resolves to a real, non-empty colour, and no two syllables active in the same toneset ever share one — confirming the palette reads as genuinely distinguishable, not verified by contrast math alone.
 - **Metre-Aware Workspace Grid:** the grid's actual column count is re-derived independently from the live session's `ticksPerBar` and compared against the page's rendered `--grid-placement`, confirming bars pack multiple-per-row where they fit rather than always reserving one row per bar.
 - **Classroom Level Panels:** the Preparation/Presentation/Practice tabs switch correctly, Preparation shows its unavailable state at every level (not just 5+), and the tab strip itself wraps to a second row on a narrow (320px) viewport rather than overflowing — bounding-box positions confirm Practice actually drops below Preparation/Presentation instead of running off-screen. Presentation, both Workshops, Example, and Interval Detective are verified per level — not just that markup renders, but that audio actually plays the intended content. `AudioEngine.playOstinato`/`playNote`/`playSequence` are intercepted directly on the page's live module instance (a dynamic `import()` inside `page.evaluate` resolves to the same cached ES module the app itself is running, so the spy sees real calls, not a mock standing in for untested code) to confirm the exact motif/syllable/interval pair passed matches what's on screen, rather than only checking "some call happened." Also covers Level 4's "nothing new this level" message (distinct from the Level 5+ unavailable state), a real keyboard-press regression test for the Workshop pads' Space-key activation, a tum-ti/syncopa regression test locking in that only tied motifs get a second box, Rhythm Workshop's Simple/Compound grouping, Interval Detective's reference-only highlight held for a full 2s (`playOstinato` mocked to sidestep a real, pre-existing WebKit/Tone.js scheduling error unrelated to the fix being tested — see Known Issues), and that Practice tab panels keep clear space before the next panel's separator rule rather than touching it.
+
+### Running the Suite Locally
+
+```bash
+npm run verify:engine                    # Node engine harness — generation/invariant checks
+npx playwright install                   # one-time browser download (Chromium, WebKit, Firefox)
+npm test                                 # full suite, all 5 browser/device projects
+npx playwright test --project=webkit     # a single project only
+```
+
+`npm test` boots the local static server itself, via `playwright.config.js`'s `webServer` (`npx http-server -p 8080`) — no separate serve step needed first. `npm run verify:engine` needs no server at all, since it runs the pure-function engine directly under Node.
+
+Last verified locally: 2026-07-21 — `npm run lint` and `npm run verify:engine` both clean (0 lint errors, 22,763 engine assertions passed), full 5-project Playwright run: **160/160 passing** (32 tests × 5 projects — see Browser Compatibility below). One pre-existing flake was found and fixed during this pass: the audio-lock test raced a real (unstubbed) Tone.js playback against its own assertion, intermittently losing on WebKit/Mobile Safari's faster audio stack — now stubbed with a deterministic delay, same technique already used elsewhere in the suite for reproducibility.
 
 ### 3. Manual Testing Matrix (Outstanding — to complete before project close)
 
@@ -758,10 +805,14 @@ Worth documenting in full, since it's a genuinely reusable recipe beyond this pr
 
 | Engine / Browser                     | Verified                          | Notes                                                                                                                                                                          |
 | ------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Chromium (Chrome/Edge desktop)       | ✅ Automated (150/150 tests pass) | `chromium` project.                                                                                                                                                            |
-| WebKit (Safari desktop)              | ✅ Automated (150/150 tests pass) | `webkit` project, added this pass.                                                                                                                                             |
-| Gecko (Firefox)                      | ✅ Automated (150/150 tests pass) | `firefox` project, added this pass.                                                                                                                                            |
+| Chromium (Chrome/Edge desktop)       | ✅ Automated (32/32 tests pass) | `chromium` project.                                                                                                                                                            |
+| WebKit (Safari desktop)              | ✅ Automated (32/32 tests pass) | `webkit` project, added this pass.                                                                                                                                             |
+| Gecko (Firefox)                      | ✅ Automated (32/32 tests pass) | `firefox` project, added this pass.                                                                                                                                            |
+| Chromium (Mobile Chrome, Pixel 5 viewport) | ✅ Automated (32/32 tests pass) | `Mobile Chrome` project.                                                                                                                                                 |
+| WebKit (Mobile Safari, iPhone 12 viewport) | ✅ Automated (32/32 tests pass) | `Mobile Safari` project — engine coverage only, see the physical-device row below. |
 | WebKit (Safari iOS, physical device) | ☐ Pending — genuinely needs real hardware | Playwright's Mobile Safari project runs the WebKit _engine_, not physical Safari on physical iOS — real device/browser-specific quirks (V1's own testing log found one: Safari's collapsing bottom toolbar interacting badly with `100dvh`) won't necessarily surface through emulation. This is also where the still-open iPhone workspace-grid sizing bug lives (see Known Issues) — automation can't close this row. |
+
+160/160 total (32 tests × 5 projects), last run 2026-07-21 — see [Running the Suite Locally](#testing) above.
 
 ### 6. Validator Testing
 
