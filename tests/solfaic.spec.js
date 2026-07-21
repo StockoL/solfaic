@@ -313,6 +313,42 @@ test.describe("Solfaic Interactive Application Suite", () => {
       expect(await readOnlyBoxes.count()).toBeGreaterThan(0);
     });
 
+    // Regression test: the reel used to render targetPitchLine.toneset,
+    // which is exercise-specific — Level 1 in particular draws a random,
+    // sometimes single-syllable subset of its melodic group (see
+    // generatePitchLine in engine.js), making the reel trivially easy
+    // whenever an exercise happened to land on a small one. It should
+    // always show the level's full cumulative keyboard instead, same
+    // source Melodic Workshop/Interval Detective already use.
+    test("The pitch-phase reel shows the level's full cumulative toneset, not just this exercise's own subset", async ({
+      page,
+    }) => {
+      await goToPracticeWithDeterministicRandom(page);
+      await completeRhythmPhaseCorrectly(page);
+
+      const { padLabels, cumulativeToneset, exerciseToneset } =
+        await page.evaluate(async () => {
+          // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+          const engine = await import("/src/js/engine.js");
+          // @ts-ignore
+          const state = await import("/src/js/state.js");
+          const cumulativeToneset = engine.getCumulativeToneset(
+            state.sessionState.currentLevel,
+          );
+          const exerciseToneset = state.sessionState.targetPitchLine.toneset;
+          const padLabels = Array.from(
+            document.querySelectorAll("#ui-motif-reel .solfege-pad"),
+          ).map((el) => el.getAttribute("aria-label"));
+          return { padLabels, cumulativeToneset, exerciseToneset };
+        });
+
+      expect([...padLabels].sort()).toEqual([...cumulativeToneset].sort());
+      // Level 1's two melodic groups aren't identical, so the cumulative
+      // (union of both) set is strictly bigger than either one alone —
+      // confirming the reel isn't just coincidentally matching by falling
+      // back to the same value.
+      expect(cumulativeToneset.length).toBeGreaterThan(exerciseToneset.length);
+    });
   });
 
   test.describe("6. Escalating Feedback & Remediation Modals", () => {

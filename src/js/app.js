@@ -20,6 +20,7 @@ import {
   clearMotif,
   insertPitch,
   clearPitch,
+  getCumulativeToneset,
 } from "./engine.js";
 import {
   DOM,
@@ -105,7 +106,14 @@ export async function enterPitchPhase() {
 
   unlockUI();
   renderWorkspace(sessionState);
-  renderSolfegeReel(sessionState.targetPitchLine.toneset);
+  // The full keyboard, not just this exercise's own toneset — targetPitchLine.toneset
+  // is exercise-specific (Level 1 in particular draws a random, sometimes
+  // single-syllable subset of its melodic group, see generatePitchLine),
+  // which made the reel trivially easy whenever an exercise happened to
+  // use few syllables. getCumulativeToneset gives every syllable actually
+  // introduced by this level so far, same source Melodic Workshop and
+  // Interval Detective already use.
+  renderSolfegeReel(getCumulativeToneset(sessionState.currentLevel));
   renderMeta(sessionState);
 
   // Starting Note modal — showModal() blocks interaction with the rest of
