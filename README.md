@@ -508,6 +508,13 @@ Licensed under the [MIT License](./LICENSE).
 
 Artificial Intelligence (LLMs) was utilised strictly as a "Pair Programmer" and strict linter throughout the development lifecycle to accelerate cross-browser debugging, reflow profiling, and formatting, ensuring absolute human ownership and comprehension of the overarching engine code.
 
+Two specific blocks in the codebase are marked `AI-Attribution` inline rather than left unmarked like the rest — as a learner, these are cases where I genuinely wouldn't have arrived at the solution unaided, and I'd rather credit that honestly than claim it as unaided work I later happened to also understand:
+
+- **`src/js/audio.js`, inside `resolveSolfegeToNote()`:** the regex `/^([A-G][#b]?)(\d+)$/` that splits a Tone.js note string like `"Eb4"` into its pitch-class letter (with optional accidental) and octave digits, in one pattern with the capture groups destructured directly. The rest of the function — converting that pitch class to a 0–11 chromatic index, adding the solfège syllable's semitone offset, then using `Math.floor`/modulo on the total to work out both the resulting note *and* whether it crossed an octave boundary — is the actual movable-do resolution logic, and it only works because this regex hands it a clean pitch-class/octave split to begin with.
+- **`src/js/core.js`, inside `resolveSolfegeColor()`:** the `color-mix(in srgb, var(--color-solfege-${above.token}) ${towardAbovePercent}%, var(--color-solfege-${below.token}) ${100 - towardAbovePercent}%)` template literal that blends two solfège anchor colours. Each of the 7 diatonic syllables has a fixed colour; a chromatic syllable not among them gets its colour computed on the fly — nearest anchor below and above by semitone degree, how far between them it sits as a percentage, then handed straight to CSS's native `color-mix()` so the actual RGB blending happens in the browser's CSS engine rather than being precomputed in JS. No chromatic syllable's colour is ever hand-picked or stored; the blend is entirely degree-driven.
+
+This is an ongoing thing, not a closed list — these are the two I've identified so far while learning to recognise this class of solution myself; more may get the same honest attribution as I find them.
+
 ### Technologies Used
 
 - **HTML5:** Semantic, accessible markup across three purpose-built pages.
@@ -649,6 +656,14 @@ The "Video coming soon" placeholder has also been deleted from each Level Guide 
 ## 9. <a name="testing"></a> 🧪 Testing & Quality Assurance Portfolio
 
 This section outlines the holistic verification suite executed to guarantee the engineering integrity, mathematical precision, and cross-platform accessibility of Solfaic.
+
+### Why Playwright, and Why Tests Came First
+
+**Why Playwright, not Jest.** This was actually decided back in V1, for a reason that's still just as true now: Jest runs in a simulated Node environment (`jsdom`) with no real soundcard and no real `window.AudioContext`. Getting Jest to touch anything audio-related at all means mocking the entire Web Audio API — which V1's own README called out plainly as "an industry anti-pattern," and V2 inherited that reasoning rather than re-litigating it. Every race condition documented in this README's bug log (the audio-lock race, the keyboard/scheduled-playback synth conflict) is a *timing* bug against a *real* Tone.js transport — a mocked audio context wouldn't have real timing to get wrong, so it wouldn't have caught any of them. Playwright spins up an actual Chromium/WebKit/Firefox engine with a real audio stack, so the tests are exercising the same failure modes a real user actually hits.
+
+**The V1 lesson, with the real numbers.** V1 built the rhythm engine, the DOM rendering cycle, event handling, and the full Tone.js audio integration across 88 commits over 22 days (`78e37f5`, 2026-06-05, through `4987e3f`, 2026-06-27) with zero automated tests. `4987e3f`'s own commit message says what happened next: `test(e2e): implement Playwright suite, patch audio UI race condition, and document QA strategy` — the very first time any test ever ran against this codebase, it caught a real concurrency bug (the audio-lock race condition) that had been sitting undetected in shipped code for over three weeks. That's not a hypothetical argument for testing early; it's what actually happened the one time testing was left until the end.
+
+**How V2 actually did it differently.** Tests weren't planned upfront as a grand strategy and then executed — each mechanism was reached for at the point in development where it was the natural fit. The Node harness (`tests/engine-verification.mjs`) exists because the rhythm/melodic engines are pure functions with no DOM dependency, so `55542bd` added it directly alongside that engine work rather than routing everything through slower E2E tests. Playwright coverage grew the same way: `34c7e7e` (`test: update the Playwright suite for the Classroom sprint`) landed the same session as the five Classroom panels it covers, not weeks after — and when a test's own assumption turned out to be wrong (a tab-wrap test that assumed a specific row split, which held on Windows but broke on Ubuntu's font metrics in CI), `c802d5d` fixed the *test's* assumption in direct response to that real CI failure, rather than leaving it broken or writing it once and never revisiting it. Tests are part of the same commit as the feature they check, not a separate phase that happens afterward.
 
 ### 1. Engine Verification (Node Harness)
 
