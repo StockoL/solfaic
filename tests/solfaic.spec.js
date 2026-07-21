@@ -686,6 +686,31 @@ test.describe("Solfaic Interactive Application Suite", () => {
       expect(after.width).toBeCloseTo(before.width, 1);
       expect(after.height).toBeCloseTo(before.height, 1);
     });
+
+    // Regression test: the overflow: hidden fix above (for the same card
+    // growing taller once filled) exposed a Chromium/Firefox-only bug of
+    // its own -- once overflow: hidden removed the automatic-minimum-size
+    // fallback, this card's aspect-ratio-derived height stopped being
+    // treated as definite for its child SVG's percentage height to
+    // resolve against, rendering the SVG at 0 height (invisible) the
+    // instant a motif was placed from the reel. WebKit didn't reproduce
+    // this one, so it's worth its own dedicated assertion rather than
+    // trusting the sizing test above (which only checks the CARD's own
+    // box, not whether its content actually paints).
+    test("A workspace box's rhythm card renders a visibly-sized SVG once a motif is placed from the reel", async ({
+      page,
+    }) => {
+      await goToPracticeWithDeterministicRandom(page);
+
+      await page.locator(".motif-pad").first().click();
+
+      const svgHeight = await page
+        .locator(".workspace-card--rhythm svg")
+        .first()
+        .evaluate((el) => el.getBoundingClientRect().height);
+
+      expect(svgHeight).toBeGreaterThan(0);
+    });
   });
 
   test.describe("9. Classroom Level Panels", () => {

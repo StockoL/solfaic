@@ -1440,8 +1440,22 @@ body.practice-room {
   overflow: hidden;
 }
 
+/*
+ * width: 100%/height: auto, not the SVG's own inline 100%/100% attributes --
+ * a flex item's percentage height only resolves against a definite parent
+ * height, and Chromium/Firefox (WebKit excepted) don't treat this card's
+ * aspect-ratio-derived height as definite for that resolution once
+ * overflow: hidden (above) has removed the automatic-minimum-size fallback
+ * that used to mask it, rendering the SVG at 0 height -- invisible -- the
+ * instant a motif was placed. Sizing from width alone via the SVG's own
+ * viewBox aspect ratio sidesteps the percentage-height resolution
+ * entirely, which happens to match the design anyway: the viewBox is 4:1,
+ * the same ratio this card's aspect-ratio already declares.
+ */
 .workspace-card--rhythm svg {
   display: block;
+  width: 100%;
+  height: auto;
 }
 
 .workspace-card--rhythm.is-placeholder {
