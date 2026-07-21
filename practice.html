@@ -261,6 +261,54 @@
       </button>
     </dialog>
 
+    <!--
+      OUT OF PLAYS: the listen budget for this exercise/phase is spent.
+      Same dismiss pattern as the compliance modals (data-close-target) —
+      dismissing just hands the board back, nothing else changes.
+    -->
+    <dialog
+      id="modal-out-of-plays"
+      class="modal feedback-modal"
+      aria-labelledby="out-of-plays-title"
+    >
+      <h2 id="out-of-plays-title">Out of plays</h2>
+      <p class="feedback-modal__text">
+        You've used all your listens for this one. Give it your best guess.
+      </p>
+      <button
+        id="btn-out-of-plays-continue"
+        class="button compliance-close-btn"
+        data-variant="primary"
+        data-close-target="modal-out-of-plays"
+      >
+        Okay
+      </button>
+    </dialog>
+
+    <!--
+      AUDIO ERROR: Tone.js/Web Audio failed to start or play. The Conductor
+      has already unlocked the UI by the time this shows (see app.js) —
+      dismissing just closes the message, no further state change needed.
+    -->
+    <dialog
+      id="modal-audio-error"
+      class="modal feedback-modal"
+      aria-labelledby="audio-error-title"
+    >
+      <h2 id="audio-error-title">Playback couldn't start</h2>
+      <p class="feedback-modal__text">
+        Check your device's audio and try again.
+      </p>
+      <button
+        id="btn-audio-error-continue"
+        class="button compliance-close-btn"
+        data-variant="primary"
+        data-close-target="modal-audio-error"
+      >
+        Okay
+      </button>
+    </dialog>
+
     <!-- Tone.js v14.8.49 (MIT licensed) - external, handles Web Audio scheduling -->
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"

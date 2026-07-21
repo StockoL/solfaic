@@ -38,6 +38,8 @@ import {
   showTryAgainModal,
   showRhythmPracticeModal,
   showPitchPracticeModal,
+  showOutOfPlaysModal,
+  showAudioErrorModal,
   initialiseCoreUI,
   closeVignette,
 } from "./core.js";
@@ -82,10 +84,6 @@ export function startLevel(levelId) {
   renderStreakTracker(sessionState.streak);
   renderMeta(sessionState);
   syncLevelDropdown(levelId);
-
-  console.log(
-    `[Conductor] Level ${levelId} Initialised. Streak: ${sessionState.streak}/3`,
-  );
 }
 
 /**
@@ -118,14 +116,16 @@ export async function enterPitchPhase() {
   // waiting on Tone's one-time init.
   const firstPitch = sessionState.targetPitchLine.pitches[0];
   showStartingNoteModal(firstPitch);
-  await AudioEngine.playStartingNote(
-    firstPitch,
-    sessionState.targetPitchLine.tonic,
-  );
-
-  console.log(
-    `[Conductor] Entered PITCH phase. Streak: ${sessionState.streak}/3`,
-  );
+  try {
+    await AudioEngine.playStartingNote(
+      firstPitch,
+      sessionState.targetPitchLine.tonic,
+    );
+  } catch {
+    sessionState.currentState = "IDLE";
+    unlockUI();
+    showAudioErrorModal();
+  }
 }
 
 /**
@@ -227,7 +227,7 @@ function handleFailedAttempt({
 async function triggerReplay() {
   if (sessionState.currentState === "PLAYING") return;
   if (sessionState.playCount >= sessionState.maxPlays) {
-    alert("You are out of plays! Give it your best guess.");
+    showOutOfPlaysModal();
     return;
   }
 
@@ -240,12 +240,19 @@ async function triggerReplay() {
 
   // AudioEngine remains decoupled from the DOM/state; we pass it what it
   // needs and use the Promise it returns to know when playback finished.
-  await AudioEngine.playSequence(
-    sessionState.targetTimeline,
-    sessionState.activeConfig,
-    sessionState.targetPitchLine?.tonic,
-    sessionState.targetPitchLine?.pitches,
-  );
+  try {
+    await AudioEngine.playSequence(
+      sessionState.targetTimeline,
+      sessionState.activeConfig,
+      sessionState.targetPitchLine?.tonic,
+      sessionState.targetPitchLine?.pitches,
+    );
+  } catch {
+    sessionState.currentState = "IDLE";
+    unlockUI();
+    showAudioErrorModal();
+    return;
+  }
 
   sessionState.currentState = "IDLE";
   if (sessionState.playCount < sessionState.maxPlays) {
@@ -514,6 +521,5 @@ window.addEventListener("DOMContentLoaded", () => {
   if (DOM.workspace) {
     initialiseEventListeners();
     startLevel(1);
-    console.log("Solfaic! Conductor Active. 🚀");
   }
 });

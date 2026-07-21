@@ -211,6 +211,18 @@ test.describe("Solfaic Interactive Application Suite", () => {
     test("Triggering audio locks the replay button temporarily", async ({
       page,
     }) => {
+      // Stubbed with a short delay so the lock window is deterministic
+      // across browser engines — a real (short) Level 1 exercise can
+      // otherwise finish playing before this assertion's first poll on a
+      // faster audio stack (observed flaking on WebKit/Mobile Safari),
+      // racing the very thing being tested.
+      await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const audio = await import("/src/js/audio.js");
+        audio.AudioEngine.playSequence = () =>
+          new Promise((resolve) => setTimeout(resolve, 300));
+      });
+
       const replayBtn = page.locator("#btn-replay");
 
       // Click replay
@@ -218,6 +230,63 @@ test.describe("Solfaic Interactive Application Suite", () => {
 
       // Verify the UI locks down to prevent double-firing
       await expect(replayBtn).toHaveClass(/is-locked/);
+    });
+
+    test("Exhausting all plays shows the out-of-plays modal, never a native alert", async ({
+      page,
+    }) => {
+      // Real playback timing isn't the point of this test — stub
+      // playSequence to resolve instantly so exhausting maxPlays (3)
+      // doesn't require waiting out three real audio plays.
+      await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const audio = await import("/src/js/audio.js");
+        audio.AudioEngine.playSequence = () => Promise.resolve();
+      });
+
+      let nativeDialogFired = false;
+      page.on("dialog", () => {
+        nativeDialogFired = true;
+      });
+
+      const replayBtn = page.locator("#btn-replay");
+      // First 2 plays: the button re-enables between clicks.
+      await replayBtn.click();
+      await expect(replayBtn).not.toHaveClass(/is-locked/);
+      await replayBtn.click();
+      await expect(replayBtn).not.toHaveClass(/is-locked/);
+
+      // The 3rd play exhausts maxPlays (3) — the button now stays locked
+      // (pointer-events: none) for the rest of this exercise, per
+      // triggerReplay in app.js. That's exactly the defensive case the
+      // out-of-plays guard exists for: a triggerReplay() call that lands
+      // once plays are already exhausted. A real mouse click can no
+      // longer reach the locked button, so the guard is exercised via a
+      // direct dispatch, same as a bypass a keyboard/assistive path could
+      // still take.
+      await replayBtn.click();
+      await expect(replayBtn).toHaveClass(/is-locked/);
+      await replayBtn.dispatchEvent("click");
+
+      await expect(page.locator("#modal-out-of-plays")).toBeVisible();
+      expect(nativeDialogFired).toBe(false);
+    });
+
+    test("A failed audio playback unlocks the UI and shows an error modal instead of hanging locked", async ({
+      page,
+    }) => {
+      await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const audio = await import("/src/js/audio.js");
+        audio.AudioEngine.playSequence = () =>
+          Promise.reject(new Error("test-forced audio failure"));
+      });
+
+      const replayBtn = page.locator("#btn-replay");
+      await replayBtn.click();
+
+      await expect(page.locator("#modal-audio-error")).toBeVisible();
+      await expect(replayBtn).not.toHaveClass(/is-locked/);
     });
   });
 

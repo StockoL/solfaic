@@ -49,6 +49,8 @@ export const DOM = {
   practiceModal: document.getElementById("modal-practice"),
   practiceTitle: document.getElementById("practice-title"),
   practiceCards: document.getElementById("ui-practice-cards"),
+  outOfPlaysModal: document.getElementById("modal-out-of-plays"),
+  audioErrorModal: document.getElementById("modal-audio-error"),
 };
 
 const TICKS_PER_PAGE = 16;
@@ -1001,6 +1003,26 @@ function createCelebrationBackdrop() {
  */
 export function showTryAgainModal() {
   DOM.tryAgainModal?.showModal();
+}
+
+/**
+ * The listen budget for this exercise/phase is spent — replaces the old
+ * browser alert() with the same native-<dialog> pattern as every other
+ * feedback modal here, dismissed via the generic compliance-close-btn
+ * wiring (see initialiseCoreUI) rather than a dedicated close listener,
+ * since dismissing it doesn't need to trigger any further state change.
+ */
+export function showOutOfPlaysModal() {
+  DOM.outOfPlaysModal?.showModal();
+}
+
+/**
+ * Tone.js/Web Audio failed to start or play. app.js has already unlocked
+ * the UI and reset state by the time this is called (see triggerReplay/
+ * enterPitchPhase's catch blocks) — this only surfaces the message.
+ */
+export function showAudioErrorModal() {
+  DOM.audioErrorModal?.showModal();
 }
 
 /**
