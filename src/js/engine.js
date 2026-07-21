@@ -230,7 +230,61 @@ export function generateRhythmTimeline(levelId) {
   return { timeline, config: activeConfig };
 }
 
-export function evaluateSubmission(userSubmission, targetTimeline) {
+// A bar-internal 2-tick silence is the same musical rest to a real
+// musician whether it's notated as one long rest or two short rests of
+// the same time-feel (simple/compound) — so either should mark correct.
+// A long rest can never legally span a barline the way two short rests
+// naturally can (you can't write one rest symbol starting in one bar and
+// ending in the next), which is why the equivalence below is bar-internal
+// only, not a blanket "any two adjacent short rests" rule.
+const REST_EQUIVALENCE_PAIRS = {
+  taRest: "tooRest",
+  tumRest: "toomRest",
+};
+
+/**
+ * True when tickIndex is the last tick of its own bar — an anacrusis
+ * (see generateRhythmTimeline) sits at index 0 as its own complete 1-tick
+ * pickup bar, shifting bar 0 proper to start at index 1, so every
+ * subsequent bar boundary needs that one-tick offset accounted for too.
+ */
+function isLastTickOfBar(tickIndex, ticksPerBar, hasAnacrusis) {
+  if (hasAnacrusis) {
+    if (tickIndex === 0) return true;
+    return (tickIndex - 1) % ticksPerBar === ticksPerBar - 1;
+  }
+  return tickIndex % ticksPerBar === ticksPerBar - 1;
+}
+
+/**
+ * Normalizes every bar-internal pair of adjacent identical short rests
+ * (ta-rest+ta-rest, tum-rest+tum-rest) to their long-rest token shape
+ * (tooRest/tooRest_ext, toomRest/toomRest_ext) — comparing two normalized
+ * arrays then accepts either valid notation for the same silence. A pair
+ * that actually crosses a barline (this bar's last tick into the next
+ * bar's first) is deliberately left unmerged, since only two short rests
+ * are ever legal there.
+ */
+function normalizeRestEquivalence(flatTokens, ticksPerBar, hasAnacrusis) {
+  const normalized = [...flatTokens];
+  for (let i = 0; i < normalized.length - 1; i++) {
+    const shortId = normalized[i];
+    const longId = REST_EQUIVALENCE_PAIRS[shortId];
+    if (!longId || normalized[i + 1] !== shortId) continue;
+    if (isLastTickOfBar(i, ticksPerBar, hasAnacrusis)) continue; // crosses a barline
+    normalized[i] = longId;
+    normalized[i + 1] = `${longId}_ext`;
+    i++; // this pair is spoken for; don't let the next iteration re-pair it
+  }
+  return normalized;
+}
+
+export function evaluateSubmission(
+  userSubmission,
+  targetTimeline,
+  ticksPerBar,
+  hasAnacrusis = false,
+) {
   // 1. Flatten the algorithm's answer
   const flatTarget = [];
   targetTimeline.forEach((event) => {
@@ -241,11 +295,26 @@ export function evaluateSubmission(userSubmission, targetTimeline) {
     }
   });
 
+  // 2. Compare normalized forms, not the literal tokens — see
+  // normalizeRestEquivalence. flatTarget itself stays the literal
+  // generated answer below, since that's what's shown when the answer is
+  // revealed; only the correctness check treats equivalent rests as equal.
+  const normalizedTarget = normalizeRestEquivalence(
+    flatTarget,
+    ticksPerBar,
+    hasAnacrusis,
+  );
+  const normalizedSubmission = normalizeRestEquivalence(
+    userSubmission,
+    ticksPerBar,
+    hasAnacrusis,
+  );
+
   let isCorrect = true;
 
-  // 2. Map success/error states
-  const newSlotStates = userSubmission.map((token, index) => {
-    if (token === flatTarget[index]) {
+  // 3. Map success/error states
+  const newSlotStates = normalizedSubmission.map((token, index) => {
+    if (token === normalizedTarget[index]) {
       return "success";
     } else {
       isCorrect = false;
@@ -253,7 +322,7 @@ export function evaluateSubmission(userSubmission, targetTimeline) {
     }
   });
 
-  // 3. Return the payload for the Conductor to handle
+  // 4. Return the payload for the Conductor to handle
   return {
     isCorrect,
     newSlotStates,

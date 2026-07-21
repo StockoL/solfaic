@@ -25,6 +25,7 @@ import {
   generateIrregularBar,
   countSoundingNotes,
   generatePitchLine,
+  evaluateSubmission,
   evaluatePitchSubmission,
   getCumulativeToneset,
   getNewlyIntroducedSyllables,
@@ -364,6 +365,132 @@ section("resolveSolfegeToNote");
     Object.keys(SOLFEGE_DEGREES).length === 14,
     "SOLFEGE_DEGREES has all 14 confirmed syllables (7 diatonic + do' + 6 chromatic, si/le sharing a semitone)",
   );
+}
+
+// ============================================================================
+// 5a. evaluateSubmission — too-rest / ta-rest (and toom-rest / tum-rest)
+// notational equivalence
+// ============================================================================
+// A bar-internal 2-tick silence is the same musical rest whether notated
+// as one long rest or two short ones -- both should mark correct. A long
+// rest can never legally span a barline the way two short rests can, so
+// that specific case should accept ONLY the two-short-rests form.
+section("evaluateSubmission — rest notational equivalence");
+{
+  // targetTimeline only needs {motifId} per event — evaluateSubmission
+  // reads MOTIF_LIBRARY[motifId].ticks itself to flatten it.
+  const timeline = (motifIds) => motifIds.map((motifId) => ({ motifId }));
+
+  // --- Bar-internal: too-rest and two ta-rests both mark correct, either
+  // direction of substitution --- (single 4-tick bar)
+  {
+    const target = timeline(["ta", "tooRest", "ta"]); // ta | too-rest(2) | ta
+    const asToo = ["ta", "tooRest", "tooRest_ext", "ta"];
+    const asTwoTa = ["ta", "taRest", "taRest", "ta"];
+
+    assert(
+      evaluateSubmission(asToo, target, 4).isCorrect,
+      "literal too-rest submission against a too-rest target is correct",
+    );
+    assert(
+      evaluateSubmission(asTwoTa, target, 4).isCorrect,
+      "two ta-rests against a too-rest target is correct (same bar-internal silence)",
+    );
+
+    const targetAsTwoTa = timeline(["ta", "taRest", "taRest", "ta"]);
+    assert(
+      evaluateSubmission(asToo, targetAsTwoTa, 4).isCorrect,
+      "too-rest against a two-ta-rest target is correct (the reverse substitution)",
+    );
+  }
+
+  // --- Crosses a barline: only two ta-rests is ever correct, a too-rest
+  // spanning the barline must fail --- (two 3-tick bars, 3/4)
+  {
+    const target = timeline(["ta", "ta", "taRest", "taRest", "ta", "ta"]);
+    const literal = ["ta", "ta", "taRest", "taRest", "ta", "ta"];
+    const wrongToo = ["ta", "ta", "tooRest", "tooRest_ext", "ta", "ta"];
+
+    assert(
+      evaluateSubmission(literal, target, 3).isCorrect,
+      "two ta-rests spanning a barline (bar 1's last tick, bar 2's first) is correct",
+    );
+    assert(
+      !evaluateSubmission(wrongToo, target, 3).isCorrect,
+      "a too-rest spanning a barline is rejected -- only two ta-rests are legal there",
+    );
+  }
+
+  // --- Compound time: toom-rest / tum-rest, same rules ---
+  {
+    const target = timeline(["toomRest"]); // one 2-tick bar, 6/8
+    const asTwoTum = ["tumRest", "tumRest"];
+    assert(
+      evaluateSubmission(asTwoTum, target, 2).isCorrect,
+      "two tum-rests against a toom-rest target is correct (compound-time equivalent)",
+    );
+  }
+
+  // --- Anacrusis shifts every bar boundary by one tick: the pickup tick
+  // is its own 1-tick bar, so it must never merge with bar 0's first tick,
+  // even though a naive tickIndex % ticksPerBar would miss that shift. ---
+  {
+    const ticksPerBar = 4;
+    // Synthetic (not necessarily a real anacrusis pool motif) purely to
+    // isolate the boundary arithmetic: index 0 is the pickup, indices 1-4
+    // are bar 0.
+    const target = [
+      "taRest", // index 0: the anacrusis, its own bar
+      "taRest", // index 1: bar 0's first tick
+      "ta", // index 2
+      "taRest", // index 3
+      "taRest", // index 4: bar 0's last tick
+    ];
+    const targetEvents = target.map((motifId) => ({ motifId }));
+
+    const literalMatch = evaluateSubmission(
+      target,
+      targetEvents,
+      ticksPerBar,
+      true,
+    );
+    assert(
+      literalMatch.isCorrect,
+      "anacrusis: the literal target still evaluates correct against itself",
+    );
+    assert(
+      literalMatch.newSlotStates[0] === "success" &&
+        literalMatch.newSlotStates[1] === "success",
+      "anacrusis: the pickup tick and bar 0's first tick both mark success individually, without being merged into one too-rest",
+    );
+
+    // Indices 3-4 (both inside bar 0, neither is the anacrusis boundary)
+    // should still accept a too-rest substitution.
+    const withTooInBar0 = [
+      "taRest",
+      "taRest",
+      "ta",
+      "tooRest",
+      "tooRest_ext",
+    ];
+    assert(
+      evaluateSubmission(withTooInBar0, targetEvents, ticksPerBar, true)
+        .isCorrect,
+      "anacrusis: a too-rest substitution still works for a bar-internal pair once the pickup offset is accounted for",
+    );
+  }
+
+  // --- Unrelated regression safety net: a genuinely wrong submission
+  // still fails, rest-equivalence normalization hasn't loosened anything
+  // else. ---
+  {
+    const target = timeline(["ta", "titi"]);
+    const wrong = ["ta", "ta"];
+    assert(
+      !evaluateSubmission(wrong, target, 4).isCorrect,
+      "an unrelated wrong submission still fails correctly",
+    );
+  }
 }
 
 // ============================================================================

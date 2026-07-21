@@ -307,6 +307,8 @@ function initialiseEventListeners() {
         const result = evaluateSubmission(
           sessionState.userSubmission,
           sessionState.targetTimeline,
+          sessionState.activeConfig.ticksPerBar,
+          sessionState.activeConfig.hasAnacrusis,
         );
         sessionState.slotStates = result.newSlotStates;
         renderWorkspace(sessionState);
