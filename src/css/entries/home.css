@@ -1,0 +1,44 @@
+/**
+ * ============================================================================
+ * SOLFAIC V2 - CSS ENTRY: index.html (marketing/landing page)
+ * ============================================================================
+ * Page-specific sibling of ../index.css (which stays the "everything"
+ * chain — still what 404.html links to, and still the easiest single file
+ * to skim the whole cascade from during local dev). This one only imports
+ * what index.html's DOM actually renders: shared chrome (nav, footer,
+ * buttons, the compliance-modal base) plus the hero — no Practice Room or
+ * Classroom blocks, none of which this page has any DOM for. Compositions
+ * and utilities stay unfiltered across every entry: they're small
+ * (~23KB combined) generic layout/accessibility primitives, not worth the
+ * risk of a per-page audit missing one and silently breaking a layout.
+ *
+ * Regenerate with `npm run build:css` after any change here.
+ * ============================================================================
+ */
+
+@layer reset, global, compositions, blocks, utilities;
+
+@import url("../global/reset.css") layer(reset);
+@import url("../global/variables.css") layer(global);
+@import url("../global/font-faces.css") layer(global);
+@import url("../global/global-styles.css") layer(global);
+
+@import url("../compositions/center.css") layer(compositions);
+@import url("../compositions/cluster.css") layer(compositions);
+@import url("../compositions/container.css") layer(compositions);
+@import url("../compositions/flow.css") layer(compositions);
+@import url("../compositions/grid.css") layer(compositions);
+@import url("../compositions/reel.css") layer(compositions);
+@import url("../compositions/spread.css") layer(compositions);
+@import url("../compositions/switcher.css") layer(compositions);
+@import url("../compositions/wrapper.css") layer(compositions);
+
+@import url("../blocks/button.css") layer(blocks);
+@import url("../blocks/nav.css") layer(blocks);
+@import url("../blocks/modal.css") layer(blocks);
+@import url("../blocks/hero.css") layer(blocks);
+@import url("../blocks/footer.css") layer(blocks);
+
+@import url("../utilities/animations.css") layer(utilities);
+@import url("../utilities/colors.css") layer(utilities);
+@import url("../utilities/accessibility.css") layer(utilities);

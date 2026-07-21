@@ -1,0 +1,48 @@
+/**
+ * ============================================================================
+ * SOLFAIC V2 - CSS ENTRY: practice.html
+ * ============================================================================
+ * Page-specific sibling of ../index.css (see home.css for the shared
+ * rationale). practice.html has no standard site nav or footer — it's a
+ * "focus-mode" page (confirmed: neither block's classes appear anywhere in
+ * practice.html) — so this entry skips nav.css/footer.css/hero.css/
+ * classroom*.css/level-select.css entirely and only imports the
+ * Practice Room's own blocks, plus badge/motif-pad (shared with
+ * classroom.html's Workshops) and the base modal chrome (this page's own
+ * dialogs — Try Again, Practice, Starting Note, Out of Plays, Audio Error —
+ * all build on modal.css's `.modal`/`.compliance-close-btn`).
+ *
+ * Regenerate with `npm run build:css` after any change here.
+ * ============================================================================
+ */
+
+@layer reset, global, compositions, blocks, utilities;
+
+@import url("../global/reset.css") layer(reset);
+@import url("../global/variables.css") layer(global);
+@import url("../global/font-faces.css") layer(global);
+@import url("../global/global-styles.css") layer(global);
+
+@import url("../compositions/center.css") layer(compositions);
+@import url("../compositions/cluster.css") layer(compositions);
+@import url("../compositions/container.css") layer(compositions);
+@import url("../compositions/flow.css") layer(compositions);
+@import url("../compositions/grid.css") layer(compositions);
+@import url("../compositions/reel.css") layer(compositions);
+@import url("../compositions/spread.css") layer(compositions);
+@import url("../compositions/switcher.css") layer(compositions);
+@import url("../compositions/wrapper.css") layer(compositions);
+
+@import url("../blocks/button.css") layer(blocks);
+@import url("../blocks/modal.css") layer(blocks);
+@import url("../blocks/badge.css") layer(blocks);
+@import url("../blocks/practice-header.css") layer(blocks);
+@import url("../blocks/workspace.css") layer(blocks);
+@import url("../blocks/motif-pad.css") layer(blocks);
+@import url("../blocks/vignette-overlay.css") layer(blocks);
+@import url("../blocks/celebration-modal.css") layer(blocks);
+@import url("../blocks/feedback-modal.css") layer(blocks);
+
+@import url("../utilities/animations.css") layer(utilities);
+@import url("../utilities/colors.css") layer(utilities);
+@import url("../utilities/accessibility.css") layer(utilities);
