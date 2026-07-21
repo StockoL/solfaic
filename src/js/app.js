@@ -243,9 +243,13 @@ async function triggerReplay() {
 
   // Lock immediately on click, BEFORE awaiting Tone's async init — this
   // is the exact fix from the V1 "Audio-Lock Race Condition" bug log.
+  // Submit is functionally blocked during PLAYING already (see its own
+  // click handler's early return) — it just didn't look disabled, which
+  // read as unresponsive rather than deliberately locked.
   sessionState.currentState = "PLAYING";
   sessionState.playCount++;
   DOM.replayBtn?.classList.add("is-locked");
+  DOM.submitBtn?.classList.add("is-locked");
   renderMeta(sessionState);
 
   // AudioEngine remains decoupled from the DOM/state; we pass it what it
@@ -265,6 +269,10 @@ async function triggerReplay() {
   }
 
   sessionState.currentState = "IDLE";
+  // Submit unlocks unconditionally — its lock was only ever about "audio
+  // is playing right now", unlike Replay's, which stays locked once plays
+  // run out for a separate reason.
+  DOM.submitBtn?.classList.remove("is-locked");
   if (sessionState.playCount < sessionState.maxPlays) {
     DOM.replayBtn?.classList.remove("is-locked");
   }

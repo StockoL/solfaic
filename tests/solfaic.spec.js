@@ -232,6 +232,30 @@ test.describe("Solfaic Interactive Application Suite", () => {
       await expect(replayBtn).toHaveClass(/is-locked/);
     });
 
+    test("Triggering audio also fades the submit button, not just replay", async ({
+      page,
+    }) => {
+      // Submit was already functionally blocked during PLAYING (its click
+      // handler's own early return) -- this checks it also LOOKS disabled,
+      // rather than silently doing nothing when clicked mid-playback.
+      await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const audio = await import("/src/js/audio.js");
+        audio.AudioEngine.playSequence = () =>
+          new Promise((resolve) => setTimeout(resolve, 300));
+      });
+
+      const replayBtn = page.locator("#btn-replay");
+      const submitBtn = page.locator("#btn-submit");
+
+      await replayBtn.click();
+      await expect(submitBtn).toHaveClass(/is-locked/);
+
+      // Unlocks again once playback finishes, regardless of how many plays
+      // are left -- unlike Replay, which can stay locked once plays run out.
+      await expect(submitBtn).not.toHaveClass(/is-locked/);
+    });
+
     test("Exhausting all plays shows the out-of-plays modal, never a native alert", async ({
       page,
     }) => {
