@@ -33,14 +33,16 @@
     <!-- app.js's real module graph, fetched in parallel up front instead of
          discovered one import at a time — doesn't concatenate anything, so
          each file keeps its own URL/module identity (tests rely on that,
-         see README's Lighthouse notes). -->
+         see README's Lighthouse notes). Skips classroom.js — app.js no
+         longer imports it, since practice.html has no Classroom panels
+         for it to attach to (classroom.html gets its own dedicated entry
+         point, classroom-entry.js). -->
     <link rel="modulepreload" href="src/js/data.js" />
     <link rel="modulepreload" href="src/js/state.js" />
     <link rel="modulepreload" href="src/js/rhythm-notation.js" />
     <link rel="modulepreload" href="src/js/audio.js" />
     <link rel="modulepreload" href="src/js/engine.js" />
     <link rel="modulepreload" href="src/js/core.js" />
-    <link rel="modulepreload" href="src/js/classroom.js" />
     <link rel="modulepreload" href="src/js/app.js" />
   </head>
   <body class="practice-room">

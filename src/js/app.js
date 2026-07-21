@@ -44,7 +44,6 @@ import {
   closeVignette,
 } from "./core.js";
 import { AudioEngine } from "./audio.js";
-import { initialiseClassroomPanels } from "./classroom.js";
 
 /**
  * Bootstraps a new round. Generates data, clears previous UI elements, and requests a render.
@@ -514,9 +513,12 @@ function initialiseEventListeners() {
 window.addEventListener("DOMContentLoaded", () => {
   // initialiseCoreUI() wires up chrome shared by every page (nav, accordion,
   // level-select, compliance modals). Everything below it is the Practice
-  // Room engine itself, which only has DOM to attach to on practice.html.
+  // Room engine itself. This module is practice.html's own entry point
+  // (see classroom-entry.js/home-entry.js for the other pages' lighter
+  // equivalents), so DOM.workspace is always present here — the guard
+  // stays anyway as the one honest signal this file is wired to the right
+  // page, rather than assuming its own script tag placement.
   initialiseCoreUI();
-  initialiseClassroomPanels();
 
   if (DOM.workspace) {
     initialiseEventListeners();

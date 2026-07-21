@@ -28,18 +28,18 @@
       href="assets/media/favicon-solfaic.svg"
     />
 
-    <!-- app.js's real module graph, fetched in parallel up front instead of
-         discovered one import at a time — doesn't concatenate anything, so
-         each file keeps its own URL/module identity (tests rely on that,
-         see README's Lighthouse notes). -->
+    <!-- home-entry.js's real module graph, fetched in parallel up front
+         instead of discovered one import at a time — doesn't concatenate
+         anything, so each file keeps its own URL/module identity (tests
+         rely on that, see README's Lighthouse notes). This is the landing
+         page: no exercises, no audio, no Classroom panels, so it skips
+         engine.js/audio.js/classroom.js/app.js entirely rather than
+         loading the full Practice Room graph for chrome alone. -->
     <link rel="modulepreload" href="src/js/data.js" />
     <link rel="modulepreload" href="src/js/state.js" />
     <link rel="modulepreload" href="src/js/rhythm-notation.js" />
-    <link rel="modulepreload" href="src/js/audio.js" />
-    <link rel="modulepreload" href="src/js/engine.js" />
     <link rel="modulepreload" href="src/js/core.js" />
-    <link rel="modulepreload" href="src/js/classroom.js" />
-    <link rel="modulepreload" href="src/js/app.js" />
+    <link rel="modulepreload" href="src/js/home-entry.js" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -208,6 +208,6 @@
       </button>
     </dialog>
 
-    <script type="module" src="src/js/app.js"></script>
+    <script type="module" src="src/js/home-entry.js"></script>
   </body>
 </html>
