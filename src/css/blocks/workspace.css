@@ -277,6 +277,18 @@
   justify-content: center;
   padding: var(--space-2xs);
   color: var(--color-text-base);
+  /* A flex item's automatic minimum size defaults to its content's own
+     intrinsic size, which can override a shorter aspect-ratio -- this
+     card is a column-flex item of .workspace-box__container, and its SVG
+     content's own intrinsic sizing was doing exactly that, so a
+     placeholder card (near-empty content) and a filled card (a real SVG)
+     ended up two different heights instead of both obeying 4/1. overflow
+     other than visible is what actually zeroes that automatic minimum out
+     per spec -- min-block-size: 0 achieves the same height fix, but was
+     confirmed (via WebKit specifically) to also perturb this same flex
+     item's INLINE sizing enough to push the whole row a measurable amount
+     wider than its track, which overflow: hidden doesn't. */
+  overflow: hidden;
 }
 
 .workspace-card--rhythm svg {

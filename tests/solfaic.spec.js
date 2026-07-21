@@ -658,6 +658,34 @@ test.describe("Solfaic Interactive Application Suite", () => {
         expect(Math.abs(width - first)).toBeLessThanOrEqual(1);
       }
     });
+
+    // Regression test: .workspace-card--rhythm declares aspect-ratio: 4/1,
+    // but as a column-flex item its automatic minimum size defaulted to
+    // its own content's intrinsic size, which could override a shorter
+    // aspect-ratio -- a near-empty placeholder (just a small dot) and a
+    // real rendered SVG have different intrinsic sizes, so the same box
+    // visibly grew taller the moment it was filled in.
+    test("A workspace box's rhythm card stays the same size before and after it's filled with an SVG", async ({
+      page,
+    }) => {
+      await goToPracticeWithDeterministicRandom(page);
+
+      const firstCard = page.locator(".workspace-card--rhythm").first();
+      const before = await firstCard.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return { width: r.width, height: r.height };
+      });
+
+      await page.locator(".motif-pad").first().click();
+
+      const after = await firstCard.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return { width: r.width, height: r.height };
+      });
+
+      expect(after.width).toBeCloseTo(before.width, 1);
+      expect(after.height).toBeCloseTo(before.height, 1);
+    });
   });
 
   test.describe("9. Classroom Level Panels", () => {
