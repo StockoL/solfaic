@@ -35,6 +35,7 @@ import {
   getPresentationContent,
 } from "../src/js/engine.js";
 import { resolveSolfegeToNote } from "../src/js/audio.js";
+import { renderRhythmSVG } from "../src/js/rhythm-notation.js";
 
 let passCount = 0;
 let failCount = 0;
@@ -362,6 +363,39 @@ section("resolveSolfegeToNote");
   assert(
     Object.keys(SOLFEGE_DEGREES).length === 14,
     "SOLFEGE_DEGREES has all 14 confirmed syllables (7 diatonic + do' + 6 chromatic, si/le sharing a semitone)",
+  );
+}
+
+// ============================================================================
+// 5b. renderRhythmSVG — secondary (semiquaver) beam presence
+// ============================================================================
+// A semiquaver's secondary beam used to only draw when 2+ consecutive
+// semiquavers sat next to each other in the same beamed run — an isolated
+// semiquaver (tim-ka's dotted quaver + semiquaver; syncopa v1's two lone
+// semiquavers either side of a quaver) silently got no secondary beam at
+// all, rendering indistinguishable from a plain quaver. Counting y="27"
+// rects (the secondary-beam layer, see rhythm-notation.js) rather than
+// parsing full SVG geometry — enough to confirm one exists per semiquaver
+// group, without over-specifying exact pixel placement here.
+section("renderRhythmSVG — secondary beam presence");
+{
+  const secondaryBeamCount = (svg) => (svg.match(/y="27"/g) || []).length;
+
+  assert(
+    secondaryBeamCount(renderRhythmSVG("timKa")) === 1,
+    "tim-ka (dotted quaver + isolated semiquaver) draws one secondary-beam hook",
+  );
+  assert(
+    secondaryBeamCount(renderRhythmSVG("syncopaV1")) === 2,
+    "syncopa v1 (semiquaver-quaver-semiquaver) draws two secondary-beam hooks, one per isolated semiquaver",
+  );
+  assert(
+    secondaryBeamCount(renderRhythmSVG("tikatika")) === 1,
+    "ti-ka-ti-ka (four consecutive semiquavers) draws one continuous secondary beam, not per-note hooks",
+  );
+  assert(
+    secondaryBeamCount(renderRhythmSVG("tikati")) === 1,
+    "ti-ka-ti (two consecutive semiquavers + a quaver) still draws its one secondary beam correctly",
   );
 }
 

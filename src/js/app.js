@@ -66,8 +66,11 @@ export function startLevel(levelId) {
   const noteCount = countSoundingNotes(timeline);
   sessionState.targetPitchLine = generatePitchLine(levelId, noteCount);
 
-  // 2. Reset submission arrays to empty nulls matching the level's total ticks
-  const totalSlots = config.bars * config.ticksPerBar;
+  // 2. Reset submission arrays to empty nulls matching the level's total
+  // ticks — config.totalTicks itself, not bars * ticksPerBar, since an
+  // anacrusis-affected exercise (Levels 3/4) adds one pickup tick that
+  // bars * ticksPerBar doesn't account for.
+  const totalSlots = config.totalTicks;
   sessionState.userSubmission = Array(totalSlots).fill(null);
   sessionState.slotStates = Array(totalSlots).fill("idle");
 

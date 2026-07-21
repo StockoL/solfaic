@@ -315,8 +315,15 @@ export function renderRhythmSVG(motifId) {
       const beamEnd = run[run.length - 1].centerX + 1.5;
       body += `<rect x="${beamStart}" y="15" width="${beamEnd - beamStart}" height="8"/>`;
 
-      // Secondary (semiquaver) beam under consecutive weight-1 notes
-      // within this run.
+      // Secondary (semiquaver) beam under weight-1 notes within this run.
+      // Consecutive semiquavers (2+) get one continuous beam spanning all
+      // of them. A single semiquaver with no semiquaver neighbour still
+      // needs its second beam — real notation draws it as a short hook
+      // toward whichever adjacent note is actually in this run, not a full
+      // beam with nothing to span to (tim-ka's dotted quaver + semiquaver,
+      // or syncopa v1's two lone semiquavers either side of a quaver) —
+      // previously dropped entirely, silently rendering as an unmarked
+      // quaver instead.
       let k = 0;
       while (k < run.length) {
         if (run[k].weight === SEMIQUAVER_WEIGHT) {
@@ -326,6 +333,20 @@ export function renderRhythmSVG(motifId) {
             const subStart = run[k].centerX - 1.5;
             const subEnd = run[m - 1].centerX + 1.5;
             body += `<rect x="${subStart}" y="27" width="${subEnd - subStart}" height="8"/>`;
+          } else {
+            // Isolated semiquaver: hook toward whichever neighbour is
+            // actually in the run — rightward if this is the run's first
+            // note (nothing beamable precedes it), leftward otherwise.
+            const pointsRight = k === 0;
+            const hookCenterX = run[k].centerX;
+            const neighborCenterX = pointsRight
+              ? run[k + 1].centerX
+              : run[k - 1].centerX;
+            const hookLength = Math.abs(neighborCenterX - hookCenterX) / 2;
+            const hookStart = pointsRight
+              ? hookCenterX - 1.5
+              : hookCenterX - hookLength;
+            body += `<rect x="${hookStart}" y="27" width="${hookLength + 1.5}" height="8"/>`;
           }
           k = m;
         } else {

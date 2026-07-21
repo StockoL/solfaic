@@ -383,9 +383,33 @@ function renderReelTrack(trackEl, items, buildPad) {
 }
 
 /**
+ * Box B for a motif tied across two boxes (tum-ti, syncopa v2) in the
+ * reel — purely decorative continuation, not independently selectable
+ * (the main Practice Room workspace doesn't wire clicks on its own
+ * extension boxes either), so this is a plain div, aria-hidden, not a
+ * second button. Same shape as classroom.js's own buildMotifExtensionPad
+ * (kept as a separate copy rather than a cross-import, since classroom.js
+ * already imports from core.js and importing back would be circular) —
+ * both build on .motif-pad-pair/.motif-pad-extension, which motif-pad.css
+ * already styles with reel scroll-snap in mind.
+ */
+function buildReelExtensionPad() {
+  const pad = document.createElement("div");
+  pad.className = "motif-pad-extension";
+  pad.setAttribute("aria-hidden", "true");
+  pad.innerHTML = `<div class="motif-pad__svg is-tie-arc">${renderTieArcSVG()}</div><span class="motif-pad__label">&nbsp;</span>`;
+  return pad;
+}
+
+/**
  * Renders one .motif-pad button per allowed motif into a given reel track
  * element. Used for both the main practice reel and the vignette's mirrored
- * reel, so both stay visually and behaviourally identical.
+ * reel, so both stay visually and behaviourally identical. A tied motif
+ * (tum-ti, syncopa) gets its real second box alongside it, wrapped in a
+ * .motif-pad-pair — the reel used to render box A alone and silently drop
+ * box B, the same class of bug already fixed for Presentation/Rhythm
+ * Workshop's own pads (see classroom.js's buildMotifCard), just never
+ * applied here too.
  */
 function renderReelInto(trackEl, allowedMotifs) {
   renderReelTrack(trackEl, allowedMotifs, (motifId) => {
@@ -405,6 +429,14 @@ function renderReelInto(trackEl, allowedMotifs) {
         }),
       );
     });
+
+    if (motifData.ticks > 1 && motifData.tieContinuation) {
+      const pair = document.createElement("div");
+      pair.className = "motif-pad-pair";
+      pair.appendChild(btn);
+      pair.appendChild(buildReelExtensionPad());
+      return pair;
+    }
 
     return btn;
   });
@@ -879,7 +911,18 @@ export function renderWorkspace(state) {
       barsPerRow(config.ticksPerBar) * config.ticksPerBar,
     );
 
-    for (let i = 0; i < TICKS_PER_PAGE; i++) {
+    // Only this page's real ticks — TICKS_PER_PAGE is a pagination chunk
+    // size (an upper bound per page), not a fixed count every page must
+    // show. The last (or only) page used to always render a full
+    // TICKS_PER_PAGE boxes regardless of how many ticks the exercise
+    // actually has, padding the remainder out with dimmed, disabled
+    // placeholder boxes — so a 4-bar 3/4 exercise (12 real ticks) rendered
+    // 16 boxes total instead of 12.
+    const boxesOnThisPage = Math.min(
+      TICKS_PER_PAGE,
+      config.totalTicks - page * TICKS_PER_PAGE,
+    );
+    for (let i = 0; i < boxesOnThisPage; i++) {
       const tickIndex = page * TICKS_PER_PAGE + i;
       gridEl.appendChild(buildWorkspaceBox(state, tickIndex));
     }

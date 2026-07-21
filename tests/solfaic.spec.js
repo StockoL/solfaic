@@ -312,6 +312,7 @@ test.describe("Solfaic Interactive Application Suite", () => {
       const readOnlyBoxes = page.locator('.workspace-box[data-state="readonly"]');
       expect(await readOnlyBoxes.count()).toBeGreaterThan(0);
     });
+
   });
 
   test.describe("6. Escalating Feedback & Remediation Modals", () => {
@@ -412,6 +413,54 @@ test.describe("Solfaic Interactive Application Suite", () => {
       const expectedPlacement = expectedBarsPerRow * ticksPerBar;
 
       expect(Number(gridPlacement)).toBe(expectedPlacement);
+    });
+
+    test("The total number of rendered boxes matches the exercise's actual totalTicks, not a fixed page size", async ({
+      page,
+    }) => {
+      // Same no-determinism-needed reasoning as the bars-per-row test above —
+      // re-derives the expected count from the live config rather than
+      // assuming a metre. Regression test for a bug where the workspace
+      // padded its last (or only) page out to a fixed 16 boxes regardless of
+      // the exercise's real tick count, rendering extra dimmed/disabled
+      // placeholder boxes (e.g. 16 shown for a 4-bar 3/4 exercise's real 12).
+      const totalTicks = await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const state = await import("/src/js/state.js");
+        return state.sessionState.activeConfig.totalTicks;
+      });
+
+      await expect(page.locator(".workspace-box")).toHaveCount(totalTicks);
+      await expect(
+        page.locator('.workspace-box[data-state="disabled"]'),
+      ).toHaveCount(0);
+    });
+
+    test("An exercise spanning more than one page renders exactly totalTicks boxes across all pages", async ({
+      page,
+    }) => {
+      // Level 1 always boots at 2 bars (never enough to paginate), so this
+      // exercises renderWorkspace directly with a synthetic multi-page
+      // config instead — the same function the live page uses, just fed
+      // a state object big enough to actually need 2 pages.
+      const boxCount = await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const core = await import("/src/js/core.js");
+        const totalTicks = 24; // 8 bars of 3/4, i.e. > one 16-box page
+        core.renderWorkspace({
+          activeConfig: { totalTicks, ticksPerBar: 3, bars: 8 },
+          userSubmission: Array(totalTicks).fill(null),
+          slotStates: Array(totalTicks).fill("idle"),
+          pitchSubmission: [],
+          pitchSlotStates: [],
+          exercisePhase: "RHYTHM",
+          selectedSlotIndex: null,
+        });
+        return document.querySelectorAll(".workspace-box").length;
+      });
+
+      expect(boxCount).toBe(24);
+      await expect(page.locator(".workspace-page")).toHaveCount(2);
     });
 
     // Safety net for the iPhone-only "workspace boxes render inconsistent
@@ -1040,6 +1089,45 @@ test.describe("Solfaic Interactive Application Suite", () => {
       await expect(
         page.locator("#interval-detective-content .solfege-pad"),
       ).toHaveCount(0);
+    });
+  });
+
+  test.describe("10. Practice Reel Rendering", () => {
+    // The same tied-motif box-dropping bug fixed for Presentation/Rhythm
+    // Workshop (see section 9's "tum-ti and syncopa render both boxes"
+    // test), but in the Practice Room's own reel (core.js's
+    // renderReelInto/renderMotifReel) — a third, separate call site the
+    // earlier fix never reached. Called directly rather than progressing a
+    // real session to Level 2 (tum-ti/syncopa's introducedAtLevel), since
+    // Practice Room only ever boots at Level 1 and has no in-page level
+    // switcher.
+    test("The practice reel shows both boxes for tied motifs (tum-ti, syncopa), not just the first", async ({
+      page,
+    }) => {
+      await page.evaluate(async () => {
+        // @ts-ignore -- absolute-path dynamic import resolved by the browser at runtime, not by tsc
+        const core = await import("/src/js/core.js");
+        core.renderMotifReel(["tumTi", "syncopaV2", "too"]);
+      });
+
+      const reel = page.locator("#ui-motif-reel");
+      for (const label of ["tum-ti", "syncopa"]) {
+        const pair = reel.locator(
+          `.motif-pad-pair:has(.motif-pad[aria-label="${label}"])`,
+        );
+        await expect(pair).toHaveCount(1);
+        await expect(pair.locator("svg")).toHaveCount(2);
+        await expect(pair.locator(".motif-pad-extension")).toHaveCount(1);
+      }
+
+      // too spans 2 ticks like tum-ti/syncopa but has no tieContinuation —
+      // single box, no pair wrapper, exactly one SVG.
+      const tooPad = reel.locator('.motif-pad[aria-label="too"]');
+      await expect(tooPad).toHaveCount(1);
+      await expect(
+        reel.locator('.motif-pad-pair:has(.motif-pad[aria-label="too"])'),
+      ).toHaveCount(0);
+      await expect(tooPad.locator("svg")).toHaveCount(1);
     });
   });
 });
