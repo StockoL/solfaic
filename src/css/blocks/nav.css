@@ -28,13 +28,6 @@
   text-decoration: none;
 }
 
-.nav__logo-mark {
-  /* Reserved for the "drawn on" logo animation (Flair phase) */
-  display: inline-block;
-  width: 1.5em;
-  height: 1.5em;
-}
-
 .nav__logo-subtitle {
   font-family: var(--font-family-body);
   font-size: var(--size-step--1);
