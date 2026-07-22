@@ -24,6 +24,36 @@ const esbuild = require("esbuild");
 
 const ROOT = __dirname;
 const DIST = path.join(ROOT, "dist");
+const ASSETS_SRC = path.join(ROOT, "assets");
+const CSS_SRC_ROOT = path.join(ROOT, "src", "css");
+
+// Matches url("./relative") / url('../relative') / url(../relative) —
+// mirrors build-css.js's own RELATIVE_URL_PATTERN.
+const RELATIVE_URL_PATTERN = /url\((["']?)(\.\.?\/[^"')]+)\1\)/g;
+
+/**
+ * build-css.js writes each bundle's relative url()s (e.g. font-faces.css's
+ * ../../../assets/fonts/x.woff2) relative to CSS_ROOT (src/css/), correct
+ * for a bundle that lives at src/css/ with assets/ two levels above it.
+ * Once that same bundle is copied into dist/css/, that's wrong: dist/
+ * becomes the site root once deployed, so dist/assets/ sits only ONE
+ * level above dist/css/, not two. Re-resolving each url() against its
+ * original src/css/ location, then re-expressing it relative to dist/css/
+ * (via dist/assets/, the copy of assets/ build-dist.js's own copyDir call
+ * makes), accounts for that one-level difference.
+ */
+function rewriteAssetUrlsForDist(content, outDir) {
+  return content.replace(RELATIVE_URL_PATTERN, (match, quote, relativeUrl) => {
+    const absoluteTarget = path.resolve(CSS_SRC_ROOT, relativeUrl);
+    if (!absoluteTarget.startsWith(ASSETS_SRC + path.sep)) return match;
+    const distTarget = path.join(DIST, "assets", path.relative(ASSETS_SRC, absoluteTarget));
+    const rewritten = path
+      .relative(outDir, distTarget)
+      .split(path.sep)
+      .join("/");
+    return `url(${quote}${rewritten}${quote})`;
+  });
+}
 
 // Every CSS bundle build-css.js produces, minified 1:1 into dist/css.
 const CSS_BUNDLES = [
@@ -76,6 +106,9 @@ async function minifyCssBundles() {
       bundle: false,
       minify: true,
     });
+
+    const minified = fs.readFileSync(outfile, "utf8");
+    fs.writeFileSync(outfile, rewriteAssetUrlsForDist(minified, outDir), "utf8");
 
     console.log(`[build-dist] wrote ${path.relative(ROOT, outfile)}`);
   }
