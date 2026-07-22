@@ -64,7 +64,13 @@ module.exports = [
     },
   },
   {
-    files: ["build-tokens.js", "build-css.js", "build-font-fallback.js"],
+    files: [
+      "build-tokens.js",
+      "build-css.js",
+      "build-font-fallback.js",
+      "build-js.js",
+      "build-dist.js",
+    ],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "commonjs",

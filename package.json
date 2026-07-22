@@ -9,6 +9,9 @@
     "build:tokens": "node build-tokens.js",
     "build:fonts": "node build-font-fallback.js",
     "build:css": "node build-css.js",
+    "build:js": "node build-js.js",
+    "build:dist": "node build-dist.js",
+    "build": "npm run build:tokens && npm run build:fonts && npm run build:css && npm run build:js && npm run build:dist",
     "verify:engine": "node tests/engine-verification.mjs",
     "lint": "eslint .",
     "test": "playwright test"
@@ -29,6 +32,7 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
     "@types/node": "^26.0.1",
+    "esbuild": "^0.28.1",
     "eslint": "^10.6.0",
     "fontkit": "^2.0.4"
   }
