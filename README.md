@@ -2,7 +2,7 @@
 
 [![GitHub license](https://img.shields.io/github/license/StockoL/solfaic?color=blue)](https://github.com/StockoL/solfaic/blob/main/LICENSE)
 [![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/StockoL/solfaic?color=success)](https://github.com/StockoL/solfaic)
-[![Lighthouse Performance](https://img.shields.io/badge/Lighthouse_Performance-98%25-brightgreen)](https://github.com/StockoL/solfaic)
+[![Lighthouse Performance](https://img.shields.io/badge/Lighthouse_Performance-97%25-brightgreen)](https://github.com/StockoL/solfaic)
 [![Lighthouse Accessibility](https://img.shields.io/badge/Lighthouse_Accessibility-100%25-brightgreen)](https://github.com/StockoL/solfaic)
 [![Lighthouse Best Practices](https://img.shields.io/badge/Lighthouse_Performance-100%25-brightgreen)](https://github.com/StockoL/solfaic)
 [![Lighthouse SEO](https://img.shields.io/badge/Lighthouse_Performance-100%25-brightgreen)](https://github.com/StockoL/solfaic)
@@ -370,7 +370,7 @@ V2's build ran across seven phases: rhythm engine extension, the melodic engine 
 
 ## 9. <a name="testing"></a>Testing & Quality Assurance Portfolio
 
-The full verification portfolio: why Playwright over Jest, the Node engine harness, the 5-browser/device Playwright suite (160/160 passing), the outstanding manual testing matrix, four measured Lighthouse passes (each investigated from a real finding, not guessed at), browser-compatibility and validator results, and a running list of known issues.
+The full verification portfolio: why Playwright over Jest, the Node engine harness, the 5-browser/device Playwright suite (210/210 passing), the outstanding manual testing matrix, five measured Lighthouse passes (each investigated from a real finding, not guessed at), browser-compatibility and validator results, and a running list of known issues.
 
 **Full breakdown:** [`docs/testing.md`](./docs/testing.md)
 
