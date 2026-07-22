@@ -58,7 +58,7 @@ npx playwright test --project=webkit     # a single project only
 
 `npm test` boots the local static server itself, via `playwright.config.js`'s `webServer` (`npx http-server -p 8080`), so no separate serve step is needed first. `npm run verify:engine` needs no server at all, since it runs the pure-function engine directly under Node.
 
-Last verified locally on 2026-07-21: `npm run lint` and `npm run verify:engine` both clean (0 lint errors, 22,763 engine assertions passed), and the full 5-project Playwright run stands at **160/160 passing** (32 tests × 5 projects, see Browser Compatibility below). One pre-existing flake was found and fixed during this pass: the audio-lock test raced a real (unstubbed) Tone.js playback against its own assertion, intermittently losing on WebKit/Mobile Safari's faster audio stack. It's now stubbed with a deterministic delay, the same technique already used elsewhere in the suite for reproducibility.
+Last verified locally on 2026-07-22: `npm run lint` and `npm run build` both clean end-to-end, `npm run verify:engine` reports 22,755 passed / 0 failed, and the full 5-project Playwright run stands at **210/210 passing** (42 tests × 5 projects, see Browser Compatibility below), run with `CI=true` to match the exact sequence `.github/workflows/ci.yml` and `playwright.yml` now run on every push. One pre-existing flake was found and fixed on an earlier pass: the audio-lock test raced a real (unstubbed) Tone.js playback against its own assertion, intermittently losing on WebKit/Mobile Safari's faster audio stack. It's now stubbed with a deterministic delay, the same technique already used elsewhere in the suite for reproducibility.
 
 ### 3. Manual Testing Matrix (Outstanding — to complete before project close)
 
@@ -125,14 +125,14 @@ Worth documenting in full, since it's a genuinely reusable recipe beyond this pr
 
 | Engine / Browser                     | Verified                          | Notes                                                                                                                                                                          |
 | ------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Chromium (Chrome/Edge desktop)       | Automated (32/32 tests pass) | `chromium` project.                                                                                                                                                            |
-| WebKit (Safari desktop)              | Automated (32/32 tests pass) | `webkit` project, added this pass.                                                                                                                                             |
-| Gecko (Firefox)                      | Automated (32/32 tests pass) | `firefox` project, added this pass.                                                                                                                                            |
-| Chromium (Mobile Chrome, Pixel 5 viewport) | Automated (32/32 tests pass) | `Mobile Chrome` project.                                                                                                                                                 |
-| WebKit (Mobile Safari, iPhone 12 viewport) | Automated (32/32 tests pass) | `Mobile Safari` project — engine coverage only, see the physical-device row below. |
+| Chromium (Chrome/Edge desktop)       | Automated (42/42 tests pass) | `chromium` project.                                                                                                                                                            |
+| WebKit (Safari desktop)              | Automated (42/42 tests pass) | `webkit` project, added this pass.                                                                                                                                             |
+| Gecko (Firefox)                      | Automated (42/42 tests pass) | `firefox` project, added this pass.                                                                                                                                            |
+| Chromium (Mobile Chrome, Pixel 5 viewport) | Automated (42/42 tests pass) | `Mobile Chrome` project.                                                                                                                                                 |
+| WebKit (Mobile Safari, iPhone 12 viewport) | Automated (42/42 tests pass) | `Mobile Safari` project — engine coverage only, see the physical-device row below. |
 | WebKit (Safari iOS, physical device) | Pending, genuinely needs real hardware | Playwright's Mobile Safari project runs the WebKit _engine_, not physical Safari on physical iOS. Real device/browser-specific quirks (V1's own testing log found one: Safari's collapsing bottom toolbar interacting badly with `100dvh`) won't necessarily surface through emulation. This is also where the still-open iPhone workspace-grid sizing bug lives (see [Known Issues](#known-issues)); automation can't close this row. |
 
-160/160 total (32 tests × 5 projects), last run 2026-07-21; see [Running the Suite Locally](#testing) above.
+210/210 total (42 tests × 5 projects), last run 2026-07-22; see [Running the Suite Locally](#testing) above.
 
 ### 6. Validator Testing
 
