@@ -51,6 +51,7 @@ module.exports = [
       "node_modules/**",
       "playwright-report/**",
       "test-results/**",
+      "dist/**",
       "src/css/global/variables.css",
     ],
   },
