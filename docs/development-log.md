@@ -1,0 +1,99 @@
+<a name="top"></a>
+
+_This is a split-out detail doc — for the project overview, see the [root README](../README.md)._
+
+## <a name="dev-log"></a>Development Log & Engineering Phases
+
+V2's build ran in five loosely sequential phases, each building directly on the last rather than as a flat feature list:
+
+1. **Rhythm engine extension**, carrying V1's Markov-driven bar generator forward, then adding anacrusis (pickup-beat) support and irregular-metre grouping (5/8, 7/8) without a second, parallel generator.
+2. The melodic engine and the movable-do bridge came next: a curriculum-grounded pitch generation layer built onto the same architectural pattern as the rhythm engine, plus the resolution step (`audio.js`) that turns relative solfège tokens into real, keyed notes only at playback time.
+3. **CUBE CSS rebuild & the accessible palette rollout:** migrating from V1's single stylesheet to a four-layer cascade architecture, then auditing and darkening every text-bearing button/badge/status colour to a verified WCAG AA 4.5:1 minimum, while deliberately keeping the hero particle field and focus ring on the brighter, pre-darkened tokens.
+4. The two-phase workspace and shared notation rendering phase rebuilt the practice workspace around a metre-aware grid and a single shared duration table that drives both the rhythm SVG and the paired solfège entry columns, so the two never drift out of alignment.
+5. **Test harness build-out:** a Node harness for the two pure-function engines (`tests/engine-verification.mjs`), followed by a full Playwright rewrite of the E2E suite to match the two-phase rhythm/pitch flow and the current page structure.
+6. **Classroom content sprint:** Presentation, Rhythm Workshop, Melodic Workshop, Example, and Interval Detective, all built on existing generated content or new engine logic rather than needing real repertoire or video. This fulfils "introductory learning content for each level" much as V2's initial planning document scoped it from day one, video explanations aside, which remain deferred pending real recorded material rather than a new idea introduced at this stage. A new `AudioEngine.playOstinato` method and a small level-of-introduction/interval-naming data layer (`introducedAtLevel`, `getNewlyIntroducedSyllables`, `INTERVAL_NAMES`) underpin all five, wired to Classroom's level dropdown via a `classroom-level-changed` event rather than a direct module import.
+7. Classroom refinement followed: three tabs (Preparation/Presentation/Practice) replace the five flat sections and the now-deleted Kodály reference matrix; a rendering-only tum-ti/syncopa bug is fixed at its shared root; Rhythm Workshop is grouped by metre; Melodic Workshop is rebuilt as a click-to-play keyboard on a new, deliberately Transport-free `AudioEngine.playNote`; and Interval Detective's reference syllable now highlights alone.
+
+### Notable Bugs Caught & Fixed
+
+**A recurring theme worth naming explicitly: asynchronicity and shared-state timing.** Several entries below aren't isolated one-off bugs. They're the same underlying class of problem surfacing in different places, because Tone.js playback is inherently asynchronous (`await Tone.start()`, `Tone.Transport`-scheduled events) while the app's own state (`sessionState`, button lock classes, synth voices) is mutated synchronously around it. V1 first hit this as the **Audio-Lock Race Condition**: `triggerReplay()` originally awaited Tone's async boot-up *before* applying the `is-locked` class, leaving a real window (worse on slower devices) where a second click could fire before the UI reflected that playback had already started. The fix applies the lock synchronously, immediately on click, before anything `await`s, which is why `triggerReplay()` in `app.js` locks the button as its very first statement, ahead of the `await AudioEngine.playSequence(...)` call. The same shared-mutable-state hazard reappeared in V2 in a different shape below (**"A new keyboard feature and the scheduled playback engine fought over the same synth voice"**), where two independent playback paths, one immediate and one Transport-scheduled, mutated the same monophonic synth's internal timeline from two different call sites. `playStartingNote`'s open, not-yet-fixed risk (see [Known Issues](testing.md#known-issues)) is the same hazard a third time, just not yet observed causing a failure. The `is-locked` CSS state itself, previously unstyled (see the button block's fix), exists specifically so the user has a visible signal for exactly this class of async gap, not just correct-but-invisible internal state.
+
+**Tied motifs left the solfège card with no entry column in the continuation box**
+
+- A motif tied across two grid boxes (a dotted note whose sound continues into the next box) had nothing tracking which portion of its duration belonged to which box, so the solfège card's continuation box rendered with no entry column at all.
+- _Fix:_ Generalised the shared rendering system to track duration-per-box explicitly, rather than patching the one motif that exposed the gap.
+
+**Palette darkening had fallout across three derived surfaces**
+
+- Darkening `action-primary`/`action-secondary`/`status-success` for text contrast, the core accessibility fix, had knock-on effects nothing else caught automatically: the pushable CTA's `color-mix()`-derived shadow/edge layers collapsed into a muddy, low-contrast stack; the hero particle field silently inherited the new muted tone instead of staying decorative-bright; and the site-wide focus ring became noticeably less visible.
+- _Fix:_ Restored the CTA's 3D depth against the new base colour, and pointed the hero particles and focus ring explicitly at the separate `accent-vivid-*` tokens reserved for decoration, leaving the deep tokens exclusively for text-bearing surfaces.
+
+**Practice Room broke after a dead-code removal.** Removing the unused V1 onboarding-tour wizard from `core.js` took a live module dependency down with it, breaking Practice Room's boot sequence. The fix restored the load path without reintroducing the dead tour code.
+
+**Confetti and the celebration modal fought over stacking order.** The confetti burst originally rendered in front of the celebration modal instead of behind it, and the modal backdrop dimmed the confetti's own colours. The fix corrected the layering so the modal reads as sitting in front of the burst, with the confetti kept fully coloured.
+
+**The workspace grid didn't follow the exercise's actual metre**
+
+- Early workspace layouts used a fixed column count, splitting bars awkwardly across row boundaries for anything other than common time.
+- _Fix:_ Column count is now derived from the live session's `ticksPerBar`, so a 3/4 exercise renders in genuine 3-column rows.
+
+**3/4 exercises rendered dramatically taller than every other metre**
+
+- Fixing the row above surfaced a second-order bug: the Grid composition's default `1fr` columns divide a row's full width evenly by however many columns exist, and 3/4 only fits 3 boxes per row without splitting a bar, so those 3 columns rendered wider than every other metre's 4. Since `.workspace-card--rhythm`'s `aspect-ratio: 4/1` ties height directly to width, that extra width became extra height on every card, compounding across a multi-bar phrase into a workspace that scrolled far longer than the same content needed in any other metre.
+- _Fix:_ Column tracks now size against a constant 4-box reference instead of the row's actual column count, so box size stays identical across every metre; 3/4's row is simply narrower and centred rather than stretched.
+
+**A global keyboard shortcut router silently broke native button activation everywhere**
+
+- Practice Room's Space=replay/Enter=submit shortcuts were wired as a page-wide `keydown` listener that called `e.preventDefault()` unconditionally, before checking whether those shortcuts even applied. That suppressed the browser's native Enter/Space-activates-a-focused-button behaviour for every button on every page, including Classroom's own controls, not just the two it was meant for. Only surfaced by testing a real keyboard press directly; a simulated click bypasses native keyboard activation entirely and would have passed regardless.
+- _Fix:_ The router now skips entirely when focus is already on a native interactive element (button, link, form control), letting the browser's own correct behaviour apply instead of being overridden.
+
+**tum-ti and syncopa silently dropped their second box in Presentation and Rhythm Workshop**
+
+- Playback was already correct, so this was a rendering-only gap. Both motifs are tied across two grid boxes, but the shared display-pad builder both panels use only ever called the rhythm-SVG renderer once, for box A, with nothing checking whether a motif actually needed a second box at all. The main Practice Room workspace already handled this correctly for the exact same motifs; the Classroom display path just never reused that logic.
+- _Fix:_ Wraps the existing single-box builder with a second, purely decorative box (the same tie-arc rendering path the workspace uses) whenever a motif is tied, rather than duplicating the fix per call site. `too`/`too-rest` also span two boxes but aren't tied, and correctly keep their single-box display, since their held notehead already shows the full duration on its own.
+
+**A new keyboard feature and the scheduled playback engine fought over the same synth voice**
+
+- Caught manually clicking through the new Melodic Workshop keyboard: click a key, then trigger a scheduled sequence shortly after (Play Ostinato, Play Interval, real dictation playback), and Tone.js throws "Start time must be strictly greater than previous start time." The keyboard's immediate, unscheduled note-trigger and the sequencer's Transport-scheduled ones were sharing one monophonic voice, and the two playback models don't share a timeline.
+- _Fix:_ Gave the keyboard its own dedicated synth instance rather than trying to keep one shared voice's timing consistent across an immediate and a scheduled playback model.
+
+**The Classroom tab strip ran off-screen on narrow viewports instead of wrapping**
+
+- `.classroom-tabs` declared its own `display: flex` with no wrap, so Preparation/Presentation/Practice tried to stay on one line regardless of available width and overflowed the viewport on mobile.
+- _Fix:_ Added the existing `.cluster` composition class to the tab strip instead of hand-rolling a wrap rule. It's the same flex-wrap layout primitive already used for every reel/group elsewhere in the app, so Practice now drops to a second row exactly when it stops fitting.
+
+**Interval Detective's reference-syllable highlight was too brief to register**
+
+- It reused the shared `is-pulsing` beat-flash Rhythm Workshop's ostinato drives, a CSS animation tuned for a quick per-beat pulse (`--dur-base`, 250ms). That's correct for that purpose, but too fast to actually notice as "here's your reference note" here.
+- _Fix:_ A new `is-highlighted` class held for a full 2s on a JS timer (`highlightReferencePad`), applied directly in the "Play Interval" click handler rather than through the shared `pulseOstinatoTarget`/`audio-ostinato-beat` mechanism. It's decoupled entirely so Rhythm Workshop's own quick pulse is untouched.
+
+**Practice tab panels touched the separator rule of the panel after them**
+
+- `.classroom-panel`'s border lives on the top edge of the NEXT panel, not the bottom of the current one, and only `padding-block-start` existed, so a panel's own last content (Melodic Workshop's solfège circles, Example's Play button) sat flush against the following panel's border line.
+- _Fix:_ Changed to `padding-block` (both sides) so each panel keeps clear space before the next one's separator, not just after its own.
+
+**classroom.html's Lighthouse score stayed the worst of the three, and my first fix for it didn't move it at all**
+
+- 87, against index.html's 93 and practice.html's 91, even after CSS bundling and font self-hosting had already landed. I ran a real Lighthouse audit rather than guess why, and read `unused-javascript`/`unminified-javascript` flagging `core.js` and Tone.js as the biggest JS offenders. My first theory: every page was loading the exact same `app.js`, so index.html (a marketing page with no exercises) was downloading and parsing the entire Practice Room engine (`engine.js`, `audio.js`, `rhythm-notation.js`) for nothing. I split it into three lighter entry points (`home-entry.js`, `classroom-entry.js`, and `app.js` kept for practice.html), each importing only what its own page's DOM actually has to attach to.
+- I re-ran the audit before trusting the fix. All 160 tests still passed and real bytes dropped (11KB less unminified JS on classroom.html), but FCP, LCP, and the score itself, still 87, didn't move outside noise. The JS split was correct, just not the actual bottleneck.
+- Went back to the same audit's `render-blocking-insight` finding, which I'd read past the first time: `bundle.css` itself, one universal ~90KB file shipped identically to all three pages, was costing classroom.html ~1954ms of render-blocking time on rules it doesn't even use (`workspace.css`, `celebration-modal.css`, and others that are exclusively Practice Room's). Bundling had fixed the *request count* (32 imports down to 1) but never addressed the fact that all three pages were still shipping each other's CSS.
+- _Fix:_ Audited which of the 16 block files each page's DOM genuinely needs, checking actual `className`/`classList` assignments in the JS rather than just filenames, since a couple of assumptions turned out wrong on inspection (Classroom's Workshops share `motif-pad.css`/`badge.css` with Practice Room's reel; `workspace.css` really is Practice-only, despite a comment in `classroom.js` that mentions `.workspace-box` in passing). Then split `index.css`'s single import chain into three page-specific entries (`src/css/entries/{home,classroom,practice}.css`), and generalised `build-css.js` to build all of them from one script run instead of assuming a single bundle. classroom.html went from 87 to 93, index.html from 93 to 98, practice.html from 91 to 94, confirmed with a real before/after Lighthouse run rather than assumed from the byte-size drop alone.
+
+**A workspace box visibly grew taller the moment it was filled in**
+
+- Noticed during manual testing: an empty placeholder card and the same card holding a real rhythm SVG weren't the same height, even though `.workspace-card--rhythm` declares `aspect-ratio: 4/1` specifically so every card's size is derived from its width alone. Measured directly rather than guessed at the cause: a placeholder card came out at 28.5px tall, the same card filled with an SVG at 34.5625px, both against an identical 76.75px width.
+- The card is a flex item of `.workspace-box__container` (a column flex). A flex item's automatic minimum size defaults to its own content's intrinsic size unless told otherwise, and that default can override a shorter `aspect-ratio`, since the placeholder's content (a tiny 0.5rem dot) and the SVG's own intrinsic sizing are different heights. So the "win" between aspect-ratio and content-driven minimum flipped between the two states instead of `aspect-ratio` simply holding regardless of content.
+- First fix tried: `min-block-size: 0`, which does remove the content-driven automatic minimum and made both states measure identically (63.25px box height, placeholder and filled alike). But checking it against WebKit specifically (Playwright's own `webkit` project, no physical device needed) turned up a real regression: the exact same rule also perturbed this flex item's INLINE sizing enough that the whole 4-box row measured 14px wider than its track on a narrow viewport, an overflow Chromium never showed for the identical CSS. Box geometry (widths, positions) came out byte-identical between the two engines; only WebKit's reported `scrollWidth` differed, confirmed by toggling the rule on and off directly.
+- _Fix:_ `overflow: hidden` instead. CSS's automatic-minimum-size rule zeroes out for any `overflow` other than `visible`, so it fixes the same height problem, and (confirmed the same way) doesn't carry the width side effect on WebKit.
+
+**That same `overflow: hidden` fix made every rhythm SVG invisible in Chromium and Firefox**
+
+- Caught this on a manual pass right after the fix above shipped: a motif clicked from the reel filled the workspace box (the card's `is-placeholder` class came off, matching what the existing Playwright test checks), but nothing actually drew, no stick notation, no rest glyph, just an empty card. The existing sizing regression test hadn't caught it because it only measures the CARD's own box, never whether its content paints; I wrote a quick diagnostic checking the SVG child's own `getBoundingClientRect()` instead and found it rendering at exactly 0px tall.
+- The SVG (`renderRhythmSVG`'s markup) sizes itself with `width="100%" height="100%"`, a flex-item child of `.workspace-card--rhythm` sized via `aspect-ratio: 4/1`. Percentage heights on a flex item should resolve against the parent's own height once that height is definite, and `aspect-ratio` is supposed to count as definite, but I confirmed directly (toggling `overflow` back to `visible` restored the SVG immediately, no other change) that Chromium and Firefox don't treat this card's `aspect-ratio`-derived height as definite for that resolution once `overflow: hidden` had removed the automatic-minimum-size fallback that used to mask it. WebKit doesn't have this quirk, since the SVG stayed visible there the whole time, which is exactly why I didn't catch this despite testing on WebKit for the sizing fix above.
+- _Fix:_ `width: 100%; height: auto` on the SVG instead of `100%/100%`. Sizing from width alone via the SVG's own `viewBox` aspect ratio sidesteps the percentage-height resolution entirely, and happens to match the design anyway: the `viewBox` is already 4:1, the same ratio the card's `aspect-ratio` declares. I confirmed a non-zero, visible SVG height on Chromium, Firefox, and WebKit alike, with the card's own dimensions (and the growing-taller fix above) untouched.
+
+The "Video coming soon" placeholder has also been deleted from each Level Guide (`classroom.html`'s `.level-guide__video` mount points and their CSS), dead weight now the Presentation/Practice panels carry real generated content instead.
+
+---
+
+<p align="right">(<a href="#top">Back to top</a>)</p>
