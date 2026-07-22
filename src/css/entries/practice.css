@@ -3,14 +3,14 @@
  * SOLFAIC V2 - CSS ENTRY: practice.html
  * ============================================================================
  * Page-specific sibling of ../index.css (see home.css for the shared
- * rationale). practice.html has no standard site nav or footer — it's a
- * "focus-mode" page (confirmed: neither block's classes appear anywhere in
- * practice.html) — so this entry skips nav.css/footer.css/hero.css/
- * classroom*.css/level-select.css entirely and only imports the
- * Practice Room's own blocks, plus badge/motif-pad (shared with
- * classroom.html's Workshops) and the base modal chrome (this page's own
- * dialogs — Try Again, Practice, Starting Note, Out of Plays, Audio Error —
- * all build on modal.css's `.modal`/`.compliance-close-btn`).
+ * rationale). practice.html has no standard site nav — it's a "focus-mode"
+ * page (nav.css's classes don't appear anywhere in practice.html) — so this
+ * entry skips nav.css/hero.css/classroom*.css/level-select.css entirely, but
+ * does import footer.css for the page's minimal single-line copyright, plus
+ * badge/motif-pad (shared with classroom.html's Workshops) and the base
+ * modal chrome (this page's own dialogs — Try Again, Practice, Starting
+ * Note, Out of Plays, Audio Error — all build on modal.css's
+ * `.modal`/`.compliance-close-btn`).
  *
  * Regenerate with `npm run build:css` after any change here.
  * ============================================================================
@@ -37,6 +37,7 @@
 @import url("../blocks/modal.css") layer(blocks);
 @import url("../blocks/badge.css") layer(blocks);
 @import url("../blocks/practice-header.css") layer(blocks);
+@import url("../blocks/footer.css") layer(blocks);
 @import url("../blocks/workspace.css") layer(blocks);
 @import url("../blocks/motif-pad.css") layer(blocks);
 @import url("../blocks/vignette-overlay.css") layer(blocks);

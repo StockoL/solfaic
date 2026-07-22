@@ -53,8 +53,27 @@ body.practice-room {
 }
 
 .practice-header {
+  position: relative;
   padding-block: var(--space-s);
   border-block-end: 1px solid var(--color-border-subtle);
+}
+
+/*
+ * Decorative attribution mark only (aria-hidden, no link) — the same
+ * favicon file (assets/media/solfaic2-favicon.svg), absolutely centred on
+ * the header bar rather than sized into either Spread group, since the
+ * start/end clusters' own widths shift (level text, streak dots, metre/bars
+ * chips) and would throw off a flex-based centering approach. This is a
+ * focus-mode page with no global nav (see the header comment above), so it
+ * stays brand attribution, not a "back home" affordance.
+ */
+.practice-header__brand-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1.75em;
+  height: 1.75em;
 }
 
 .streak-dot {
@@ -95,6 +114,11 @@ body.practice-room {
   .practice-header .badge {
     padding: 0.2em 0.5em;
     font-size: var(--size-step--2);
+  }
+
+  .practice-header__brand-mark {
+    width: 1.25em;
+    height: 1.25em;
   }
 
   .practice-header .meta-chip {
