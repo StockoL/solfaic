@@ -38,9 +38,20 @@ const fontkit = require("fontkit");
 const FONT_DIR = path.join(__dirname, "assets", "fonts");
 const OUTPUT_PATH = path.join(__dirname, "src", "css", "global", "font-faces.css");
 
-// Windows ships Arial at this path; used purely as a one-time metrics
-// reference at build time, never shipped or referenced at runtime.
-const FALLBACK_REFERENCE_PATH = "C:/Windows/Fonts/arial.ttf";
+// Arial's own OS/2 + hhea metrics, used purely as a one-time metrics
+// reference at build time (never shipped or referenced at runtime).
+// Hardcoded rather than read from a local Arial.ttf so the build doesn't
+// depend on an OS-provided font file that only exists on Windows — these
+// are the published, version-stable values (unitsPerEm 2048 is Arial's
+// standard em square) and were cross-checked against a real Windows
+// Arial.ttf to confirm they match exactly.
+const FALLBACK_METRICS = {
+  unitsPerEm: 2048,
+  ascent: 1854,
+  descent: -434,
+  lineGap: 67,
+  xAvgCharWidth: 904,
+};
 
 function readMetrics(filePath) {
   const font = fontkit.openSync(filePath);
@@ -74,7 +85,7 @@ function pct(n) {
 }
 
 function build() {
-  const fallbackMetrics = readMetrics(FALLBACK_REFERENCE_PATH);
+  const fallbackMetrics = FALLBACK_METRICS;
 
   const families = [
     {
