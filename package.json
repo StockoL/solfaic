@@ -20,8 +20,15 @@
     "type": "git",
     "url": "git+https://github.com/StockoL/solfaic.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "solfege",
+    "ear-training",
+    "sight-singing",
+    "kodaly",
+    "music-education",
+    "rhythm-dictation"
+  ],
+  "author": "Louis Mannix",
   "license": "MIT",
   "type": "commonjs",
   "bugs": {
