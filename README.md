@@ -190,7 +190,7 @@ Only `dist/` is ever deployed. It's git-ignored, never committed, and always reb
 
 ### <a name="deployment-steps"></a>Deployment Steps
 
-Deployment is automatic once configured. `.github/workflows/deploy.yml` runs `npm run build` and publishes `dist/` via `actions/deploy-pages` on every push to `main`. There is one manual, one-time step:
+Deployment is automatic once configured. `.github/workflows/deploy.yml` runs `npm run build` and publishes `dist/` via `actions/deploy-pages` on every push to `main`. Two more workflows gate that push before deploy.yml ever runs: `playwright.yml` runs the full 210-test suite, and `ci.yml` runs `npm run lint` followed by `npm run build` — added after a build that passed clean locally on Windows still failed on the Ubuntu runner (see [Development Log](./docs/development-log.md#notable-bugs-caught--fixed)), so a broken build now fails loudly in its own gate rather than silently inside deploy.yml. There is one manual, one-time step:
 
 1. **Repository Access:** Click on the Settings tab located in the repository's main navigation bar.
 2. **Pages Configuration:** In the left-hand sidebar, click on Pages.
@@ -238,7 +238,7 @@ npx http-server dist -p 8081      # serve the deploy build itself
 | Item                                | Status                | Notes                                                                                                                                        |
 | ------------------------------------ | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | Live URL reachable                   | Verified 2026-07-21 | `https://stockol.github.io/solfaic/` returns `200 OK`, `Content-Encoding: gzip`, matching the compression note in the Lighthouse section above. |
-| Deploy workflow succeeded            | Pending each release | Check the Actions tab for a green run of `deploy.yml` after pushing to `main`. No local build/commit step needed first.                       |
+| Deploy workflow succeeded            | Checked each release — last green run 2026-07-22 | Check the Actions tab for a green run of `deploy.yml` after pushing to `main`. No local build/commit step needed first. The first-ever run of this workflow actually failed; see [Development Log](./docs/development-log.md#notable-bugs-caught--fixed) for the investigation and fix. |
 | Cross-browser spot check (desktop)   | Pending              | Load the deployed URL itself (not just localhost) in Chrome, Firefox, and Safari.                                                              |
 | Cross-device spot check (mobile)     | Pending              | At least one real iOS and one real Android device against the deployed URL. This is also where the iPhone grid bug ([Known Issues](./docs/testing.md#known-issues)) would need chasing directly. |
 
@@ -297,6 +297,7 @@ This is an ongoing thing, not a closed list. These are the two I've identified s
 ```text
 ├── .github/workflows/
 │   ├── playwright.yml           # CI — runs the Playwright suite on push/PR
+│   ├── ci.yml                    # CI — lint + full build on push/PR (catches a broken build before deploy.yml ever runs it)
 │   └── deploy.yml                # Builds + deploys dist/ to GitHub Pages on push to main
 ├── LICENSE                       # MIT
 ├── design-tokens.json            # Single Source of Truth — colour, type, space, motion tokens
