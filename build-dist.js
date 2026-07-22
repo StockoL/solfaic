@@ -96,9 +96,15 @@ function rewriteHtml(pageName) {
 
   const jsEntry = PAGE_JS[pageName];
   if (jsEntry) {
+    // The source tag's type="module" made it implicitly deferred and
+    // ordered after Tone.js's own explicit `defer` (both execute in
+    // source order once parsing finishes). The bundle is a plain classic
+    // script now, not a module, so `defer` has to be added explicitly to
+    // keep both properties - otherwise it blocks the parser and, worse,
+    // runs *before* Tone.js's deferred script instead of after it.
     html = html.replace(
       `<script type="module" src="${jsEntry.source}"></script>`,
-      `<script src="${jsEntry.output}"></script>`,
+      `<script defer src="${jsEntry.output}"></script>`,
     );
   }
 
