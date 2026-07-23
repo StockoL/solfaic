@@ -155,6 +155,14 @@ export const MOTIF_LIBRARY = {
     playback: ["8n", "16n", "16n"],
     restMask: [true, false, false],
   },
+  tooo: {
+    introducedAtLevel: 7,
+    type: "simple",
+    duration: "1n",
+    ticks: 4,
+    label: "too-oo-oo-oo",
+    playback: ["1n"],
+  },
 
   // ---- Compound time ----
   tum: {
@@ -251,6 +259,8 @@ export const MOTIF_POOLS = {
   compoundL2: ["tum", "tititi", "tati", "tumRest"],
   compoundL3: ["tikaTikaTi", "toom", "toomRest"],
   compoundL4: ["tiTikaTi"],
+  // Levels 5-9's only new rhythm vocabulary -- see levelRules[7] below.
+  simpleL7: ["tooo"],
 };
 
 export const FORM_TEMPLATES = {

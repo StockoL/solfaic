@@ -73,6 +73,7 @@ const QUARTER_BEATS = {
   "4n.": 1.5,
   "2n": 2,
   "2n.": 3,
+  "1n": 4,
 };
 
 Object.entries(MOTIF_LIBRARY).forEach(([id, motif]) => {
