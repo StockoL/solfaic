@@ -43,6 +43,17 @@ export function generateBarSequence(
       );
       if (exactFitCadence.length > 0) {
         viableIds = exactFitCadence;
+      } else {
+        // No cadence motif exactly fits the remaining ticks yet -- still
+        // exclude any candidate that would complete the bar right here
+        // without being a genuine cadence motif (e.g. a whole-bar motif
+        // like `tooo` filling a 4/4 bar in one step, before the loop ever
+        // reaches a tick count a cadence motif matches). Every other
+        // motif in the vocabulary is 1-2 ticks, well under a full bar, so
+        // this never empties viableIds in practice.
+        viableIds = viableIds.filter(
+          (id) => MOTIF_LIBRARY[id].ticks !== remainingTicks,
+        );
       }
     }
 
