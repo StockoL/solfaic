@@ -725,6 +725,68 @@ export const PITCH_LEVEL_RULES = {
 };
 
 /**
+ * Levels 5-9: adds `ti` (completing the diatonic scale) at Level 5, `fi`/
+ * `si` (harmonic/melodic minor) at Level 7, and `ra`/`ma`/`le` (completing
+ * the chromatic set) at Level 8 -- extending the existing do-mode/la-mode
+ * tables rather than building new bespoke systems. `modes` mirrors Levels
+ * 3/4's exact pattern (cadence-target syllable -> {level, mode} pointing
+ * into PITCH_SYNTAX_DICTIONARY) -- generatePitchLine's fallback branch
+ * (anything past levelId 1/2) requires this map to exist, it's not
+ * optional bookkeeping.
+ */
+PITCH_LEVEL_RULES[5] = {
+  toneset: ["do", "re", "mi", "fa", "so", "la", "ti"],
+  cadenceRequired: true,
+  cadenceTargets: ["do", "la"],
+  modes: {
+    do: { level: 5, mode: "doMode" },
+    la: { level: 5, mode: "laMode" },
+  },
+};
+
+// Level 6 is a consolidation level -- same toneset/tables as Level 5,
+// no melodic-sequence algorithm tonight (deferred pending a real design pass).
+PITCH_LEVEL_RULES[6] = { ...PITCH_LEVEL_RULES[5] };
+
+PITCH_LEVEL_RULES[7] = {
+  // fi/si extend la-mode only (harmonic/melodic minor are inherently
+  // la-based constructs) -- do-mode's cadence isn't offered at this level.
+  toneset: ["do", "re", "mi", "fa", "so", "la", "ti", "si", "fi"],
+  cadenceRequired: true,
+  cadenceTargets: ["la"],
+  modes: {
+    la: { level: 7, mode: "laMode" },
+  },
+};
+
+PITCH_LEVEL_RULES[8] = {
+  toneset: [
+    "do",
+    "re",
+    "mi",
+    "fa",
+    "so",
+    "la",
+    "ti",
+    "si",
+    "fi",
+    "ra",
+    "ma",
+    "le",
+  ],
+  cadenceRequired: true,
+  cadenceTargets: ["do", "la"],
+  modes: {
+    do: { level: 8, mode: "doMode" },
+    la: { level: 8, mode: "laMode" },
+  },
+};
+
+// No real modulation tonight -- Level 9 generates within the same rich,
+// chromatic key as Level 8 rather than an actual mid-phrase key change.
+PITCH_LEVEL_RULES[9] = { ...PITCH_LEVEL_RULES[8] };
+
+/**
  * Preparation tab content: real Kodály "prepare through familiar repertoire"
  * — songs chosen to sit inside each level's actual PITCH_LEVEL_RULES
  * toneset above, not arbitrary picks. Only levels with a real toneset get a
@@ -847,3 +909,159 @@ export const PITCH_SYNTAX_DICTIONARY = {
     },
   },
 };
+
+/**
+ * Level 5 adds `ti`, completing the diatonic scale. Level 6 is a
+ * consolidation level (no melodic-sequence algorithm tonight) and reuses
+ * these tables exactly rather than getting its own. Level 7 extends
+ * la-mode only with `fi`/`si` (harmonic/melodic minor are inherently
+ * la-based) -- do-mode is untouched. Level 8 completes the chromatic set
+ * (`ra`/`ma`/`le`) in both modes, each new row weighted toward its nearest
+ * diatonic neighbor (same chromatic-passing-tone logic as fi->so above),
+ * with modest inbound weight from the 1-2 closest existing rows. Level 9
+ * reuses Level 8's tables -- no real modulation tonight.
+ */
+PITCH_SYNTAX_DICTIONARY[5] = {
+  doMode: {
+    do: { do: 15, re: 20, mi: 20, fa: 5, so: 15, la: 10, ti: 15 },
+    re: { do: 40, mi: 20, fa: 10, re: 10, so: 10, ti: 10 },
+    mi: { do: 25, re: 15, mi: 10, fa: 15, so: 20, la: 10, ti: 5 },
+    fa: { mi: 55, so: 20, fa: 10, re: 10, ti: 5 },
+    so: { mi: 20, fa: 10, so: 10, la: 20, do: 20, re: 10, ti: 10 },
+    la: { so: 35, mi: 10, la: 10, do: 15, fa: 5, ti: 25 },
+    ti: { do: 60, la: 20, ti: 10, so: 10 },
+  },
+  laMode: {
+    do: { la: 30, do: 10, mi: 15, re: 15, so: 10, ti: 10, fa: 10 },
+    re: { do: 25, mi: 15, re: 10, la: 25, fa: 10, ti: 15 },
+    mi: { re: 10, fa: 10, mi: 10, so: 10, la: 30, do: 10, ti: 20 },
+    fa: { mi: 50, so: 15, fa: 10, la: 20, ti: 5 },
+    so: { la: 30, mi: 15, fa: 10, so: 10, do: 15, ti: 20 },
+    ti: { la: 60, so: 15, do: 10, ti: 15 },
+    la: { la: 20, so: 20, mi: 15, do: 15, fa: 5, ti: 25 },
+  },
+};
+
+PITCH_SYNTAX_DICTIONARY[6] = PITCH_SYNTAX_DICTIONARY[5];
+
+PITCH_SYNTAX_DICTIONARY[7] = {
+  doMode: PITCH_SYNTAX_DICTIONARY[5].doMode,
+  laMode: {
+    do: {
+      la: 25,
+      do: 10,
+      mi: 15,
+      re: 10,
+      so: 10,
+      ti: 10,
+      fa: 5,
+      si: 10,
+      fi: 5,
+    },
+    re: { do: 20, mi: 15, re: 10, la: 20, fa: 10, ti: 10, si: 10, fi: 5 },
+    mi: {
+      re: 10,
+      fa: 10,
+      mi: 10,
+      so: 10,
+      la: 25,
+      do: 10,
+      ti: 10,
+      si: 10,
+      fi: 5,
+    },
+    fa: { mi: 40, so: 15, fa: 10, la: 15, ti: 5, si: 5, fi: 10 },
+    so: { la: 25, mi: 15, fa: 10, so: 10, do: 10, ti: 15, si: 5, fi: 10 },
+    ti: { la: 50, so: 15, do: 10, ti: 10, si: 15 },
+    si: { la: 75, ti: 10, si: 15 },
+    fi: { so: 60, la: 15, fi: 15, mi: 10 },
+    la: { la: 15, so: 20, mi: 15, do: 10, fa: 5, ti: 15, si: 15, fi: 5 },
+  },
+};
+
+PITCH_SYNTAX_DICTIONARY[8] = {
+  doMode: {
+    do: { do: 15, re: 20, mi: 16, fa: 5, so: 15, la: 10, ti: 15, ra: 4 },
+    re: { do: 32, mi: 20, fa: 10, re: 10, so: 10, ti: 10, ra: 4, ma: 4 },
+    mi: { do: 21, re: 15, mi: 10, fa: 15, so: 20, la: 10, ti: 5, ma: 4 },
+    fa: { mi: 55, so: 20, fa: 10, re: 10, ti: 5 },
+    so: { mi: 20, fa: 10, so: 10, la: 20, do: 16, re: 10, ti: 10, le: 4 },
+    la: { so: 35, mi: 10, la: 10, do: 15, fa: 5, ti: 21, le: 4 },
+    ti: { do: 60, la: 20, ti: 10, so: 10 },
+    ra: { do: 65, re: 15, ra: 10, mi: 10 },
+    ma: { mi: 60, re: 20, ma: 10, fa: 10 },
+    le: { la: 60, so: 20, le: 10, ti: 10 },
+  },
+  laMode: {
+    do: {
+      la: 25,
+      do: 10,
+      mi: 11,
+      re: 10,
+      so: 10,
+      ti: 10,
+      fa: 5,
+      si: 10,
+      fi: 5,
+      ra: 4,
+    },
+    re: {
+      do: 14,
+      mi: 15,
+      re: 10,
+      la: 20,
+      fa: 10,
+      ti: 10,
+      si: 10,
+      fi: 5,
+      ra: 3,
+      ma: 3,
+    },
+    mi: {
+      re: 10,
+      fa: 10,
+      mi: 10,
+      so: 10,
+      la: 21,
+      do: 10,
+      ti: 10,
+      si: 10,
+      fi: 5,
+      ma: 4,
+    },
+    fa: { mi: 40, so: 15, fa: 10, la: 15, ti: 5, si: 5, fi: 10 },
+    so: {
+      la: 21,
+      mi: 15,
+      fa: 10,
+      so: 10,
+      do: 10,
+      ti: 15,
+      si: 5,
+      fi: 10,
+      le: 4,
+    },
+    ti: { la: 50, so: 15, do: 10, ti: 10, si: 15 },
+    si: { la: 75, ti: 10, si: 15 },
+    fi: { so: 60, la: 15, fi: 15, mi: 10 },
+    la: {
+      la: 15,
+      so: 16,
+      mi: 15,
+      do: 10,
+      fa: 5,
+      ti: 15,
+      si: 15,
+      fi: 5,
+      le: 4,
+    },
+    ra: { do: 65, re: 15, ra: 10, mi: 10 },
+    ma: { mi: 60, re: 20, ma: 10, fa: 10 },
+    le: { la: 60, so: 20, le: 10, ti: 10 },
+  },
+};
+
+// No real modulation tonight -- Level 9 generates within the same rich,
+// chromatic key as Level 8 rather than an actual mid-phrase key change.
+// PITCH_LEVEL_RULES[9].modes already points at level:8 tables, so no
+// separate PITCH_SYNTAX_DICTIONARY[9] entry is needed.
