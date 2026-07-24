@@ -811,50 +811,237 @@ PITCH_LEVEL_RULES[8] = {
 PITCH_LEVEL_RULES[9] = { ...PITCH_LEVEL_RULES[8] };
 
 /**
- * Preparation tab content: real Kodály "prepare through familiar repertoire"
- * — songs chosen to sit inside each level's actual PITCH_LEVEL_RULES
- * toneset above, not arbitrary picks. Only levels with a real toneset get a
- * list; Levels 5-9 keep the existing "not yet available" state.
+ * Preparation tab content: real Kodály "prepare through familiar
+ * repertoire" -- traced directly to Cyrilla's detailed curriculum
+ * document rather than invented. Text-only for now (no youtubeId/
+ * timestamp fields populated -- no video sourcing has happened yet, this
+ * is Preparation content, not Preparation video integration). Every level
+ * 1-9 has a real list, matching MAX_LEVEL.
  */
-export const PREPARATION_SONGS = {
+export const REPERTOIRE = {
   1: [
+    { title: "Snail, Snail", toneset: "so-mi", feature: "2/4, ta, ti-ti" },
     {
-      title: "Rain, Rain, Go Away",
-      note: "Built on so-mi-la — the falling so-mi call is the first interval most children sing.",
+      title: "Rain, Rain Go Away",
+      toneset: "la-so-mi",
+      feature: "2/4, ta, ti-ti",
     },
     {
-      title: "Pease Pudding Hot",
-      note: "Stepwise do-re-mi — the other half of Level 1's toneset, moving by step rather than leap.",
+      title: "Hot Cross Buns",
+      toneset: "mi-re-do",
+      feature: "2/4, ta, ti-ti, ta-rest",
+    },
+    {
+      title: "Bye, Baby Bunting",
+      toneset: "so-mi-re-do",
+      feature: "2/4, ta, ti-ti",
+    },
+    {
+      title: "Pease Porridge Hot",
+      toneset: "so-mi-re-do",
+      feature: "2/4, ta-rest",
+    },
+    {
+      title: "Frog in the Middle",
+      toneset: "so-mi-re-do",
+      feature: "2/4, ta, ti-ti",
+    },
+    {
+      title: "Lucy Locket",
+      toneset: "la-so-mi-re-do",
+      feature: "2/4, steady pulse/ostinato",
+    },
+    {
+      title: "Bow Wow Wow",
+      toneset: "so-mi-re-do",
+      feature: "2/4, simple AB phrasing",
     },
   ],
   2: [
     {
-      title: "Auld Lang Syne",
-      note: "A full do-re-mi-so-la melody resolving home to do — Level 2's whole toneset, cadence included.",
+      title: "Rocky Mountain",
+      toneset: "do pentatonic (d-r-m-s-l)",
+      feature: "ti-ka-ti-ka, too",
     },
     {
-      title: "Amazing Grace",
-      note: "Another genuinely pentatonic tune (no fa, no ti) that lands squarely in Level 2's five notes.",
+      title: "Dinah",
+      toneset: "do pentatonic",
+      feature: "ti-ka-ti-ka, ta ti-ti ostinato",
+    },
+    {
+      title: "Alabama Gal",
+      toneset: "do pentatonic",
+      feature: "tim-ka, dotted rhythms",
+    },
+    {
+      title: "Charlie Over the Ocean",
+      toneset: "low-so, low-la, do, re, mi",
+      feature: "6/8 compound (ta-ti)",
+    },
+    {
+      title: "The Derby Ram",
+      toneset: "major triad / pentatonic",
+      feature: "6/8 compound metre",
+    },
+    {
+      title: "Who's That Tapping at the Window",
+      toneset: "do pentatonic",
+      feature: "tika-ti, ti-tika",
     },
   ],
   3: [
     {
-      title: "Frère Jacques",
-      note: "Introduces fa naturally inside a do-re-mi-fa-so line — Level 3's do-mode toneset.",
+      title: "Canoe Song (My Paddle's Keen)",
+      toneset: "la pentatonic (l,-d-r-m-s)",
+      feature: "syncopa, 2-part canon",
     },
     {
-      title: "Scarborough Fair",
-      note: "A modal folk melody centred away from do — good preparation for Level 3's la-mode.",
+      title: "Land of the Silver Birch",
+      toneset: "la pentatonic",
+      feature: "ta-anacrusis, minor pentachord feel",
+    },
+    {
+      title: "Liza Jane",
+      toneset: "do pentatonic/pentachord",
+      feature: "syncopa, 3/4 and 4/4 conducting",
+    },
+    {
+      title: "Tommy's Gone to Hilo",
+      toneset: "major pentachord",
+      feature: "too-too (sustained 3-beat phrasing)",
+    },
+    {
+      title: "Four White Horses",
+      toneset: "do pentachord",
+      feature: "syncopa, ostinato accompaniment",
     },
   ],
   4: [
     {
-      title: "Sakura",
-      note: "A pentatonic melody without fa, useful for hearing the same five notes centred differently.",
+      title: "Hey Ho, Nobody Home",
+      toneset: "la pentatonic/minor",
+      feature: "3-part canon, score reading",
     },
     {
-      title: "Land of the Silver Birch",
-      note: "Another well-known pentatonic tune — Level 4 is about the modes these five notes can form, not new notes.",
+      title: "Ah, Poor Bird",
+      toneset: "la pentatonic",
+      feature: "2-part canon, ti-anacrusis",
+    },
+    {
+      title: "Shalom Chaverim",
+      toneset: "la/re pentatonic",
+      feature: "tri-o-la triplet phrasing, canon",
+    },
+    {
+      title: "Great Big House in New Orleans",
+      toneset: "so pentatonic/extended",
+      feature: "tim-ka-ti dotted compound",
+    },
+    {
+      title: "Rose, Rose, Rose, Rose",
+      toneset: "la pentatonic",
+      feature: "independent 2-part singing/tapping",
+    },
+  ],
+  5: [
+    {
+      title: "Kookaburra",
+      toneset: "diatonic major",
+      feature: "4-part canon, complete major scale",
+    },
+    {
+      title: "Frère Jacques",
+      toneset: "major pentachord / diatonic major",
+      feature: "canon, pentachord transformations",
+    },
+    {
+      title: "The Water Is Wide (O Waly, Waly)",
+      toneset: "diatonic major",
+      feature: "phrasing, interval naming asc/desc",
+    },
+    {
+      title: "Erie Canal",
+      toneset: "major / natural minor shifts",
+      feature: "key transformation, 2-flat key",
+    },
+    {
+      title: "Simple Gifts",
+      toneset: "diatonic major",
+      feature: "major scale inversions, 2-part",
+    },
+  ],
+  6: [
+    {
+      title: "What Shall We Do with a Drunken Sailor",
+      toneset: "Dorian",
+      feature: "authentic modal solfa, bass clef",
+    },
+    {
+      title: "Scarborough Fair",
+      toneset: "Dorian",
+      feature: "extended modal phrasing, sequences in 3rds/4ths",
+    },
+    {
+      title: "Old Joe Clark",
+      toneset: "Mixolydian",
+      feature: "flat 7th (pitch ta) recognition, modal solfa",
+    },
+    {
+      title: "I'm Seventeen Come Sunday",
+      toneset: "Dorian/Mixolydian",
+      feature: "modal transformations",
+    },
+    {
+      title: "Balkan Folk Tune (e.g. Ersko Kolo)",
+      toneset: "asymmetrical (5/8)",
+      feature: "5/8 metric counting and dictation",
+    },
+  ],
+  7: [
+    {
+      title: "Tumbalalaika",
+      toneset: "harmonic minor (si)",
+      feature: "root/inversion triads, dominant 7th",
+    },
+    {
+      title: "God Rest Ye Merry, Gentlemen",
+      toneset: "Aeolian/harmonic minor",
+      feature: "imperfect/perfect cadences, si",
+    },
+    {
+      title: "Greensleeves",
+      toneset: "Dorian/harmonic minor (fi, si)",
+      feature: "altered 6th/7th, 3-part vocal lines",
+    },
+    {
+      title: "Korobeiniki",
+      toneset: "harmonic minor",
+      feature: "harmonic minor triad tuning, dominant 7th cadences",
+    },
+    {
+      title: "Take Five / Unsquare Dance",
+      toneset: "folk settings",
+      feature: "5/4 and 7/8 metres, complex metre",
+    },
+  ],
+  8: [
+    { title: "Tallis' Canon", toneset: "modulation", feature: "4-part canon" },
+    {
+      title: "Bona Nox (Mozart, K.561)",
+      toneset: "classical round",
+      feature: "chromatic inflections, modulation analysis",
+    },
+  ],
+  9: [
+    {
+      title: "Lirum Lirum / Now Is the Month of Maying (Morley)",
+      toneset: "madrigal",
+      feature: "polyphonic 5-part, subdominant shifts",
+    },
+    {
+      title: "Dido's Lament / Music for a While (Purcell)",
+      toneset: "Baroque ground bass",
+      feature: "chromaticism, 3rd relationships",
     },
   ],
 };

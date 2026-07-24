@@ -16,7 +16,7 @@ import {
   MAX_LEVEL,
   MOTIF_LIBRARY,
   allowedTonics,
-  PREPARATION_SONGS,
+  REPERTOIRE,
 } from "./data.js";
 import { renderRhythmSVG, renderTieArcSVG } from "./rhythm-notation.js";
 import { resolveSolfegeColor, sortSyllablesAscending } from "./core.js";
@@ -163,14 +163,17 @@ function renderNoNewContentMessage(container, trackLabel) {
  * Preparation, in the actual Kodály sense: exposure through familiar
  * repertoire before anything is named. A plain curated list, not an
  * interactive feature — real content that happens to be simple, rather
- * than a placeholder dressed up to look like one.
+ * than a placeholder dressed up to look like one. REPERTOIRE covers every
+ * level 1-9 (matching MAX_LEVEL); the unavailable-state fallback below is
+ * defensive only, not the routine path it used to be when Levels 5-9 had
+ * no song list at all.
  */
 function renderPreparationPanel(levelId) {
   const container = DOM.preparationContent;
   if (!container) return;
   container.innerHTML = "";
 
-  const songs = PREPARATION_SONGS[levelId];
+  const songs = REPERTOIRE[levelId];
   if (!songs) {
     renderUnavailableState(
       container,
@@ -186,9 +189,9 @@ function renderPreparationPanel(levelId) {
 
   const list = document.createElement("ul");
   list.className = "preparation-song-list flow";
-  songs.forEach(({ title, note }) => {
+  songs.forEach(({ title, toneset, feature }) => {
     const item = document.createElement("li");
-    item.innerHTML = `<strong>${title}</strong> — ${note}`;
+    item.innerHTML = `<strong>${title}</strong> — ${toneset}; ${feature}`;
     list.appendChild(item);
   });
   section.appendChild(list);
