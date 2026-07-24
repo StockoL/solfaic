@@ -148,9 +148,9 @@ export function buildSolfegeDisplayPad(syllable) {
  * targets/modes), so melody sections need to say that plainly rather than
  * either rendering an empty circle row or falling back to the "not yet
  * available" state, which would misrepresent a live level as an unbuilt
- * one. Rhythm's equivalent branch is currently unreachable (every live
- * level introduces at least one new motif) but handled the same way for
- * consistency if that ever changes.
+ * one. Rhythm's equivalent branch was speculative until Level 5 (its real
+ * advance is new pitch content, no new motif), which is the first level
+ * that actually exercises it.
  */
 function renderNoNewContentMessage(container, trackLabel) {
   const message = document.createElement("p");
@@ -208,12 +208,16 @@ function renderPresentationPanel(levelId) {
   const rhythmSection = document.createElement("div");
   rhythmSection.className = "flow";
   rhythmSection.innerHTML = "<h3>New this level: Rhythm</h3>";
-  const rhythmCluster = document.createElement("div");
-  rhythmCluster.className = "cluster";
-  content.newMotifIds.forEach((motifId) => {
-    rhythmCluster.appendChild(buildMotifCard(motifId).element);
-  });
-  rhythmSection.appendChild(rhythmCluster);
+  if (content.newMotifIds.length === 0) {
+    renderNoNewContentMessage(rhythmSection, "rhythm motifs");
+  } else {
+    const rhythmCluster = document.createElement("div");
+    rhythmCluster.className = "cluster";
+    content.newMotifIds.forEach((motifId) => {
+      rhythmCluster.appendChild(buildMotifCard(motifId).element);
+    });
+    rhythmSection.appendChild(rhythmCluster);
+  }
   container.appendChild(rhythmSection);
 
   const melodySection = document.createElement("div");
