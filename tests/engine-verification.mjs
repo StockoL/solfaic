@@ -16,6 +16,7 @@ import {
   CADENCE_MOTIFS,
   IRREGULAR_METRE_GROUPINGS,
   PITCH_LEVEL_RULES,
+  PITCH_SYNTAX_DICTIONARY,
   SOLFEGE_DEGREES,
   INTERVAL_NAMES,
   allowedTonics,
@@ -306,6 +307,28 @@ Object.keys(PITCH_LEVEL_RULES).forEach((levelKey) => {
     `  L${levelId}: ${PITCH_TRIALS} trials, ${finalNotesSeen.size} distinct final notes seen.`,
   );
 });
+
+// Every Markov weight row across every level/mode/group must sum to
+// exactly 100 -- a plain data-entry check, generic over however many
+// levels/groups exist, so it catches mistakes in future hand-authored
+// tables too, not just tonight's Levels 5-9/8 additions.
+section("PITCH_SYNTAX_DICTIONARY row sums");
+{
+  let rowsChecked = 0;
+  Object.entries(PITCH_SYNTAX_DICTIONARY).forEach(([levelKey, groups]) => {
+    Object.entries(groups).forEach(([groupName, table]) => {
+      Object.entries(table).forEach(([row, weights]) => {
+        const sum = Object.values(weights).reduce((a, b) => a + b, 0);
+        assert(
+          sum === 100,
+          `L${levelKey}.${groupName}.${row}: weights sum to ${sum} (expected 100)`,
+        );
+        rowsChecked++;
+      });
+    });
+  });
+  console.log(`  ${rowsChecked} Markov rows checked, all sum to 100.`);
+}
 
 // Pitch line length must track a real rhythm timeline's sounding-note count
 // (restMask-aware), across levels/metres that can actually produce one.
