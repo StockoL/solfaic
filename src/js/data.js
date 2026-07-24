@@ -784,6 +784,9 @@ PITCH_LEVEL_RULES[7] = {
 };
 
 PITCH_LEVEL_RULES[8] = {
+  // Full chromatic set for cumulative purposes (getCumulativeToneset --
+  // Interval Detective, "what's new this level" -- si/fi are genuinely
+  // reachable at Level 8, just not simultaneously with a "do" cadence).
   toneset: [
     "do",
     "re",
@@ -803,6 +806,30 @@ PITCH_LEVEL_RULES[8] = {
   modes: {
     do: { level: 8, mode: "doMode" },
     la: { level: 8, mode: "laMode" },
+  },
+  // Per-target generation toneset -- doMode's table has no si/fi rows
+  // (harmonic/melodic-minor-only), so generating against the full
+  // toneset above would let generateSolfegeSequence's uniform-random
+  // fallback (used whenever the Markov table has no weighted transition
+  // to fall back on, including every phrase's first note) draw si/fi
+  // into a "do" cadence phrase where they don't belong. laMode's table
+  // does cover all 12, so "la" can safely use the full set.
+  tonesets: {
+    do: ["do", "re", "mi", "fa", "so", "la", "ti", "ra", "ma", "le"],
+    la: [
+      "do",
+      "re",
+      "mi",
+      "fa",
+      "so",
+      "la",
+      "ti",
+      "si",
+      "fi",
+      "ra",
+      "ma",
+      "le",
+    ],
   },
 };
 

@@ -521,14 +521,22 @@ export function generatePitchLine(levelId, noteCount) {
     return { pitches, tonic, toneset: rules.toneset };
   }
 
-  // Level 3 & 4: pick a cadence target, which selects the mode/table.
+  // Level 3+: pick a cadence target, which selects the mode/table. Most
+  // levels' single shared toneset matches every mode's table exactly, but
+  // where a mode's table covers fewer syllables than the full toneset
+  // (Level 8's doMode has no si/fi), `tonesets` narrows generation to what
+  // that specific mode actually supports -- otherwise the uniform-random
+  // fallback in generateSolfegeSequence (used whenever there's no
+  // weighted transition to draw from, including every phrase's first
+  // note) could draw a syllable the chosen mode doesn't recognise at all.
   const targets = Object.keys(rules.modes);
   const chosenTarget = targets[Math.floor(Math.random() * targets.length)];
   const modeInfo = rules.modes[chosenTarget];
   const table = PITCH_SYNTAX_DICTIONARY[modeInfo.level][modeInfo.mode];
+  const activeToneset = rules.tonesets?.[chosenTarget] ?? rules.toneset;
   const pitches = generateSolfegeSequence(
     table,
-    rules.toneset,
+    activeToneset,
     noteCount,
     chosenTarget,
   );
@@ -536,7 +544,7 @@ export function generatePitchLine(levelId, noteCount) {
   return {
     pitches,
     tonic,
-    toneset: rules.toneset,
+    toneset: activeToneset,
     mode: modeInfo.mode,
     cadenceTarget: chosenTarget,
   };

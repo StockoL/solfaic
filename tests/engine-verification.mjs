@@ -243,9 +243,12 @@ section("Pitch generation (generatePitchLine)");
 const PITCH_TRIALS = 200;
 const SAMPLE_NOTE_COUNT = 6;
 
+// Always the actual active toneset generatePitchLine used for this
+// specific result -- Level 1's random per-group subset and Level 8's
+// per-cadence-target narrowing (doMode has no si/fi) both mean the real
+// active set can be smaller than PITCH_LEVEL_RULES[levelId].toneset.
 function tonesetFor(levelId, result) {
-  if (levelId === 1) return result.toneset;
-  return PITCH_LEVEL_RULES[levelId].toneset;
+  return result.toneset;
 }
 
 Object.keys(PITCH_LEVEL_RULES).forEach((levelKey) => {
@@ -307,6 +310,38 @@ Object.keys(PITCH_LEVEL_RULES).forEach((levelKey) => {
     `  L${levelId}: ${PITCH_TRIALS} trials, ${finalNotesSeen.size} distinct final notes seen.`,
   );
 });
+
+// Level 8/9's doMode table has no si/fi rows (harmonic/melodic-minor-only
+// additions, la-mode territory) -- generateSolfegeSequence's uniform-
+// random fallback (used whenever there's no weighted transition to draw
+// from, including every phrase's first note) used to draw from the full,
+// unfiltered 12-symbol toneset regardless of which mode was chosen, so a
+// "do" cadence phrase could occasionally surface si/fi anyway. Locks in
+// the fix (a per-target `tonesets` narrowing) with a much larger sample
+// than the generic 200-trial loop above gives any single mode.
+section("Level 8/9 doMode never leaks si/fi (harmonic/melodic-minor-only)");
+{
+  const LEAK_TRIALS = 2000;
+  [8, 9].forEach((levelId) => {
+    let doModeTrials = 0;
+    let leaks = 0;
+    for (let trial = 0; trial < LEAK_TRIALS; trial++) {
+      const result = generatePitchLine(levelId, SAMPLE_NOTE_COUNT);
+      if (result.mode !== "doMode") continue;
+      doModeTrials++;
+      if (result.pitches.some((p) => p === "si" || p === "fi")) leaks++;
+    }
+    assert(
+      doModeTrials > 0,
+      `L${levelId}: doMode was actually selected at least once across ${LEAK_TRIALS} trials`,
+    );
+    assert(
+      leaks === 0,
+      `L${levelId}: doMode never produced si/fi across ${doModeTrials} doMode trials (got ${leaks})`,
+    );
+  });
+  console.log(`  ${LEAK_TRIALS} trials/level checked, no si/fi leaks into doMode.`);
+}
 
 // Every Markov weight row across every level/mode/group must sum to
 // exactly 100 -- a plain data-entry check, generic over however many
