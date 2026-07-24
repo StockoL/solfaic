@@ -311,7 +311,7 @@ Object.keys(PITCH_LEVEL_RULES).forEach((levelKey) => {
 // (restMask-aware), across levels/metres that can actually produce one.
 section("countSoundingNotes ↔ generatePitchLine pairing");
 for (let trial = 0; trial < 100; trial++) {
-  const levelId = 1 + (trial % 4);
+  const levelId = 1 + (trial % 9);
   const { timeline } = generateRhythmTimeline(levelId);
   const noteCount = countSoundingNotes(timeline);
   const { pitches } = generatePitchLine(levelId, noteCount);
@@ -320,7 +320,7 @@ for (let trial = 0; trial < 100; trial++) {
     `L${levelId}: generated pitch line length (${pitches.length}) matches countSoundingNotes (${noteCount})`,
   );
 }
-console.log("  100 paired trials across L1-4 check out.");
+console.log("  100 paired trials across L1-9 check out.");
 
 // evaluatePitchSubmission sanity.
 section("evaluatePitchSubmission");
@@ -604,6 +604,15 @@ section("Melodic level-of-introduction");
     2: ["do'"],
     3: ["fa"],
     4: [],
+    // Level 4 drops "fa" (plain 5-note pentatonic); Level 5 restores it
+    // alongside the genuinely new "ti" -- both come back as "new" here
+    // since getNewlyIntroducedSyllables diffs against Level 4's toneset,
+    // not Level 3's.
+    5: ["fa", "ti"],
+    6: [],
+    7: ["si", "fi"],
+    8: ["ra", "ma", "le"],
+    9: [],
   };
   Object.entries(expectedNew).forEach(([levelKey, expected]) => {
     const levelId = parseInt(levelKey, 10);
@@ -614,7 +623,7 @@ section("Melodic level-of-introduction");
       `L${levelId}: newly-introduced syllables are [${expected.join(",")}] (got [${actual.join(",")}])`,
     );
   });
-  console.log("  L1-4 newly-introduced syllable sets check out.");
+  console.log("  L1-9 newly-introduced syllable sets check out.");
 }
 
 // ============================================================================
@@ -645,7 +654,7 @@ section("Interval Detective engine logic");
   );
 
   const INTERVAL_TRIALS = 200;
-  [1, 2, 3, 4].forEach((levelId) => {
+  [1, 2, 3, 4, 5, 6, 7, 8, 9].forEach((levelId) => {
     const toneset = getCumulativeToneset(levelId);
     let sawAscending = false;
     let sawDescending = false;
