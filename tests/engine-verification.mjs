@@ -354,6 +354,14 @@ section("resolveSolfegeToNote");
     ["ti", "C4", "B4"],
     ["so", "Eb4", "A#4"], // Eb + P5 = Bb, spelled A# here (sharp-only scale)
     ["la", "G4", "E5"],
+    // Below-tonic pitches (Level 2's so_low/la_low) -- confirms the
+    // resolver's existing octave arithmetic (Math.floor of a negative
+    // totalSemitones, double-modulo on noteIndex) is already correct for
+    // negative offsets, not just do'-style positive ones.
+    ["so_low", "C4", "G3"],
+    ["la_low", "C4", "A3"],
+    ["so_low", "G4", "D4"],
+    ["la_low", "G4", "E4"],
   ];
   cases.forEach(([token, tonic, expected]) => {
     const actual = resolveSolfegeToNote(token, tonic);
@@ -363,8 +371,8 @@ section("resolveSolfegeToNote");
     );
   });
   assert(
-    Object.keys(SOLFEGE_DEGREES).length === 14,
-    "SOLFEGE_DEGREES has all 14 confirmed syllables (7 diatonic + do' + 6 chromatic, si/le sharing a semitone)",
+    Object.keys(SOLFEGE_DEGREES).length === 16,
+    "SOLFEGE_DEGREES has all 16 confirmed syllables (7 diatonic + do' + 6 chromatic, si/le sharing a semitone, + so_low/la_low)",
   );
 }
 
@@ -601,7 +609,7 @@ section("Melodic level-of-introduction");
 
   const expectedNew = {
     1: ["so", "mi", "la", "do", "re"],
-    2: ["do'"],
+    2: ["so_low", "la_low", "do'"],
     3: ["fa"],
     4: [],
     // Level 4 drops "fa" (plain 5-note pentatonic); Level 5 restores it

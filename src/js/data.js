@@ -635,6 +635,8 @@ export const IRREGULAR_METRE_GROUPINGS = {
  * for audio purposes even though they're different taught scale degrees.
  */
 export const SOLFEGE_DEGREES = {
+  so_low: -5,
+  la_low: -3,
   do: 0,
   ra: 1,
   re: 2,
@@ -703,7 +705,10 @@ export const PITCH_LEVEL_RULES = {
     // place (a 2-note subset has no meaningful "tonic").
   },
   2: {
-    toneset: ["do", "re", "mi", "so", "la", "do'"],
+    // so_low/la_low are genuinely below the tonic (Charlie Over the
+    // Ocean needs them) -- resolveSolfegeToNote's octave arithmetic
+    // already handles negative offsets generically, so this is additive.
+    toneset: ["so_low", "la_low", "do", "re", "mi", "so", "la", "do'"],
     cadenceRequired: true,
     cadenceTarget: "do",
   },
@@ -874,13 +879,46 @@ export const PITCH_SYNTAX_DICTIONARY = {
   },
 
   2: {
+    // so_low/la_low are genuinely below the tonic (Charlie Over the
+    // Ocean needs them) -- rare passing tones dipping below the tonic
+    // before resolving back up, so existing rows get a modest weight
+    // toward them (heaviest from so/la/do, minimal from mi/do') and their
+    // own rows resolve mostly upward rather than lingering low.
     unified: {
-      do: { do: 20, re: 20, mi: 25, so: 15, la: 10, "do'": 10 },
-      re: { do: 45, mi: 25, re: 15, so: 15 },
-      mi: { do: 35, re: 15, mi: 15, so: 25, la: 10 },
-      so: { mi: 30, so: 15, la: 20, do: 15, re: 10, "do'": 10 },
-      la: { so: 40, mi: 15, la: 15, do: 20, "do'": 10 },
-      "do'": { la: 30, so: 25, "do'": 15, mi: 15, do: 15 },
+      do: {
+        do: 15,
+        re: 20,
+        mi: 20,
+        so: 10,
+        la: 10,
+        "do'": 10,
+        so_low: 8,
+        la_low: 7,
+      },
+      re: { do: 40, mi: 25, re: 15, so: 15, so_low: 3, la_low: 2 },
+      mi: { do: 33, re: 15, mi: 15, so: 23, la: 10, so_low: 2, la_low: 2 },
+      so: {
+        mi: 27,
+        so: 13,
+        la: 18,
+        do: 14,
+        re: 9,
+        "do'": 9,
+        so_low: 7,
+        la_low: 3,
+      },
+      la: { so: 36, mi: 13, la: 13, do: 18, "do'": 9, so_low: 3, la_low: 8 },
+      "do'": {
+        la: 28,
+        so: 24,
+        "do'": 14,
+        mi: 14,
+        do: 14,
+        so_low: 3,
+        la_low: 3,
+      },
+      so_low: { do: 40, la: 20, so_low: 15, la_low: 15, mi: 5, re: 5 },
+      la_low: { do: 35, so_low: 25, la_low: 15, la: 15, mi: 5, re: 5 },
     },
   },
 
