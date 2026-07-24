@@ -19,7 +19,11 @@ import {
   REPERTOIRE,
 } from "./data.js";
 import { renderRhythmSVG, renderTieArcSVG } from "./rhythm-notation.js";
-import { resolveSolfegeColor, sortSyllablesAscending } from "./core.js";
+import {
+  resolveSolfegeColor,
+  sortSyllablesAscending,
+  formatSyllableLabel,
+} from "./core.js";
 import {
   getPresentationContent,
   generateRhythmTimeline,
@@ -135,10 +139,10 @@ export function buildSolfegeDisplayPad(syllable) {
   pad.type = "button";
   pad.disabled = true;
   pad.className = "solfege-pad";
-  pad.setAttribute("aria-label", syllable);
+  pad.setAttribute("aria-label", formatSyllableLabel(syllable));
   pad.dataset.syllable = syllable;
   pad.style.setProperty("--pad-color", resolveSolfegeColor(syllable));
-  pad.innerHTML = `<span class="solfege-pad__label">${syllable}</span>`;
+  pad.innerHTML = `<span class="solfege-pad__label">${formatSyllableLabel(syllable)}</span>`;
   return pad;
 }
 
@@ -509,7 +513,7 @@ function renderIntervalDetectivePanel(levelId) {
       }
     });
     const directionWord = currentTarget.ascending ? "ascending" : "descending";
-    feedback.textContent = `${isCorrect ? "Correct!" : "Not quite."} That was ${currentTarget.syllableA} → ${currentTarget.syllableB} (${directionWord}): ${currentTarget.intervalName}.`;
+    feedback.textContent = `${isCorrect ? "Correct!" : "Not quite."} That was ${formatSyllableLabel(currentTarget.syllableA)} → ${formatSyllableLabel(currentTarget.syllableB)} (${directionWord}): ${currentTarget.intervalName}.`;
   }
 
   toneset.forEach((syllable) => {

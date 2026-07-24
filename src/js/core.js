@@ -567,6 +567,23 @@ export function sortSyllablesAscending(toneset) {
 }
 
 /**
+ * Most syllable tokens already read fine as their own display text (do'
+ * included — the apostrophe reads as "upper do" clearly enough). Level 2's
+ * so_low/la_low are the exception: they're genuinely below-tonic tokens
+ * named for JS/CSS safety (no bare digits or subscripts in an identifier),
+ * not for how they should look on screen, so they need an explicit
+ * Kodály-style subscript mapping rather than leaking the raw token.
+ */
+const SYLLABLE_DISPLAY_LABELS = {
+  so_low: "so₁",
+  la_low: "la₁",
+};
+
+export function formatSyllableLabel(syllable) {
+  return SYLLABLE_DISPLAY_LABELS[syllable] ?? syllable;
+}
+
+/**
  * Renders one .solfege-pad button per syllable in the exercise's active
  * toneset into a given reel track element — the solfège-phase counterpart
  * to renderReelInto, sharing its DOM setup via renderReelTrack but with no
@@ -578,9 +595,9 @@ function renderSolfegeReelInto(trackEl, toneset) {
     const btn = document.createElement("button");
     btn.className = "solfege-pad";
     btn.setAttribute("role", "option");
-    btn.setAttribute("aria-label", syllable);
+    btn.setAttribute("aria-label", formatSyllableLabel(syllable));
     btn.style.setProperty("--pad-color", resolveSolfegeColor(syllable));
-    btn.innerHTML = `<span class="solfege-pad__label">${syllable}</span>`;
+    btn.innerHTML = `<span class="solfege-pad__label">${formatSyllableLabel(syllable)}</span>`;
 
     btn.addEventListener("click", () => {
       btn.dispatchEvent(
@@ -651,7 +668,7 @@ function renderSolfegeCard(
 
       const syllable = pitchSubmission?.[cellIndex];
       if (syllable) {
-        cell.textContent = syllable;
+        cell.textContent = formatSyllableLabel(syllable);
         cell.classList.add("is-filled");
         // Placement itself is reel-pad-click auto-advance-to-first-empty-
         // slot (see the action-select-pitch handler in app.js) — clicking
@@ -1104,7 +1121,7 @@ export function showStartingNoteModal(syllable) {
     return;
   }
   if (DOM.startingNoteSyllable) {
-    DOM.startingNoteSyllable.textContent = syllable;
+    DOM.startingNoteSyllable.textContent = formatSyllableLabel(syllable);
   }
   DOM.startingNoteModal.showModal();
 }
@@ -1205,7 +1222,7 @@ export function showPitchPracticeModal(syllables) {
 
     const text = document.createElement("span");
     text.className = "feedback-modal__card-syllable";
-    text.textContent = syllable;
+    text.textContent = formatSyllableLabel(syllable);
 
     card.appendChild(text);
     return card;
