@@ -640,14 +640,16 @@ section("Melodic level-of-introduction");
 section("Interval Detective engine logic");
 {
   assert(
-    INTERVAL_NAMES.length === 13,
-    "INTERVAL_NAMES covers 0-12 semitones (13 entries)",
+    INTERVAL_NAMES.length === 18,
+    "INTERVAL_NAMES covers 0-17 semitones (18 entries) -- Level 2's so_low/la_low push the widest pairs past a single octave",
   );
   const knownDistances = [
     [0, "Unison"],
     [4, "Major 3rd"],
     [7, "Perfect 5th"],
     [12, "Octave"],
+    [14, "Major 9th"],
+    [17, "Perfect 11th"],
   ];
   knownDistances.forEach(([semitones, expected]) => {
     assert(
@@ -679,7 +681,7 @@ section("Interval Detective engine logic");
       );
       assert(
         pair.semitones >= 0 &&
-          pair.semitones <= 12 &&
+          pair.semitones < INTERVAL_NAMES.length &&
           pair.intervalName === resolveIntervalName(pair.semitones),
         `L${levelId}: semitones (${pair.semitones}) resolves to a valid interval name ("${pair.intervalName}")`,
       );

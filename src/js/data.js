@@ -654,10 +654,16 @@ export const SOLFEGE_DEGREES = {
 };
 
 /**
- * Standard interval name by semitone distance (0-12) — index IS the
- * distance, so a lookup is just `INTERVAL_NAMES[semitones]`. Reuses
- * SOLFEGE_DEGREES' existing offsets rather than needing separate interval
- * curriculum data; Interval Detective is the sole consumer.
+ * Standard interval name by semitone distance — index IS the distance, so
+ * a lookup is just `INTERVAL_NAMES[semitones]`. Reuses SOLFEGE_DEGREES'
+ * existing offsets rather than needing separate interval curriculum data;
+ * Interval Detective is the sole consumer.
+ *
+ * Extends past the octave (13-17, compound intervals) because Level 2's
+ * toneset spans so_low up to do' — a full 17 semitones once the low so/la
+ * pair is in the mix, not just the single octave 1-4's tonesets stay
+ * within. Compound names follow standard theory (an octave plus the
+ * simple interval — a 9th is an octave+2nd, a 10th an octave+3rd, etc.).
  */
 export const INTERVAL_NAMES = [
   "Unison",
@@ -673,6 +679,11 @@ export const INTERVAL_NAMES = [
   "Minor 7th",
   "Major 7th",
   "Octave",
+  "Minor 9th",
+  "Major 9th",
+  "Minor 10th",
+  "Major 10th",
+  "Perfect 11th",
 ];
 
 /**
