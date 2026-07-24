@@ -109,7 +109,7 @@ export const AudioEngine = {
       envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 0.1 },
     }).toDestination();
 
-    Tone.Transport.bpm.value = 85;
+    Tone.Transport.bpm.value = 75;
     this.isInitialized = true;
   },
 
