@@ -746,10 +746,10 @@ test.describe("Solfaic Interactive Application Suite", () => {
       ).toHaveCount(0);
       await expect(
         page.locator("#tabpanel-preparation .preparation-song-list li"),
-      ).toHaveCount(2);
+      ).toHaveCount(8);
       await expect(
         page.locator("#tabpanel-preparation"),
-      ).toContainText("Rain, Rain, Go Away");
+      ).toContainText("Rain, Rain Go Away");
 
       // Practice bundles the four drill panels behind its own tab.
       await page.locator("#tab-practice").click();
@@ -961,7 +961,16 @@ test.describe("Solfaic Interactive Application Suite", () => {
       ).toHaveCount(0);
     });
 
-    test("Level 5 shows the shared 'not yet available' state across all level-driven panels, plus Preparation", async ({
+    // Level 5 used to be past MAX_LEVEL and show the shared "not yet
+    // available" state across all six level-driven panels -- MAX_LEVEL is
+    // now 9 (levelRules/PITCH_LEVEL_RULES cover Levels 5-9 for real), and
+    // the level dropdown itself only ever offers Levels 1-9, so there's no
+    // longer a reachable "beyond the ceiling" level to demonstrate that
+    // state through the UI at all. This replaces that test with a
+    // positive-content check instead: Level 5 has no new rhythm motifs
+    // (its only advance is the pitch side) but does introduce new
+    // solfège, and Preparation has a real curated song list.
+    test("Level 5 shows real content, not the 'not yet available' state", async ({
       page,
     }) => {
       await page.goto("/classroom.html");
@@ -971,16 +980,21 @@ test.describe("Solfaic Interactive Application Suite", () => {
         .filter({ hasText: "Level 5" })
         .click();
 
-      // 5 level-driven panels (Presentation, both Workshops, Example,
-      // Interval Detective) plus Preparation, which renders this same
-      // state unconditionally regardless of level -- toHaveCount counts
-      // DOM presence, not tab visibility, so Preparation's copy counts
-      // here even while its tabpanel sits hidden.
-      await expect(page.locator(".panel-unavailable")).toHaveCount(6);
-      const badges = page.locator(".panel-unavailable .badge");
-      for (const badge of await badges.all()) {
-        await expect(badge).toContainText("Not yet available");
-      }
+      await expect(page.locator(".panel-unavailable")).toHaveCount(0);
+      await expect(
+        page.locator("#presentation-content .text-muted"),
+      ).toContainText("No new rhythm motifs this level");
+      await expect(
+        page.locator("#presentation-content .solfege-pad"),
+      ).toHaveCount(2);
+
+      await page.locator("#tab-preparation").click();
+      await expect(
+        page.locator("#tabpanel-preparation .preparation-song-list li"),
+      ).toHaveCount(5);
+      await expect(page.locator("#tabpanel-preparation")).toContainText(
+        "Kookaburra",
+      );
     });
 
     test("Rhythm Workshop plays the selected motif, not just any motif", async ({
@@ -1106,7 +1120,7 @@ test.describe("Solfaic Interactive Application Suite", () => {
       await page.goto("/classroom.html");
       await page.locator("#tab-practice").click();
 
-      for (const level of [1, 2, 3, 4]) {
+      for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
         if (level > 1) {
           await page.locator("#btn-level-dropdown").click();
           await page
@@ -1122,23 +1136,6 @@ test.describe("Solfaic Interactive Application Suite", () => {
           page.locator("#example-content .text-muted"),
         ).toContainText(/\d\/\d time, \d+ bars?/);
       }
-    });
-
-    test("Level 5's Example shows the unavailable state, no Play button", async ({
-      page,
-    }) => {
-      await page.goto("/classroom.html");
-      await page.locator("#tab-practice").click();
-      await page.locator("#btn-level-dropdown").click();
-      await page
-        .locator(".level-select__item")
-        .filter({ hasText: "Level 5" })
-        .click();
-
-      await expect(
-        page.locator("#example-content .panel-unavailable"),
-      ).toBeVisible();
-      await expect(page.locator("#example-content button")).toHaveCount(0);
     });
 
     test("Workshop pads are keyboard-selectable with Space, not just clickable", async ({
@@ -1290,7 +1287,7 @@ test.describe("Solfaic Interactive Application Suite", () => {
       );
     });
 
-    test("Level 5's Interval Detective shows the unavailable state", async ({
+    test("Level 5's Interval Detective shows real content, not the unavailable state", async ({
       page,
     }) => {
       await page.goto("/classroom.html");
@@ -1303,10 +1300,10 @@ test.describe("Solfaic Interactive Application Suite", () => {
 
       await expect(
         page.locator("#interval-detective-content .panel-unavailable"),
-      ).toBeVisible();
+      ).toHaveCount(0);
       await expect(
         page.locator("#interval-detective-content .solfege-pad"),
-      ).toHaveCount(0);
+      ).toHaveCount(7); // Level 5's cumulative toneset: do, re, mi, fa, so, la, ti
     });
   });
 
