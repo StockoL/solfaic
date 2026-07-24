@@ -686,6 +686,14 @@ export const PITCH_LEVEL_RULES = {
     melodicGroups: {
       soMiLa: { toneset: ["so", "mi", "la"], cadenceRequired: false },
       doReMi: { toneset: ["do", "re", "mi"], cadenceRequired: false },
+      // Later-in-level full merged pentatonic, alongside the two original
+      // groups rather than replacing them — the source's actual
+      // progression is s-m -> m-r-d -> s-m-r-d -> l-s-m-r-d, and this
+      // third option is that final stage.
+      fullPentatonic: {
+        toneset: ["do", "re", "mi", "so", "la"],
+        cadenceRequired: false,
+      },
     },
     // Level 1 exercises should also draw from random NON-EMPTY subsets
     // of a group's toneset (sometimes just {so,mi}, sometimes the full
@@ -852,6 +860,16 @@ export const PITCH_SYNTAX_DICTIONARY = {
       do: { do: 30, re: 30, mi: 40 },
       re: { do: 55, mi: 30, re: 15 },
       mi: { do: 45, re: 20, mi: 35 },
+    },
+    // Later-in-level full merged pentatonic (l-s-m-r-d) -- the source's
+    // real progression adds this as a final stage past the two starting
+    // groups above, not a replacement for either.
+    fullPentatonic: {
+      do: { do: 20, re: 30, mi: 30, so: 10, la: 10 },
+      re: { do: 40, mi: 30, re: 10, so: 10, la: 10 },
+      mi: { do: 25, re: 25, mi: 15, so: 25, la: 10 },
+      so: { mi: 30, do: 20, so: 15, la: 25, re: 10 },
+      la: { so: 40, mi: 20, la: 15, do: 15, re: 10 },
     },
   },
 
