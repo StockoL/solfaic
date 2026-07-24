@@ -797,6 +797,36 @@ test.describe("Solfaic Interactive Application Suite", () => {
       expect(rowsUsed.size).toBeGreaterThan(1);
     });
 
+    // Cluster's natural greedy flex-wrap groups Preparation+Presentation on
+    // row 1 and drops Practice alone to row 2 -- the desired grouping is
+    // the opposite (Preparation, the entry point, alone up top; Presentation
+    // +Practice, the two active phases, paired below), which a dedicated
+    // grid takes over to guarantee. Checked at two representative narrow
+    // widths (an old iPhone SE width and a common modern phone width) since
+    // the earlier bug specifically only showed up past 320px.
+    test("The tab strip groups Preparation alone above Presentation+Practice on narrow viewports", async ({
+      page,
+    }) => {
+      for (const width of [320, 375]) {
+        await page.setViewportSize({ width, height: 700 });
+        await page.goto("/classroom.html");
+
+        const [prepBox, presBox, pracBox] = await Promise.all(
+          ["#tab-preparation", "#tab-presentation", "#tab-practice"].map(
+            (sel) => page.locator(sel).boundingBox(),
+          ),
+        );
+        const prep = /** @type {any} */ (prepBox);
+        const pres = /** @type {any} */ (presBox);
+        const prac = /** @type {any} */ (pracBox);
+
+        // Presentation and Practice share a row; Preparation sits alone,
+        // strictly above them.
+        expect(Math.round(pres.y)).toBe(Math.round(prac.y));
+        expect(Math.round(prep.y)).toBeLessThan(Math.round(pres.y));
+      }
+    });
+
     test("Presentation shows Level 1's 3 new motifs and 5 new syllables as real notation/colour circles", async ({
       page,
     }) => {

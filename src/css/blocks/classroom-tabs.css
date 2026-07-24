@@ -25,6 +25,41 @@
 }
 
 /*
+ * Cluster's natural greedy flex-wrap fills left-to-right and only wraps
+ * once the next tab genuinely doesn't fit — measured directly, that lands
+ * as Preparation+Presentation sharing row 1 and Practice wrapping alone,
+ * for every width from 320px up to ~447px (where all three finally fit on
+ * one row). The desired grouping is the other way around: Preparation
+ * (the entry point) alone on its own row, Presentation+Practice (the two
+ * active phases) paired below it. No amount of gap/width tuning holds
+ * that split stable across this whole range without either breaking at
+ * common phone widths or requiring an implausibly wide first tab, so this
+ * takes over with an explicit 2-row grid instead, only in the narrow band
+ * where Cluster would otherwise wrap. 500px leaves real margin over the
+ * measured ~447px cutover for the cross-platform font-metric variance the
+ * tab-wrap test itself already accounts for.
+ */
+@media (max-width: 499px) {
+  .classroom-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "preparation preparation"
+      "presentation practice";
+  }
+
+  #tab-preparation {
+    grid-area: preparation;
+  }
+  #tab-presentation {
+    grid-area: presentation;
+  }
+  #tab-practice {
+    grid-area: practice;
+  }
+}
+
+/*
  * Rest-state text uses a darkened variant of --tab-color, not --tab-color
  * itself — against the lightly-tinted rest background below, the full
  * -strength colour only reaches ~3:1 (a real Lighthouse finding on the
