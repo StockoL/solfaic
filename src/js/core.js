@@ -511,15 +511,15 @@ const SOLFEGE_COLOR_ANCHORS = [
  * pad's background: a direct var() for the seven diatonic anchors, or
  * for an octave mark like do' (same pitch class — only the semitone value
  * mod 12 matters, so it shares do's colour rather than needing its own).
- * A chromatic syllable not among the anchors (fi, si, ta, etc.) gets a
- * color-mix() blend between its two nearest anchors instead, weighted by
- * exactly how far it sits from each — not just a flat 50/50 split, so a
- * future chromatic pitch that isn't perfectly centred between its
+ * A chromatic syllable not among the anchors (fi, si, ra, ma, le, ta, etc.)
+ * gets a color-mix() blend between its two nearest anchors instead,
+ * weighted by exactly how far it sits from each — not just a flat 50/50
+ * split, so a chromatic pitch that isn't perfectly centred between its
  * neighbours still blends proportionally rather than needing a bespoke
- * colour decision of its own. Nothing chromatic is reachable yet (Levels
- * 1-4 are diatonic-only), but the lookup is degree-based rather than a
- * hand-listed table of syllable spellings, so it doesn't need revisiting
- * when one is.
+ * colour decision of its own. Reachable from Level 7 onward (fi/si) and
+ * Level 8 onward (ra/ma/le); the lookup is degree-based rather than a
+ * hand-listed table of syllable spellings, so it needed no changes when
+ * those became reachable.
  */
 export function resolveSolfegeColor(syllable) {
   const degree = (((SOLFEGE_DEGREES[syllable] ?? 0) % 12) + 12) % 12;
@@ -527,11 +527,8 @@ export function resolveSolfegeColor(syllable) {
   const exact = SOLFEGE_COLOR_ANCHORS.find((a) => a.degree === degree);
   if (exact) return `var(--color-solfege-${exact.token})`;
 
-  // Nearest anchor below and above, wrapping the octave — dead code for
-  // every currently reachable syllable (the smallest/largest anchors sit
-  // at 0/11, and a degree past either boundary always exact-matches
-  // above via the mod-12 normalisation before this point), kept for the
-  // same future-chromatic-syllable robustness as the rest of this lookup.
+  // Nearest anchor below and above, wrapping the octave -- live for every
+  // chromatic syllable now reachable (fi, si, ra, ma, le).
   let below = SOLFEGE_COLOR_ANCHORS[SOLFEGE_COLOR_ANCHORS.length - 1];
   let above = SOLFEGE_COLOR_ANCHORS[0];
   for (const anchor of SOLFEGE_COLOR_ANCHORS) {
