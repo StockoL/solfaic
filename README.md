@@ -41,6 +41,7 @@ If you're used to a convention where stylesheets and scripts live directly in `a
    - [Andy Bell's CUBE CSS Methodology](#research-cube-css)
    - [Phoenix Collective / British Kodály Academy](#research-phoenix-collective)
 3. [UX Design Strategy (The 5 Planes)](#ux-strategy). Full doc: [`docs/ux-design-strategy.md`](./docs/ux-design-strategy.md)
+   - [Future Roadmap](./docs/ux-design-strategy.md#future-roadmap)
 4. [System Architecture & Logic Maps](#architecture). Full doc: [`docs/architecture.md`](./docs/architecture.md)
 5. [Core Features & UI Overhauls](#features). Full doc: [`docs/features.md`](./docs/features.md)
 6. [Deployment Guide](#deployment)
