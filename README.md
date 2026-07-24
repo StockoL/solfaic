@@ -142,6 +142,7 @@ _Focus: legibility, keyboard operability, and assistive-technology compatibility
 
 ### 5. <a name="research-phoenix-collective"></a>Phoenix Collective / British Kodály Academy Musicianship Syllabus (Cyrilla Rowsell)
 
+- **Source document:** [`docs/Musicianship Levels.pdf`](<./docs/Musicianship Levels.pdf>) — Cyrilla's detailed level-by-level breakdown (tonesets, cadence targets, rhythm vocabulary, and real repertoire per level), the authoritative source the melodic/rhythm engine data across all 9 modelled levels is built from.
 - **The High Note (what works):** A real, professionally-authored progression across 10 levels, giving the melodic engine genuine pedagogical grounding instead of an invented difficulty curve.
 - **The Flat Note (what fails):** Written for live teaching (staff notation, ensemble singing, improvisation, work with a piano partner), most of which has no equivalent in an automated, solo dictation engine.
 - **Innovation:** Only the generative content (tonesets, cadence targets, rhythm vocabulary, metres) was extracted from the syllabus and modelled as structured data (weighted tonesets and Markov transition tables), deliberately excluding everything that isn't reducible to "generate it, then have the student identify it."
@@ -326,6 +327,7 @@ This is an ongoing thing, not a closed list. These are the two I've identified s
 │   ├── features.md               # Full Core Features & UI Overhauls writeup
 │   ├── development-log.md        # Full Development Log & Engineering Phases writeup
 │   ├── testing.md                # Full Testing & QA Portfolio writeup
+│   ├── Musicianship Levels.pdf   # Source curriculum doc (Cyrilla Rowsell) the melodic/rhythm data is modelled from
 │   ├── wireframes/                # Initial UI concepts
 │   ├── architecturemaps/          # Early Mermaid flowcharts from initial project conception
 │   ├── screenshots/                # UI captures referenced throughout the docs
