@@ -555,6 +555,21 @@ export const levelRules = {
 };
 
 /**
+ * Levels 5-9: rhythm needs no new vocabulary beyond Level 7's `tooo`
+ * (whole note) -- these levels' real advances are all on the pitch side
+ * (new tonesets/modes), reusing Level 4's cumulative motif pool within the
+ * same already-supported metres (no irregular metres tonight).
+ */
+levelRules[5] = { ...levelRules[4] };
+levelRules[6] = { ...levelRules[5] };
+levelRules[7] = {
+  ...levelRules[6],
+  simpleMotifs: [...levelRules[6].simpleMotifs, "tooo"],
+};
+levelRules[8] = { ...levelRules[7] };
+levelRules[9] = { ...levelRules[8] };
+
+/**
  * The highest level with real content — derived from levelRules itself
  * rather than hardcoded, so a UI ceiling (e.g. "you've mastered
  * everything") never drifts out of sync with the data the way the
